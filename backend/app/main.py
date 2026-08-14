@@ -1,0 +1,51 @@
+"""FastAPI application entrypoint — Phase 01 (Foundation).
+
+Only the health router is registered here for now. Auth/patients/RAG/etc. routers are
+added incrementally in later phases (see docs/architecture.md for the build sequence)
+and registered the same way: `app.include_router(...)`.
+"""
+
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.health import router as health_router
+from app.config.settings import get_settings
+from app.logging import configure_logging, get_logger
+
+settings = get_settings()
+configure_logging(settings.log_level)
+logger = get_logger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("GMS Clinical AI backend starting (env=%s)", settings.app_env)
+    yield
+    logger.info("GMS Clinical AI backend shutting down")
+
+
+app = FastAPI(
+    title="GMS Clinical AI",
+    description="Local-first multimodal clinical RAG & decision-support platform.",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.frontend_origin],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(health_router)
+
+
+@app.get("/", include_in_schema=False)
+async def root() -> dict[str, str]:
+    return {"name": "GMS Clinical AI", "status": "running", "docs": "/docs"}

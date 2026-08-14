@@ -1,0 +1,66 @@
+# Third-Party Notices
+
+GMS Clinical AI is built entirely on open-source / locally-runnable components. This
+file is updated as each build phase introduces new dependencies — see the version
+pinned in `backend/requirements.txt` / `frontend/package.json` for the exact version in
+use at any time.
+
+## Backend (Phase 01)
+
+| Package | Project | License |
+|---|---|---|
+| FastAPI | https://github.com/fastapi/fastapi | MIT |
+| Uvicorn | https://github.com/encode/uvicorn | BSD-3-Clause |
+| Pydantic / pydantic-settings | https://github.com/pydantic/pydantic | MIT |
+| SQLAlchemy | https://github.com/sqlalchemy/sqlalchemy | MIT |
+| Alembic | https://github.com/sqlalchemy/alembic | MIT |
+| httpx | https://github.com/encode/httpx | BSD-3-Clause |
+| argon2-cffi | https://github.com/hynek/argon2-cffi | MIT |
+| python-multipart | https://github.com/Kludex/python-multipart | Apache-2.0 |
+| pytest / pytest-asyncio | https://github.com/pytest-dev/pytest | MIT |
+| Ruff | https://github.com/astral-sh/ruff | MIT |
+
+## Backend (declared now, used starting Phase 07 — RAG core)
+
+| Package | Project | License |
+|---|---|---|
+| qdrant-client | https://github.com/qdrant/qdrant-client | Apache-2.0 |
+| sentence-transformers | https://github.com/UKPLab/sentence-transformers | Apache-2.0 |
+| transformers | https://github.com/huggingface/transformers | Apache-2.0 |
+| Qwen3-Embedding-0.6B | https://huggingface.co/Qwen/Qwen3-Embedding-0.6B | Apache-2.0 |
+| Qwen3-Reranker-0.6B | https://huggingface.co/Qwen/Qwen3-Reranker-0.6B | Apache-2.0 |
+| Qwen3.5 (via Ollama) | https://ollama.com/library/qwen3.5 | Qwen license (see model card) |
+
+## Infrastructure
+
+| Component | Project | License |
+|---|---|---|
+| Qdrant (Docker, pinned `v1.19.0`) | https://github.com/qdrant/qdrant | Apache-2.0 |
+| Ollama | https://github.com/ollama/ollama | MIT |
+| SearXNG (Research Mode, optional, Phase 11) | https://github.com/searxng/searxng | AGPL-3.0 |
+
+## Frontend (Phase 01)
+
+| Package | Project | License |
+|---|---|---|
+| React / React DOM | https://github.com/facebook/react | MIT |
+| React Router | https://github.com/remix-run/react-router | MIT |
+| TanStack Query | https://github.com/TanStack/query | MIT |
+| Vite | https://github.com/vitejs/vite | MIT |
+| Tailwind CSS | https://github.com/tailwindlabs/tailwindcss | MIT |
+| lucide-react | https://github.com/lucide-icons/lucide | ISC |
+| TypeScript | https://github.com/microsoft/TypeScript | Apache-2.0 |
+| Vitest / Testing Library | https://github.com/vitest-dev/vitest / https://github.com/testing-library/react-testing-library | MIT |
+
+## Domain reference data (not source code)
+
+The ophthalmology reference PDFs and `eye_conditions.json` under `data/` are
+user-supplied source material for the local knowledge base, not redistributed
+third-party software — confirm licensing/usage terms for each document independently
+before any redistribution beyond this local deployment.
+
+## Not bundled (by design)
+
+- **CPT** content is not bundled (AMA-licensed) — see spec §76. The coding module only
+  ever loads properly licensed, customer-supplied CPT data through an import adapter.
+- No proprietary/paid cloud SDKs are used anywhere in this project.

@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-navy antialiased;
+  }
+}
+
+@layer components {
+  /* Reusable card primitive — used across every clinical panel in the app rather than
+     each page redefining its own card border/shadow/radius. */
+  .gms-card {
+    @apply rounded-card border border-border bg-surface shadow-card;
+  }
+}

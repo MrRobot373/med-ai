@@ -1,0 +1,1568 @@
+[
+  {
+    "id": "EYE-001",
+    "disease": "Cataract",
+    "category": "Lens disorder",
+    "description": "Clouding of the eye's natural lens that reduces visual clarity and light transmission.",
+    "common_symptoms": [
+      "blurred or cloudy vision",
+      "increased glare",
+      "reduced contrast sensitivity",
+      "difficulty seeing at night",
+      "frequent changes in eyeglass prescription"
+    ],
+    "risk_factors": [
+      "increasing age",
+      "diabetes mellitus",
+      "prolonged UV exposure",
+      "previous eye injury or surgery",
+      "corticosteroid use"
+    ],
+    "diagnosis": [
+      "visual acuity assessment",
+      "slit-lamp examination",
+      "dilated fundus examination",
+      "retinal imaging"
+    ],
+    "management": [
+      "updated eyeglass prescription when useful",
+      "anti-glare sunglasses",
+      "cataract surgery when visually significant"
+    ],
+    "treatment_goal": "Restore useful vision and improve quality of life.",
+    "curative_treatment_available": "Surgery can effectively treat visually significant cataract.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-002",
+    "disease": "Glaucoma",
+    "category": "Optic nerve disease",
+    "description": "A group of diseases causing progressive optic nerve damage, often associated with elevated intraocular pressure, leading to irreversible vision loss.",
+    "common_symptoms": [
+      "gradual peripheral vision loss",
+      "tunnel vision in advanced stages",
+      "eye pain or headache (acute angle-closure)",
+      "halos around lights (acute)"
+    ],
+    "risk_factors": [
+      "elevated intraocular pressure",
+      "age over 60",
+      "family history of glaucoma",
+      "African, Asian, or Hispanic ethnicity",
+      "diabetes or hypertension"
+    ],
+    "diagnosis": [
+      "tonometry (intraocular pressure measurement)",
+      "optic nerve head examination",
+      "visual field testing",
+      "optical coherence tomography (OCT)",
+      "gonioscopy"
+    ],
+    "management": [
+      "topical intraocular pressure-lowering medications",
+      "laser trabeculoplasty",
+      "minimally invasive glaucoma surgery (MIGS)",
+      "trabeculectomy or tube shunt surgery"
+    ],
+    "treatment_goal": "Preserve remaining vision by controlling intraocular pressure.",
+    "curative_treatment_available": "No cure exists; treatment aims to slow progression and preserve vision.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-003",
+    "disease": "Diabetic Retinopathy",
+    "category": "Retinal vascular disease",
+    "description": "Microvascular complication of diabetes causing damage to retinal blood vessels, potentially leading to vision loss.",
+    "common_symptoms": [
+      "blurred vision",
+      "floaters",
+      "fluctuating vision",
+      "dark or empty areas in vision",
+      "poor night vision"
+    ],
+    "risk_factors": [
+      "long duration of diabetes",
+      "poor glycemic control",
+      "hypertension",
+      "hyperlipidemia",
+      "pregnancy"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "fluorescein angiography",
+      "optical coherence tomography (OCT)",
+      "fundus photography"
+    ],
+    "management": [
+      "strict glycemic, blood pressure, and lipid control",
+      "intravitreal anti-VEGF injections",
+      "panretinal photocoagulation laser",
+      "vitrectomy for advanced cases"
+    ],
+    "treatment_goal": "Prevent progression and preserve vision through early detection and control.",
+    "curative_treatment_available": "No cure; treatment manages complications and slows progression.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-004",
+    "disease": "Age-related Macular Degeneration",
+    "category": "Macular disease",
+    "description": "Progressive degeneration of the macula, the central part of the retina, leading to loss of central vision in older adults.",
+    "common_symptoms": [
+      "blurred central vision",
+      "distorted vision (metamorphopsia)",
+      "difficulty reading or recognizing faces",
+      "dark or empty central area"
+    ],
+    "risk_factors": [
+      "age over 50",
+      "smoking",
+      "family history",
+      "Caucasian ethnicity",
+      "obesity and cardiovascular disease"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "Amsler grid testing",
+      "optical coherence tomography (OCT)",
+      "fluorescein angiography"
+    ],
+    "management": [
+      "AREDS2 nutritional supplements (intermediate AMD)",
+      "intravitreal anti-VEGF injections (wet AMD)",
+      "photodynamic therapy",
+      "low vision rehabilitation"
+    ],
+    "treatment_goal": "Slow progression and preserve central vision; treat neovascular complications.",
+    "curative_treatment_available": "No cure for dry AMD; wet AMD is treatable but not curable.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-005",
+    "disease": "Myopia",
+    "category": "Refractive error",
+    "description": "A refractive error where distant objects appear blurry because the eye focuses images in front of the retina.",
+    "common_symptoms": [
+      "blurred distance vision",
+      "squinting to see distant objects",
+      "eye strain or headaches",
+      "difficulty seeing while driving"
+    ],
+    "risk_factors": [
+      "family history",
+      "prolonged near work",
+      "limited outdoor activity in childhood",
+      "early onset"
+    ],
+    "diagnosis": [
+      "visual acuity testing",
+      "retinoscopy",
+      "autorefraction",
+      "subjective refraction"
+    ],
+    "management": [
+      "corrective eyeglasses or contact lenses",
+      "orthokeratology",
+      "low-dose atropine (progressive myopia in children)",
+      "refractive surgery (LASIK, PRK, SMILE)"
+    ],
+    "treatment_goal": "Correct refractive error and provide clear distance vision.",
+    "curative_treatment_available": "Refractive surgery can permanently correct myopia in suitable candidates.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-006",
+    "disease": "Hyperopia",
+    "category": "Refractive error",
+    "description": "A refractive error where near objects appear blurry because the eye focuses images behind the retina.",
+    "common_symptoms": [
+      "blurred near vision",
+      "eye strain or fatigue",
+      "headaches after close work",
+      "difficulty concentrating on near tasks"
+    ],
+    "risk_factors": [
+      "family history",
+      "short axial length of the eye",
+      "age-related changes"
+    ],
+    "diagnosis": [
+      "visual acuity testing",
+      "retinoscopy",
+      "autorefraction",
+      "subjective refraction",
+      "cycloplegic refraction in children"
+    ],
+    "management": [
+      "corrective eyeglasses or contact lenses",
+      "reading glasses",
+      "refractive surgery (LASIK, PRK)"
+    ],
+    "treatment_goal": "Correct refractive error and relieve symptoms of eye strain.",
+    "curative_treatment_available": "Refractive surgery can permanently correct hyperopia in suitable candidates.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-007",
+    "disease": "Astigmatism",
+    "category": "Refractive error",
+    "description": "A refractive error caused by an irregularly shaped cornea or lens, resulting in blurred vision at all distances.",
+    "common_symptoms": [
+      "blurred or distorted vision at all distances",
+      "eye strain",
+      "headaches",
+      "difficulty with night driving"
+    ],
+    "risk_factors": [
+      "genetic predisposition",
+      "corneal scarring",
+      "keratoconus",
+      "previous eye surgery"
+    ],
+    "diagnosis": [
+      "visual acuity testing",
+      "keratometry",
+      "corneal topography",
+      "autorefraction",
+      "subjective refraction"
+    ],
+    "management": [
+      "cylindrical corrective lenses (eyeglasses or contacts)",
+      "toric contact lenses",
+      "orthokeratology",
+      "refractive surgery (LASIK, PRK)"
+    ],
+    "treatment_goal": "Correct the irregular curvature and provide clear vision at all distances.",
+    "curative_treatment_available": "Refractive surgery can permanently correct astigmatism in suitable candidates.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-008",
+    "disease": "Presbyopia",
+    "category": "Age-related refractive change",
+    "description": "An age-related loss of the eye's ability to focus on near objects due to decreased lens elasticity, typically beginning after age 40.",
+    "common_symptoms": [
+      "difficulty reading small print",
+      "holding reading material at arm's length",
+      "eye strain with near work",
+      "headaches during close tasks"
+    ],
+    "risk_factors": [
+      "age over 40",
+      "hyperopia",
+      "certain medications (antihistamines, antidepressants)",
+      "cardiovascular disease"
+    ],
+    "diagnosis": [
+      "near vision acuity testing",
+      "refraction testing",
+      "assessment of accommodative amplitude"
+    ],
+    "management": [
+      "reading glasses",
+      "bifocal or progressive lenses",
+      "multifocal contact lenses",
+      "monovision contact lenses",
+      "refractive surgery or lens replacement"
+    ],
+    "treatment_goal": "Restore comfortable near vision for daily activities.",
+    "curative_treatment_available": "No cure; it is a natural aging process managed with optical correction.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-009",
+    "disease": "Dry Eye Disease",
+    "category": "Ocular surface disease",
+    "description": "A multifactorial disease of the tears and ocular surface resulting in discomfort, visual disturbance, and tear film instability.",
+    "common_symptoms": [
+      "burning or stinging sensation",
+      "gritty or sandy feeling",
+      "excessive tearing (reflex)",
+      "blurred vision",
+      "light sensitivity"
+    ],
+    "risk_factors": [
+      "age (more common in women over 50)",
+      "hormonal changes",
+      "prolonged screen use",
+      "certain medications (antihistamines, antidepressants)",
+      "autoimmune diseases (Sjögren's, rheumatoid arthritis)"
+    ],
+    "diagnosis": [
+      "symptom questionnaire",
+      "tear film break-up time (TBUT)",
+      "Schirmer's test",
+      "corneal staining",
+      "meibomian gland assessment"
+    ],
+    "management": [
+      "artificial tears and lubricating eye drops",
+      "warm compresses and lid hygiene",
+      "punctal plugs",
+      "prescription anti-inflammatory drops (cyclosporine, lifitegrast)",
+      "intense pulsed light (IPL) therapy"
+    ],
+    "treatment_goal": "Improve tear film stability, reduce symptoms, and protect the ocular surface.",
+    "curative_treatment_available": "No permanent cure; management focuses on symptom control and underlying causes.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-010",
+    "disease": "Conjunctivitis",
+    "category": "Ocular surface/inflammatory",
+    "description": "Inflammation of the conjunctiva caused by infection, allergy, or irritants, commonly known as pink eye.",
+    "common_symptoms": [
+      "redness in the white of the eye",
+      "itching or burning sensation",
+      "watery or mucoid discharge",
+      "gritty feeling",
+      "crusting of eyelids"
+    ],
+    "risk_factors": [
+      "viral or bacterial infection",
+      "allergens (pollen, dust, pet dander)",
+      "contact lens wear",
+      "exposure to irritants (chemicals, smoke)",
+      "crowded or institutional settings"
+    ],
+    "diagnosis": [
+      "clinical examination",
+      "slit-lamp examination",
+      "conjunctival swab for culture (severe or recurrent cases)"
+    ],
+    "management": [
+      "viral: supportive care and cold compresses",
+      "bacterial: antibiotic eye drops or ointment",
+      "allergic: antihistamine or mast cell stabilizer drops",
+      "avoidance of known triggers"
+    ],
+    "treatment_goal": "Relieve symptoms, treat underlying cause, and prevent spread (infectious cases).",
+    "curative_treatment_available": "Most cases resolve with appropriate treatment; viral cases are self-limiting.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-011",
+    "disease": "Blepharitis",
+    "category": "Eyelid disorder",
+    "description": "Chronic inflammation of the eyelid margins, often involving the meibomian glands and lash follicles.",
+    "common_symptoms": [
+      "red, swollen eyelids",
+      "crusting or flaking at the lash base",
+      "burning or gritty sensation",
+      "excessive tearing",
+      "sensitivity to light"
+    ],
+    "risk_factors": [
+      "seborrheic dermatitis",
+      "rosacea",
+      "bacterial overgrowth",
+      "demodex mite infestation",
+      "meibomian gland dysfunction"
+    ],
+    "diagnosis": [
+      "slit-lamp examination of eyelid margins",
+      "assessment of meibomian gland function",
+      "evaluation for associated skin conditions"
+    ],
+    "management": [
+      "warm compresses and lid massage",
+      "lid hygiene with diluted baby shampoo or commercial cleansers",
+      "artificial tears",
+      "topical antibiotics or corticosteroids (short-term)",
+      "oral doxycycline or azithromycin (severe cases)"
+    ],
+    "treatment_goal": "Control inflammation, improve meibomian gland function, and relieve symptoms.",
+    "curative_treatment_available": "No permanent cure; requires ongoing management.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-012",
+    "disease": "Retinal Detachment",
+    "category": "Retinal emergency",
+    "description": "Separation of the neurosensory retina from the underlying retinal pigment epithelium, causing vision loss if not treated promptly.",
+    "common_symptoms": [
+      "sudden onset of floaters",
+      "flashes of light (photopsia)",
+      "shadow or curtain over visual field",
+      "rapid decrease in vision"
+    ],
+    "risk_factors": [
+      "high myopia",
+      "posterior vitreous detachment",
+      "previous retinal detachment",
+      "family history",
+      "trauma",
+      "previous cataract surgery"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "indirect ophthalmoscopy",
+      "optical coherence tomography (OCT)",
+      "B-scan ultrasonography (if media opaque)"
+    ],
+    "management": [
+      "laser photocoagulation or cryotherapy (small tears)",
+      "pneumatic retinopexy",
+      "scleral buckling",
+      "pars plana vitrectomy"
+    ],
+    "treatment_goal": "Reattach the retina promptly to preserve vision.",
+    "curative_treatment_available": "Surgical repair can successfully reattach the retina if performed promptly.",
+    "specialist_evaluation": true,
+    "emergency": true,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-013",
+    "disease": "Keratoconus",
+    "category": "Corneal disorder",
+    "description": "Progressive thinning and bulging of the cornea into a cone shape, causing distorted vision.",
+    "common_symptoms": [
+      "progressively blurred or distorted vision",
+      "increased sensitivity to light and glare",
+      "frequent changes in eyeglass prescription",
+      "ghosting or multiple images"
+    ],
+    "risk_factors": [
+      "genetic predisposition",
+      "vigorous eye rubbing",
+      "atopic diseases (eczema, asthma, allergies)",
+      "connective tissue disorders",
+      "Down syndrome"
+    ],
+    "diagnosis": [
+      "corneal topography",
+      "corneal tomography (Pentacam)",
+      "slit-lamp examination",
+      "pachymetry"
+    ],
+    "management": [
+      "rigid gas permeable contact lenses",
+      "scleral contact lenses",
+      "corneal cross-linking (CXL) to halt progression",
+      "intracorneal ring segments",
+      "corneal transplantation (advanced cases)"
+    ],
+    "treatment_goal": "Halt progression and improve visual acuity with optical or surgical correction.",
+    "curative_treatment_available": "No cure; cross-linking can halt progression, and transplantation restores vision in advanced cases.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-014",
+    "disease": "Amblyopia",
+    "category": "Visual development disorder",
+    "description": "Reduced vision in one or both eyes due to abnormal visual development during childhood, commonly known as lazy eye.",
+    "common_symptoms": [
+      "poor vision in one eye",
+      "squinting or closing one eye",
+      "poor depth perception",
+      "head tilting"
+    ],
+    "risk_factors": [
+      "strabismus",
+      "significant refractive error",
+      "visual deprivation (ptosis, cataract, corneal opacity)",
+      "family history",
+      "premature birth"
+    ],
+    "diagnosis": [
+      "visual acuity testing (age-appropriate)",
+      "cycloplegic refraction",
+      "ocular alignment assessment",
+      "complete eye examination to rule out structural causes"
+    ],
+    "management": [
+      "corrective glasses",
+      "patching the stronger eye",
+      "atropine penalization of the stronger eye",
+      "vision therapy",
+      "treatment of underlying cause (e.g., cataract removal)"
+    ],
+    "treatment_goal": "Improve visual acuity in the affected eye during the critical period of visual development.",
+    "curative_treatment_available": "Vision can be significantly improved if treated early in childhood.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-015",
+    "disease": "Strabismus",
+    "category": "Eye alignment disorder",
+    "description": "Misalignment of the eyes where they do not look in the same direction at the same time.",
+    "common_symptoms": [
+      "eyes that appear crossed or turned",
+      "double vision",
+      "head tilting or turning",
+      "poor depth perception",
+      "eye strain"
+    ],
+    "risk_factors": [
+      "family history",
+      "refractive errors (especially hyperopia)",
+      "neurological disorders",
+      "premature birth",
+      "congenital conditions (cerebral palsy, Down syndrome)"
+    ],
+    "diagnosis": [
+      "cover-uncover test",
+      "prism cover test",
+      "assessment of ocular motility",
+      "cycloplegic refraction",
+      "neurological evaluation if indicated"
+    ],
+    "management": [
+      "corrective glasses",
+      "prism lenses",
+      "orthoptic exercises",
+      "botulinum toxin injections",
+      "strabismus surgery"
+    ],
+    "treatment_goal": "Restore proper eye alignment and improve binocular vision.",
+    "curative_treatment_available": "Surgery and other treatments can successfully align the eyes.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-016",
+    "disease": "Color Vision Deficiency",
+    "category": "Visual function disorder",
+    "description": "Inherited or acquired condition causing difficulty distinguishing certain colors, most commonly red and green.",
+    "common_symptoms": [
+      "difficulty distinguishing red and green (most common)",
+      "difficulty distinguishing blue and yellow (less common)",
+      "rarely, complete inability to see color"
+    ],
+    "risk_factors": [
+      "X-linked genetic inheritance (most common)",
+      "optic nerve disease",
+      "macular disease",
+      "certain medications",
+      "aging"
+    ],
+    "diagnosis": [
+      "Ishihara color plate test",
+      "Farnsworth-Munsell 100 hue test",
+      "anomaloscope testing",
+      "comprehensive eye examination"
+    ],
+    "management": [
+      "color-corrective glasses or contact lenses (limited benefit)",
+      "adaptive strategies and technology aids",
+      "career counseling for color-dependent professions"
+    ],
+    "treatment_goal": "Assist with daily color discrimination; no treatment can restore normal color vision.",
+    "curative_treatment_available": "No cure for inherited color vision deficiency.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-017",
+    "disease": "Macular Edema",
+    "category": "Retinal/macular disorder",
+    "description": "Swelling or thickening of the macula due to fluid accumulation, leading to distorted or blurred central vision.",
+    "common_symptoms": [
+      "blurred or wavy central vision",
+      "colors appearing washed out",
+      "difficulty reading or recognizing faces"
+    ],
+    "risk_factors": [
+      "diabetic retinopathy",
+      "retinal vein occlusion",
+      "uveitis",
+      "post-cataract surgery",
+      "age-related macular degeneration"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "optical coherence tomography (OCT)",
+      "fluorescein angiography"
+    ],
+    "management": [
+      "intravitreal anti-VEGF injections",
+      "corticosteroid implants or injections",
+      "focal laser photocoagulation",
+      "treatment of underlying cause"
+    ],
+    "treatment_goal": "Reduce macular fluid and improve or stabilize central vision.",
+    "curative_treatment_available": "Treatable but often requires ongoing management; outcomes depend on underlying cause.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-018",
+    "disease": "Macular Hole",
+    "category": "Macular disorder",
+    "description": "A small break in the macula causing blurred and distorted central vision, often related to vitreous traction.",
+    "common_symptoms": [
+      "blurred or distorted central vision",
+      "difficulty reading fine print",
+      "dark spot in the center of vision",
+      "straight lines appearing bent"
+    ],
+    "risk_factors": [
+      "age over 60",
+      "female gender",
+      "high myopia",
+      "ocular trauma",
+      "vitreomacular traction"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "optical coherence tomography (OCT)",
+      "Amsler grid testing"
+    ],
+    "management": [
+      "observation (small, asymptomatic holes)",
+      "pars plana vitrectomy with internal limiting membrane peeling",
+      "gas tamponade"
+    ],
+    "treatment_goal": "Close the macular hole and restore central vision.",
+    "curative_treatment_available": "Vitrectomy surgery can successfully close the hole and improve vision in most cases.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-019",
+    "disease": "Macular Pucker",
+    "category": "Macular disorder",
+    "description": "Formation of scar tissue on the macula's surface (epiretinal membrane), causing visual distortion.",
+    "common_symptoms": [
+      "mildly blurred or distorted central vision",
+      "straight lines appearing wavy",
+      "difficulty seeing fine detail",
+      "gray area in central vision"
+    ],
+    "risk_factors": [
+      "posterior vitreous detachment",
+      "retinal tear or detachment",
+      "ocular trauma",
+      "uveitis",
+      "previous retinal surgery"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "optical coherence tomography (OCT)",
+      "fluorescein angiography"
+    ],
+    "management": [
+      "observation (mild cases)",
+      "pars plana vitrectomy with membrane peeling (significant visual impairment)"
+    ],
+    "treatment_goal": "Remove the epiretinal membrane and improve visual acuity.",
+    "curative_treatment_available": "Surgery can successfully remove the membrane and improve vision.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-020",
+    "disease": "Vitreous Detachment",
+    "category": "Vitreous disorder",
+    "description": "Separation of the vitreous gel from the retinal surface, a common age-related condition.",
+    "common_symptoms": [
+      "sudden increase in floaters",
+      "flashes of light in peripheral vision",
+      "cobweb-like shadows in vision"
+    ],
+    "risk_factors": [
+      "age over 50",
+      "high myopia",
+      "ocular trauma",
+      "cataract surgery"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "slit-lamp examination with contact lens",
+      "optical coherence tomography (OCT)"
+    ],
+    "management": [
+      "observation and reassurance (most cases)",
+      "urgent evaluation to rule out retinal tear or detachment",
+      "scleral buckling or vitrectomy if retinal complications occur"
+    ],
+    "treatment_goal": "Monitor for complications; no treatment needed for uncomplicated cases.",
+    "curative_treatment_available": "Usually resolves on its own; treatment only if retinal complications develop.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-021",
+    "disease": "Central Retinal Vein Occlusion",
+    "category": "Retinal vascular disease",
+    "description": "Blockage of the central retinal vein causing retinal hemorrhage, edema, and vision loss.",
+    "common_symptoms": [
+      "sudden painless vision loss",
+      "blurred or distorted vision",
+      "visual field defects"
+    ],
+    "risk_factors": [
+      "hypertension",
+      "diabetes",
+      "hyperlipidemia",
+      "glaucoma",
+      "cardiovascular disease",
+      "smoking"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "fluorescein angiography",
+      "optical coherence tomography (OCT)",
+      "systemic workup for risk factors"
+    ],
+    "management": [
+      "intravitreal anti-VEGF injections",
+      "intravitreal corticosteroid implants",
+      "laser photocoagulation",
+      "management of systemic risk factors"
+    ],
+    "treatment_goal": "Reduce macular edema and neovascular complications; manage systemic risk factors.",
+    "curative_treatment_available": "No cure; treatment aims to stabilize vision and prevent complications.",
+    "specialist_evaluation": true,
+    "emergency": true,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-022",
+    "disease": "Uveitis",
+    "category": "Intraocular inflammation",
+    "description": "Inflammation of the uveal tract (iris, ciliary body, choroid) that can affect vision and may be associated with systemic diseases.",
+    "common_symptoms": [
+      "eye redness",
+      "eye pain",
+      "light sensitivity (photophobia)",
+      "blurred vision",
+      "floaters"
+    ],
+    "risk_factors": [
+      "autoimmune diseases (sarcoidosis, Behçet's, ankylosing spondylitis)",
+      "infections (herpes, toxoplasmosis, TB)",
+      "trauma",
+      "certain cancers (masquerade syndromes)"
+    ],
+    "diagnosis": [
+      "slit-lamp examination",
+      "dilated fundus examination",
+      "optical coherence tomography (OCT)",
+      "laboratory tests and imaging for systemic associations",
+      "aqueous or vitreous sampling (atypical cases)"
+    ],
+    "management": [
+      "topical, periocular, or systemic corticosteroids",
+      "immunosuppressive agents",
+      "antimicrobial therapy (infectious cases)",
+      "mydriatic-cycloplegic drops",
+      "treatment of underlying systemic disease"
+    ],
+    "treatment_goal": "Control inflammation, relieve pain, and prevent vision-threatening complications.",
+    "curative_treatment_available": "Treatable and often controllable; may require long-term management.",
+    "specialist_evaluation": true,
+    "emergency": true,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-023",
+    "disease": "Retinitis Pigmentosa",
+    "category": "Inherited retinal disease",
+    "description": "A group of inherited retinal dystrophies causing progressive degeneration of photoreceptors, leading to night blindness and peripheral vision loss.",
+    "common_symptoms": [
+      "night blindness (nyctalopia)",
+      "progressive loss of peripheral vision (tunnel vision)",
+      "difficulty adjusting to dim light",
+      "eventual loss of central vision in advanced cases"
+    ],
+    "risk_factors": [
+      "genetic mutations (autosomal dominant, recessive, or X-linked)",
+      "family history"
+    ],
+    "diagnosis": [
+      "electroretinography (ERG)",
+      "visual field testing",
+      "fundus autofluorescence",
+      "optical coherence tomography (OCT)",
+      "genetic testing"
+    ],
+    "management": [
+      "vitamin A palmitate supplementation (under supervision)",
+      "low vision aids and rehabilitation",
+      "gene therapy (RPE65 mutation)",
+      "ciliary neurotrophic factor implants",
+      "clinical trials for emerging therapies"
+    ],
+    "treatment_goal": "Slow progression where possible and optimize remaining vision.",
+    "curative_treatment_available": "No cure; gene therapy available for specific genetic subtypes.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-024",
+    "disease": "Retinopathy of Prematurity",
+    "category": "Childhood retinal disease",
+    "description": "Abnormal blood vessel development in the retina of premature infants, potentially leading to retinal detachment and blindness.",
+    "common_symptoms": [
+      "usually asymptomatic in early stages",
+      "leukocoria (white pupil) in severe cases",
+      "strabismus",
+      "nystagmus"
+    ],
+    "risk_factors": [
+      "premature birth (especially <32 weeks gestation)",
+      "low birth weight (<1500g)",
+      "prolonged oxygen therapy",
+      "sepsis"
+    ],
+    "diagnosis": [
+      "dilated retinal examination by ophthalmologist",
+      "serial screening examinations",
+      "wide-field retinal imaging"
+    ],
+    "management": [
+      "observation (mild cases)",
+      "laser photocoagulation or cryotherapy",
+      "intravitreal anti-VEGF injections",
+      "vitrectomy or scleral buckling (retinal detachment)"
+    ],
+    "treatment_goal": "Prevent progression to retinal detachment and preserve vision.",
+    "curative_treatment_available": "Early treatment can prevent blindness; not all cases require intervention.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-025",
+    "disease": "Retinoblastoma",
+    "category": "Childhood eye cancer",
+    "description": "Malignant tumor of the retina, the most common primary intraocular malignancy in children.",
+    "common_symptoms": [
+      "leukocoria (white pupillary reflex)",
+      "strabismus",
+      "poor vision",
+      "red, painful eye (advanced cases)",
+      "proptosis (orbital extension)"
+    ],
+    "risk_factors": [
+      "germline RB1 gene mutation (heritable form)",
+      "family history",
+      "spontaneous somatic mutation"
+    ],
+    "diagnosis": [
+      "dilated fundus examination under anesthesia",
+      "ultrasonography",
+      "MRI of orbits and brain",
+      "genetic testing"
+    ],
+    "management": [
+      "focal laser therapy or cryotherapy (small tumors)",
+      "intra-arterial or intravitreal chemotherapy",
+      "systemic chemotherapy",
+      "enucleation (large or unresponsive tumors)",
+      "radiation therapy (selected cases)"
+    ],
+    "treatment_goal": "Save the child's life, preserve the eye when possible, and maximize vision.",
+    "curative_treatment_available": "Highly curable when detected early; survival rates exceed 95% in developed countries.",
+    "specialist_evaluation": true,
+    "emergency": true,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-026",
+    "disease": "Graves' Eye Disease",
+    "category": "Thyroid-associated eye disease",
+    "description": "Autoimmune inflammatory disorder affecting the orbit and extraocular muscles, commonly associated with hyperthyroidism.",
+    "common_symptoms": [
+      "bulging eyes (proptosis)",
+      "gritty or dry eye sensation",
+      "double vision (diplopia)",
+      "eyelid retraction",
+      "eye pain or pressure",
+      "vision loss (compressive optic neuropathy)"
+    ],
+    "risk_factors": [
+      "Graves' disease or other thyroid dysfunction",
+      "smoking",
+      "radioactive iodine treatment",
+      "female gender",
+      "genetic predisposition"
+    ],
+    "diagnosis": [
+      "clinical examination of orbit and eyelids",
+      "thyroid function tests",
+      "orbital CT or MRI",
+      "visual field testing",
+      "exophthalmometry"
+    ],
+    "management": [
+      "lubricating eye drops and ointments",
+      "corticosteroids (active inflammatory phase)",
+      "orbital radiation therapy",
+      "immunosuppressive agents",
+      "orbital decompression surgery",
+      "strabismus or eyelid surgery"
+    ],
+    "treatment_goal": "Control inflammation, protect the cornea, and preserve optic nerve function.",
+    "curative_treatment_available": "No cure; treatment manages symptoms and prevents vision loss.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-027",
+    "disease": "Coloboma",
+    "category": "Congenital eye disorder",
+    "description": "A congenital defect in ocular tissue caused by incomplete closure of the optic fissure during embryonic development.",
+    "common_symptoms": [
+      "variable visual impairment depending on location and size",
+      "decreased visual acuity",
+      "visual field defects",
+      "photophobia"
+    ],
+    "risk_factors": [
+      "genetic mutations (PAX2, SHH, CHD7)",
+      "chromosomal abnormalities",
+      "exposure to teratogens during pregnancy",
+      "familial inheritance"
+    ],
+    "diagnosis": [
+      "comprehensive eye examination",
+      "dilated fundus examination",
+      "optical coherence tomography (OCT)",
+      "genetic testing and counseling"
+    ],
+    "management": [
+      "corrective glasses or contact lenses",
+      "low vision aids",
+      "amblyopia treatment in children",
+      "monitoring for associated complications (retinal detachment, cataract)",
+      "genetic counseling"
+    ],
+    "treatment_goal": "Optimize vision and monitor for associated complications.",
+    "curative_treatment_available": "No cure for the structural defect; management focuses on visual rehabilitation.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-028",
+    "disease": "Anophthalmia and Microphthalmia",
+    "category": "Congenital eye disorder",
+    "description": "Rare congenital conditions where the eye fails to develop (anophthalmia) or is abnormally small (microphthalmia).",
+    "common_symptoms": [
+      "absent or very small eye",
+      "severe visual impairment or blindness",
+      "facial asymmetry",
+      "associated systemic anomalies"
+    ],
+    "risk_factors": [
+      "genetic mutations (SOX2, OTX2, PAX6)",
+      "chromosomal abnormalities",
+      "maternal infections during pregnancy",
+      "exposure to teratogens"
+    ],
+    "diagnosis": [
+      "clinical examination",
+      "orbital imaging (CT/MRI)",
+      "ocular ultrasound",
+      "genetic testing",
+      "evaluation for associated systemic conditions"
+    ],
+    "management": [
+      "ocular prosthetics for cosmetic and orbital development",
+      "conformers to stimulate orbital growth",
+      "low vision rehabilitation",
+      "genetic counseling",
+      "multidisciplinary care"
+    ],
+    "treatment_goal": "Promote normal facial and orbital development and provide visual rehabilitation.",
+    "curative_treatment_available": "No cure; management is supportive and rehabilitative.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-029",
+    "disease": "Blepharospasm",
+    "category": "Eyelid movement disorder",
+    "description": "A focal dystonia characterized by involuntary, sustained, and forceful closure of the eyelids.",
+    "common_symptoms": [
+      "involuntary blinking or eyelid closure",
+      "increased sensitivity to light",
+      "dry eye sensation",
+      "functional blindness from forced closure"
+    ],
+    "risk_factors": [
+      "idiopathic (most cases)",
+      "family history of dystonia",
+      "ocular surface irritation",
+      "neurological conditions"
+    ],
+    "diagnosis": [
+      "clinical examination",
+      "assessment of trigger factors",
+      "neurological evaluation to rule out secondary causes",
+      "trial of frontalis suspension"
+    ],
+    "management": [
+      "botulinum toxin injections (first-line treatment)",
+      "oral medications (benzodiazepines, anticholinergics)",
+      "surgical myectomy (refractory cases)",
+      "supportive therapies"
+    ],
+    "treatment_goal": "Reduce involuntary eyelid closure and improve functional vision.",
+    "curative_treatment_available": "No cure; botulinum toxin provides temporary relief and requires repeated injections.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-030",
+    "disease": "Convergence Insufficiency",
+    "category": "Binocular vision disorder",
+    "description": "A common binocular vision disorder where the eyes have difficulty working together when focusing on near objects.",
+    "common_symptoms": [
+      "eyestrain or headaches with reading",
+      "double vision",
+      "difficulty concentrating",
+      "words moving or floating on the page",
+      "avoidance of near work"
+    ],
+    "risk_factors": [
+      "genetic predisposition",
+      "traumatic brain injury",
+      "prolonged near work",
+      "uncorrected refractive errors"
+    ],
+    "diagnosis": [
+      "near point of convergence testing",
+      "fusional vergence assessment",
+      "cover test",
+      "cycloplegic refraction"
+    ],
+    "management": [
+      "orthoptic exercises (pencil push-ups, computer-based therapy)",
+      "prism glasses (symptomatic relief)",
+      "vision therapy",
+      "base-in prism reading glasses"
+    ],
+    "treatment_goal": "Improve convergence ability and eliminate symptoms during near work.",
+    "curative_treatment_available": "Vision therapy and exercises can effectively treat convergence insufficiency.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-031",
+    "disease": "Corneal Ulcer",
+    "category": "Corneal emergency",
+    "description": "An open sore on the cornea caused by infection, trauma, or underlying disease, posing a risk of vision loss.",
+    "common_symptoms": [
+      "severe eye pain",
+      "redness",
+      "tearing",
+      "pus or discharge",
+      "blurred vision",
+      "light sensitivity",
+      "foreign body sensation"
+    ],
+    "risk_factors": [
+      "contact lens wear (especially overnight)",
+      "corneal trauma",
+      "dry eye disease",
+      "immunocompromised state",
+      "vitamin A deficiency",
+      "exposure keratopathy"
+    ],
+    "diagnosis": [
+      "slit-lamp examination",
+      "fluorescein staining",
+      "corneal scraping for culture and sensitivity",
+      "confocal microscopy"
+    ],
+    "management": [
+      "topical antimicrobial therapy (antibiotics, antifungals, antivirals)",
+      "cycloplegic drops",
+      "oral analgesics",
+      "therapeutic contact lens or patching",
+      "corneal transplantation (perforation or non-healing ulcers)"
+    ],
+    "treatment_goal": "Eliminate infection, promote healing, and prevent corneal perforation or scarring.",
+    "curative_treatment_available": "Most cases resolve with prompt antimicrobial treatment; severe cases may require surgery.",
+    "specialist_evaluation": true,
+    "emergency": true,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-032",
+    "disease": "Pterygium",
+    "category": "Ocular surface growth",
+    "description": "A benign, wing-shaped growth of conjunctival tissue onto the cornea, often related to UV exposure.",
+    "common_symptoms": [
+      "red, irritated eye",
+      "foreign body sensation",
+      "blurred vision if encroaching on the visual axis",
+      "cosmetic concern"
+    ],
+    "risk_factors": [
+      "prolonged UV light exposure",
+      "dry and dusty environments",
+      "outdoor occupation",
+      "male gender"
+    ],
+    "diagnosis": [
+      "slit-lamp examination",
+      "assessment of size and location",
+      "corneal topography (if affecting vision)"
+    ],
+    "management": [
+      "lubricating eye drops",
+      "short-term topical corticosteroids (inflammation)",
+      "surgical excision with conjunctival autograft (progressive or visually significant)",
+      "UV-protective sunglasses"
+    ],
+    "treatment_goal": "Relieve symptoms and remove growth if visually significant or cosmetically concerning.",
+    "curative_treatment_available": "Surgical excision with grafting has low recurrence rates.",
+    "specialist_evaluation": false,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-033",
+    "disease": "Optic Neuritis",
+    "category": "Optic nerve inflammation",
+    "description": "Inflammation of the optic nerve causing acute vision loss, often associated with demyelinating diseases.",
+    "common_symptoms": [
+      "acute vision loss in one eye",
+      "eye pain with movement",
+      "decreased color vision",
+      "visual field defects",
+      "Uhthoff's phenomenon (symptoms worsen with heat)"
+    ],
+    "risk_factors": [
+      "multiple sclerosis",
+      "neuromyelitis optica (NMO)",
+      "MOG antibody disease",
+      "viral infections",
+      "autoimmune diseases"
+    ],
+    "diagnosis": [
+      "visual acuity and color vision testing",
+      "relative afferent pupillary defect (RAPD)",
+      "optical coherence tomography (OCT) of retinal nerve fiber layer",
+      "MRI of brain and orbits",
+      "lumbar puncture and serological testing"
+    ],
+    "management": [
+      "high-dose intravenous corticosteroids",
+      "plasma exchange (severe or steroid-resistant cases)",
+      "disease-modifying therapy for underlying MS",
+      "pain management"
+    ],
+    "treatment_goal": "Accelerate visual recovery and manage underlying demyelinating disease.",
+    "curative_treatment_available": "Most patients recover significant vision; treatment accelerates recovery but does not prevent recurrence.",
+    "specialist_evaluation": true,
+    "emergency": true,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-034",
+    "disease": "Retinal Tear",
+    "category": "Retinal emergency",
+    "description": "A break in the retinal tissue that can lead to retinal detachment if fluid passes through it.",
+    "common_symptoms": [
+      "sudden onset of floaters",
+      "flashes of light (photopsia)",
+      "decreased peripheral vision",
+      "shadow or curtain in vision"
+    ],
+    "risk_factors": [
+      "posterior vitreous detachment",
+      "high myopia",
+      "ocular trauma",
+      "lattice degeneration",
+      "previous cataract surgery"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "indirect ophthalmoscopy",
+      "scleral depression",
+      "optical coherence tomography (OCT)"
+    ],
+    "management": [
+      "laser photocoagulation (barrier laser)",
+      "cryotherapy (cryopexy)",
+      "close observation (selected asymptomatic cases)",
+      "prompt treatment to prevent retinal detachment"
+    ],
+    "treatment_goal": "Seal the tear to prevent progression to retinal detachment.",
+    "curative_treatment_available": "Laser or cryotherapy can effectively seal the tear and prevent detachment.",
+    "specialist_evaluation": true,
+    "emergency": true,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-035",
+    "disease": "Ocular Histoplasmosis Syndrome",
+    "category": "Retinal disorder",
+    "description": "A chorioretinal condition caused by presumed ocular involvement with Histoplasma capsulatum, characterized by peripheral atrophic scars and macular choroidal neovascularization.",
+    "common_symptoms": [
+      "blurred central vision",
+      "metamorphopsia (distorted vision)",
+      "scotoma (blind spot)",
+      "decreased color perception"
+    ],
+    "risk_factors": [
+      "exposure to Histoplasma capsulatum (Ohio and Mississippi River valleys)",
+      "previous histoplasmosis infection",
+      "peripheral chorioretinal scars (histo spots)"
+    ],
+    "diagnosis": [
+      "dilated fundus examination",
+      "fluorescein angiography",
+      "optical coherence tomography (OCT)",
+      "indocyanine green angiography"
+    ],
+    "management": [
+      "intravitreal anti-VEGF injections",
+      "photodynamic therapy",
+      "laser photocoagulation (extrafoveal lesions)",
+      "low vision aids"
+    ],
+    "treatment_goal": "Treat choroidal neovascularization and preserve central vision.",
+    "curative_treatment_available": "No cure; treatment manages neovascular complications.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-036",
+    "disease": "Stargardt Disease",
+    "category": "Inherited retinal disease",
+    "description": "The most common inherited macular dystrophy, causing progressive central vision loss due to lipofuscin accumulation in retinal pigment epithelium cells.",
+    "common_symptoms": [
+      "progressive loss of central vision",
+      "difficulty with reading and recognizing faces",
+      "decreased color vision",
+      "slow dark adaptation"
+    ],
+    "risk_factors": [
+      "autosomal recessive ABCA4 gene mutations",
+      "family history",
+      "consanguinity"
+    ],
+    "diagnosis": [
+      "fundus examination (fleck-like deposits, beaten-bronze macula)",
+      "fundus autofluorescence",
+      "optical coherence tomography (OCT)",
+      "electroretinography (ERG)",
+      "genetic testing"
+    ],
+    "management": [
+      "low vision aids and rehabilitation",
+      "UV-blocking sunglasses",
+      "avoidance of vitamin A supplementation",
+      "genetic counseling",
+      "clinical trials for gene therapy and stem cell therapy"
+    ],
+    "treatment_goal": "Optimize remaining vision and support adaptation to visual impairment.",
+    "curative_treatment_available": "No cure; management is supportive.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-037",
+    "disease": "Usher Syndrome",
+    "category": "Inherited sensory disorder",
+    "description": "A genetic condition characterized by combined hearing loss and progressive vision loss due to retinitis pigmentosa.",
+    "common_symptoms": [
+      "congenital or early-onset hearing loss",
+      "progressive night blindness",
+      "progressive peripheral vision loss (tunnel vision)",
+      "balance problems (in some types)"
+    ],
+    "risk_factors": [
+      "autosomal recessive inheritance",
+      "mutations in USH1, USH2, or USH3 genes",
+      "family history"
+    ],
+    "diagnosis": [
+      "audiological testing",
+      "electroretinography (ERG)",
+      "visual field testing",
+      "optical coherence tomography (OCT)",
+      "genetic testing",
+      "vestibular function testing"
+    ],
+    "management": [
+      "hearing aids or cochlear implants",
+      "low vision aids and rehabilitation",
+      "orientation and mobility training",
+      "educational support",
+      "genetic counseling",
+      "clinical trials for emerging therapies"
+    ],
+    "treatment_goal": "Optimize hearing and vision function; support communication and independence.",
+    "curative_treatment_available": "No cure; management focuses on sensory rehabilitation and support.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-038",
+    "disease": "Bietti's Crystalline Dystrophy",
+    "category": "Inherited retinal disease",
+    "description": "A rare inherited retinal dystrophy characterized by crystalline deposits in the retina and choroidal atrophy, leading to progressive vision loss.",
+    "common_symptoms": [
+      "progressive night blindness",
+      "peripheral vision loss",
+      "decreased visual acuity",
+      "glare sensitivity"
+    ],
+    "risk_factors": [
+      "autosomal recessive CYP4V2 gene mutations",
+      "family history",
+      "higher prevalence in East Asian populations"
+    ],
+    "diagnosis": [
+      "fundus examination (crystalline deposits, chorioretinal atrophy)",
+      "fundus autofluorescence",
+      "optical coherence tomography (OCT)",
+      "electroretinography (ERG)",
+      "genetic testing"
+    ],
+    "management": [
+      "low vision aids and rehabilitation",
+      "UV-protective sunglasses",
+      "genetic counseling",
+      "monitoring for complications"
+    ],
+    "treatment_goal": "Optimize remaining vision and provide supportive care.",
+    "curative_treatment_available": "No cure; management is supportive.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-039",
+    "disease": "Behçet's Disease",
+    "category": "Inflammatory eye disease",
+    "description": "A rare, chronic systemic vasculitis that can cause recurrent, severe intraocular inflammation (uveitis) and vision-threatening complications.",
+    "common_symptoms": [
+      "recurrent painful red eyes",
+      "blurred vision",
+      "floaters",
+      "mouth and genital ulcers",
+      "skin lesions"
+    ],
+    "risk_factors": [
+      "HLA-B51 association",
+      "genetic predisposition",
+      "higher prevalence along the Silk Road (Middle East to East Asia)",
+      "male gender (more severe disease)"
+    ],
+    "diagnosis": [
+      "clinical criteria (recurrent oral ulcers plus two of: genital ulcers, eye lesions, skin lesions, pathergy test)",
+      "slit-lamp and fundus examination",
+      "fluorescein angiography",
+      "HLA typing"
+    ],
+    "management": [
+      "topical, periocular, and systemic corticosteroids",
+      "immunosuppressive agents (azathioprine, cyclosporine, cyclophosphamide)",
+      "biologic agents (interferon-alpha, anti-TNF agents)",
+      "colchicine (mucocutaneous disease)"
+    ],
+    "treatment_goal": "Control inflammation, prevent recurrences, and preserve vision.",
+    "curative_treatment_available": "No cure; requires long-term immunosuppressive management.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  },
+  {
+    "id": "EYE-040",
+    "disease": "Idiopathic Intracranial Hypertension",
+    "category": "Neuro-ophthalmic disorder",
+    "description": "Elevated intracranial pressure without an identifiable cause, often causing papilledema and vision-threatening complications.",
+    "common_symptoms": [
+      "headache (often pulsatile)",
+      "pulsatile tinnitus",
+      "transient visual obscurations",
+      "diplopia (double vision from sixth nerve palsy)",
+      "papilledema"
+    ],
+    "risk_factors": [
+      "female gender (childbearing age)",
+      "obesity",
+      "recent weight gain",
+      "certain medications (tetracyclines, isotretinoin, excess vitamin A)",
+      "hormonal factors"
+    ],
+    "diagnosis": [
+      "neurological examination",
+      "fundus examination (papilledema)",
+      "MRI/MRV of brain (to exclude secondary causes)",
+      "lumbar puncture (elevated opening pressure, normal CSF analysis)"
+    ],
+    "management": [
+      "weight loss (first-line, most effective)",
+      "acetazolamide (carbonic anhydrase inhibitor)",
+      "topiramate",
+      "serial lumbar punctures",
+      "optic nerve sheath fenestration",
+      "ventriculoperitoneal or lumboperitoneal shunt (refractory cases)"
+    ],
+    "treatment_goal": "Preserve vision and reduce intracranial pressure and associated symptoms.",
+    "curative_treatment_available": "Often resolves with weight loss; may require ongoing management.",
+    "specialist_evaluation": true,
+    "emergency": false,
+    "source_ids": [
+      "NEI-EYE-CONDITIONS",
+      "ICMR-STW"
+    ]
+  }
+]

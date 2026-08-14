@@ -1,0 +1,46 @@
+# --- Python / backend ---
+backend/.venv/
+backend/venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- Node / frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# --- Env / secrets ---
+.env
+.env.local
+*.local.env
+
+# --- Data (never commit local demo/runtime state) ---
+data/sqlite/*.db
+data/sqlite/*.db-journal
+data/uploads/*
+!data/uploads/.gitkeep
+data/documents/*
+!data/documents/.gitkeep
+data/exports/*
+!data/exports/.gitkeep
+
+# Large raw knowledge-base source material (user-supplied reference PDFs, hundreds of
+# MB) does not belong in git. Keep it local; Phase 05/07 ingestion reads directly from
+# this folder. Small structured seed data (eye_conditions.json) IS tracked — it's
+# meaningful to version and tiny.
+data/*.pdf
+
+# --- Qdrant local storage volume ---
+docker/qdrant/storage/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- Logs ---
+*.log
