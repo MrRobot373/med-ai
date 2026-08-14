@@ -5,18 +5,20 @@ Master Build Prompt in this repo's root (`MASTER BUILD PROMPT — GMS Local Mult
 Clinical RAG & Decision-Support Platform.md`) as a 16-phase program — see
 [docs/architecture.md](docs/architecture.md) for the phase roadmap and current status.
 
-> **Current status: Phase 03 — Authentication.** Backend foundation (Phase 01), the
-> screenshot-matched dashboard (Phase 02), and now real login/logout/session/role
-> handling all exist. Patient management, RAG, chat, vision, and every other clinical
-> feature are not implemented yet — the nav in the running app tells you exactly which
-> phase each section lands in, and every capability card links to a real (if
+> **Current status: Phase 04 — Patient System.** Foundation (01), the dashboard (02),
+> authentication (03), and now real patient management — search, workspace, encounters,
+> conditions, allergies, medications, and a derived timeline — all exist and are backed
+> by 3 seeded synthetic ophthalmology patients. Report ingestion, labs, RAG, chat, and
+> vision are not implemented yet — the nav and patient-workspace tabs tell you exactly
+> which phase each section lands in, and every capability card links to a real (if
 > not-yet-built) destination rather than a dead end.
 
 The initial knowledge-base domain for this deployment is **ophthalmology** — see
 `data/*.pdf` (anatomy, disease, referral-guideline, and instrument references) and
-`data/eye_conditions.json` (structured disease/symptom/management dataset). These feed
-the `medical_knowledge` Qdrant collection and demo patient set starting in Phase 05/07.
-Swap this folder's contents for a different specialty at any time; nothing in the code
+`data/eye_conditions.json` (structured disease/symptom/management dataset). The 3 seeded
+demo patients (cataract, glaucoma, diabetic retinopathy) already draw on this domain;
+the PDFs themselves feed the `medical_knowledge` Qdrant collection starting in Phase 07.
+Swap `data/`'s contents for a different specialty at any time; nothing in the code
 hardcodes ophthalmology.
 
 ## Prerequisites
@@ -55,6 +57,10 @@ copy .env.example .env
 :: Demo accounts (admin/doctor/viewer) — passwords are generated, never hardcoded;
 :: printed once and saved to data/sqlite/.demo_credentials.txt (gitignored)
 backend\.venv\Scripts\python scripts\seed_demo.py
+
+:: Demo patients (3 synthetic ophthalmology cases — cataract, glaucoma, diabetic
+:: retinopathy — with several months of encounter history). Idempotent.
+backend\.venv\Scripts\python scripts\seed_demo_patients.py
 ```
 
 ## Running
@@ -63,9 +69,10 @@ backend\.venv\Scripts\python scripts\seed_demo.py
 start-demo.bat
 ```
 
-This checks Docker, starts Qdrant, checks Ollama, runs migrations, starts the backend
-(`:8000`) and frontend (`:5173`) in separate windows, polls `/api/health` until it
-responds, and opens the browser. `stop-demo.bat` shuts services down.
+This checks Docker, starts Qdrant, checks Ollama, runs migrations, seeds demo accounts
+and patients, starts the backend (`:8000`) and frontend (`:5173`) in separate windows,
+polls `/api/health` until it responds, and opens the browser. `stop-demo.bat` shuts
+services down.
 `health-check.bat` runs the same checks as `/api/health` from the command line.
 `reset-demo.bat` is a stub until Phase 14 (synthetic demo dataset) — it says so and
 exits non-zero rather than pretending to do something.

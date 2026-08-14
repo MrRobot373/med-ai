@@ -32,7 +32,7 @@ GMS CLINICAL AI
 | 01 | Foundation: repo scaffold, backend/frontend skeleton, SQLite+Alembic, Qdrant (Docker), Ollama integration, real health checks | **Done** |
 | 02 | Screenshot-matched UI shell (full nav, dashboard cards, responsive layout) | **Done** |
 | 03 | Authentication: login/logout, roles, sessions, protected routes | **Done** |
-| 04 | Patient system: CRUD, search, workspace, encounters, conditions, allergies, medications, timeline | Not started |
+| 04 | Patient system: CRUD, search, workspace, encounters, conditions, allergies, medications, timeline | **Done** |
 | 05 | Report ingestion: upload, PDF/DOCX/XLSX/image parsing, OCR, identity checking, ingestion jobs | Not started |
 | 06 | Structured clinical data: lab extraction, trend engine, medication reconciliation, change engine | Not started |
 | 07 | Local RAG core: embeddings, Qdrant collections, dense+BM25 retrieval, RRF fusion, reranking, dedup | Not started |
@@ -141,6 +141,73 @@ Verified end-to-end with Playwright against the real running app: unauthenticate
 redirect → invalid-credentials error → successful login → user menu → logout → session
 genuinely revoked server-side (reloading a protected route redirects again, not just a
 client-side flag).
+```
+
+## Phase 04 — what exists right now
+
+```text
+backend/app/
+  models/patient.py, encounter.py, condition.py, allergy.py, medication.py
+                            `source_report_id` on Condition deliberately omitted until
+                            Phase 05 adds `reports` (avoids a dangling/unconstrained FK)
+  models/enums.py            Shared VerificationStatus (confirmed/provisional/unconfirmed)
+  schemas/patient.py, encounter.py, condition.py, allergy.py, medication.py, timeline.py
+  services/patients.py       search/create/update/archive; every query scoped by
+                              patient_id — the same discipline Phase 07 RAG isolation needs
+  services/encounters.py     Sequential per-patient encounter numbering (MRN-ENCnnn)
+  services/clinical.py       Conditions/allergies/medications. Medications are append-
+                              only (spec §36): stopping sets active=False + stop_date,
+                              never mutates/deletes the original prescribing details
+  services/timeline.py       Derives chronological events from encounters/conditions/
+                              medications/allergies — report/lab events join the same
+                              shape once Phase 05/06 exist, no reshaping needed later
+  api/patients.py             Nested resource routes (spec §104); GET open to any
+                               authenticated role, every write behind
+                               require_role(ADMIN, DOCTOR) via a dedicated WriteUser
+                               Annotated type (not a reused CurrentUser + default value,
+                               which would silently skip the role check)
+
+scripts/seed_demo_patients.py  3 synthetic ophthalmology patients (cataract, glaucoma,
+                                 diabetic retinopathy) with 5-10 months of encounter/
+                                 condition/medication/allergy history, drawn from
+                                 data/eye_conditions.json terminology. Idempotent by MRN.
+                                 Wired into start-demo.bat as step 6/8.
+
+frontend/src/
+  api/patients.ts, encounters.ts, clinical.ts, timeline.ts   TanStack Query hooks
+  api/auth.ts (useCanWrite)   Derives write-permission from the logged-in role so
+                               viewers see read-only UI (no button rendered at all)
+                               instead of a control that always 403s — presentation
+                               only, the backend role check remains authoritative
+  components/Modal.tsx         Shared dialog primitive — every Add-X form composes it
+  components/PatientCard.tsx, AddPatientModal.tsx, NewEncounterModal.tsx,
+             AddConditionModal.tsx, AddAllergyModal.tsx, AddMedicationModal.tsx
+  layouts/PatientWorkspace.tsx  Patient identity always visible (spec §24); tabs are
+                                 real nested routes (/patients/:id/overview etc.), not
+                                 client-only state, so each tab is directly linkable
+  pages/Patients/               Search, filter, add
+  pages/PatientWorkspace/        Overview, Timeline, Conditions (+ allergies),
+                                  Medications tabs; Reports/Labs/Clinical AI still
+                                  NotYetBuilt (Phases 05/06/08-10) but now nested inside
+                                  the real patient context instead of standalone
+  components/DashboardSnapshot.tsx  Now shows a REAL active-patient count (previously
+                                      an honest "not available yet" placeholder) — the
+                                      exact "gets replaced once Phase 04 lands" its own
+                                      Phase 02 docstring promised. Report/AI-analysis
+                                      counts remain honest placeholders until Phase 05/
+                                      08-10 exist to generate them for real.
+
+Deliberate simplification vs. the spec's literal wording: spec §18 says doctors access
+"assigned/permitted patients." This build uses role-based access (any doctor/admin sees
+all patients; viewer is read-only) rather than a per-patient grant/ACL system, since no
+later phase in the spec's own plan calls for building patient-assignment management —
+matches §135 "avoid unnecessary infrastructure" better than speculative ACL scaffolding.
+
+Verified end-to-end with Playwright against the real running app: search → open a
+seeded patient → real conditions/allergies/medications/encounters render → add a
+condition → stop a medication (history preserved, not deleted) → new encounter →
+unknown-patient-id shows a clean not-found state, not a broken page → logged in as
+viewer, every write control is absent (not shown-then-403).
 ```
 
 ## Domain note

@@ -1,8 +1,7 @@
-"""FastAPI application entrypoint — Phase 01 (Foundation).
+"""FastAPI application entrypoint.
 
-Only the health router is registered here for now. Auth/patients/RAG/etc. routers are
-added incrementally in later phases (see docs/architecture.md for the build sequence)
-and registered the same way: `app.include_router(...)`.
+Routers are added incrementally per phase (see docs/architecture.md for the build
+sequence) and registered the same way: `app.include_router(...)`.
 """
 
 from __future__ import annotations
@@ -14,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
 from app.api.health import router as health_router
+from app.api.patients import router as patients_router
 from app.config.settings import get_settings
 from app.logging import configure_logging, get_logger
 
@@ -46,6 +46,7 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(patients_router)
 
 
 @app.get("/", include_in_schema=False)

@@ -45,6 +45,15 @@ export function useLogin() {
   });
 }
 
+/** Spec §18: viewer is read-only. Backend enforces this for real (403 on any write) —
+ * this hook lets the UI hide write controls for viewers instead of showing a button
+ * that always fails, which would be exactly the "dummy control" this project avoids
+ * everywhere else. The backend check remains authoritative; this is presentation only. */
+export function useCanWrite(): boolean {
+  const { data: user } = useMe();
+  return user?.role === "admin" || user?.role === "doctor";
+}
+
 export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
