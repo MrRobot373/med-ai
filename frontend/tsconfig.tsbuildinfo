@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/router.tsx","./src/vite-env.d.ts","./src/api/client.ts","./src/api/health.ts","./src/components/statuschip.tsx","./src/layouts/appshell.tsx","./src/pages/notyetbuilt.tsx","./src/pages/overview/index.tsx","./tests/overview.test.tsx","./tests/statuschip.test.tsx","./tests/setup.ts"],"version":"5.9.3"}

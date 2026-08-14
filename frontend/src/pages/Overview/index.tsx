@@ -1,79 +1,169 @@
-import { useSystemHealth } from "@/api/health";
-import { StatusChip, type StatusTone } from "@/components/StatusChip";
+import {
+  BookOpen,
+  Cpu,
+  Database,
+  FileText,
+  HeartHandshake,
+  MessageSquare,
+  ScanSearch,
+  ServerCog,
+  ShieldCheck,
+  Sparkles,
+  Stethoscope,
+  Tags,
+  Upload,
+} from "lucide-react";
+import { Card } from "@/components/Card";
+import { CapabilityCard } from "@/components/CapabilityCard";
+import { DashboardSnapshot } from "@/components/DashboardSnapshot";
+import { HeroIllustration } from "@/components/HeroIllustration";
+import { HowItWorksStep } from "@/components/HowItWorksStep";
+import { IconBadge } from "@/components/IconBadge";
+import { SystemStatusPanel } from "@/components/SystemStatusPanel";
 
-function toneFor(reachable: boolean | undefined, isLoading: boolean): StatusTone {
-  if (isLoading) return "loading";
-  return reachable ? "ok" : "down";
-}
+const CAPABILITIES = [
+  {
+    icon: FileText,
+    tone: "blue" as const,
+    title: "Note Summarization",
+    description: "Concise, structured summaries of clinical notes and reports.",
+    to: "/clinical-ai",
+  },
+  {
+    icon: Tags,
+    tone: "green" as const,
+    title: "Clinical Entity Extraction",
+    description: "Identify and highlight clinical entities in patient text.",
+    to: "/clinical-ai",
+  },
+  {
+    icon: Stethoscope,
+    tone: "purple" as const,
+    title: "Differential Assistant",
+    description: "Get differential possibilities with supporting evidence for review.",
+    to: "/clinical-ai",
+  },
+  {
+    icon: BookOpen,
+    tone: "amber" as const,
+    title: "Guideline Q&A",
+    description: "Ask clinical questions and get evidence-backed, cited answers.",
+    to: "/knowledge",
+  },
+  {
+    icon: Database,
+    tone: "cyan" as const,
+    title: "EHR Reasoning",
+    description: "Reason over structured patient data alongside clinical evidence.",
+    to: "/patients",
+  },
+  {
+    icon: Cpu,
+    tone: "navy" as const,
+    title: "Local Medical LLM",
+    description: "Chat securely with a fully local model — nothing leaves this machine.",
+    to: "/clinical-ai",
+  },
+];
 
-/**
- * Phase 01 Overview: real, live-checked service status only. The full marketing hero /
- * capability cards / clinician dashboard metrics from spec §22 land in Phase 02 (UI
- * shell) and Phase 04+ (once there is real patient data to summarize) — this page does
- * not fabricate those numbers in the meantime.
- */
+const TRUST_ITEMS = [
+  {
+    icon: ShieldCheck,
+    title: "Privacy First",
+    description: "Patient data stays local and secure by default.",
+  },
+  {
+    icon: ServerCog,
+    title: "On-Premise",
+    description: "Runs entirely in your own environment — no cloud dependency.",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Clinician Focused",
+    description: "Built around real-world clinical workflows, not a generic chatbot.",
+  },
+];
+
 export default function OverviewPage() {
-  const { data, isLoading, isError, error } = useSystemHealth();
-
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-navy">System Status</h1>
-        <p className="text-sm text-muted-text">
-          Live health of the local clinical AI stack. Nothing on this page is simulated.
-        </p>
-      </div>
-
-      {isError && (
-        <div className="gms-card border-danger/30 bg-danger/5 p-4 text-sm text-danger">
-          Could not reach the backend at all: {(error as Error).message}. Is it running on
-          the configured port?
+    <div className="mx-auto max-w-6xl space-y-14">
+      {/* Hero */}
+      <section className="grid items-center gap-8 lg:grid-cols-2">
+        <div>
+          <h1 className="text-3xl font-bold leading-tight text-navy sm:text-4xl">
+            Smarter Clinical Decisions
+            <br />
+            with Trusted AI
+          </h1>
+          <p className="mt-4 max-w-md text-muted-text">
+            AI-powered tools to extract insights, summarize notes, and support better
+            clinical outcomes — running entirely on local, open-source infrastructure.
+          </p>
+          <a
+            href="#capabilities"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary-blue px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-blue/90"
+          >
+            Explore Capabilities
+          </a>
         </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="gms-card p-4">
-          <div className="mb-2 text-sm font-medium text-navy">Database</div>
-          <StatusChip
-            label={isLoading ? "Checking…" : data?.database.reachable ? "Ready" : "Unreachable"}
-            tone={toneFor(data?.database.reachable, isLoading)}
-          />
+        <div className="mx-auto w-full max-w-sm">
+          <HeroIllustration />
         </div>
+      </section>
 
-        <div className="gms-card p-4">
-          <div className="mb-2 text-sm font-medium text-navy">Local AI (Ollama)</div>
-          <StatusChip
-            label={
-              isLoading
-                ? "Checking…"
-                : data?.ollama.reachable
-                  ? data.ollama.model_available
-                    ? "Ready"
-                    : "Model missing"
-                  : "Unreachable"
-            }
-            tone={
-              isLoading
-                ? "loading"
-                : !data?.ollama.reachable
-                  ? "down"
-                  : data.ollama.model_available
-                    ? "ok"
-                    : "degraded"
-            }
-          />
-          {data?.ollama.error && <p className="mt-2 text-xs text-muted-text">{data.ollama.error}</p>}
+      {/* Capabilities + How It Works */}
+      <section id="capabilities" className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <h2 className="mb-4 text-lg font-semibold text-navy">AI Capabilities</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {CAPABILITIES.map((c) => (
+              <CapabilityCard key={c.title} {...c} />
+            ))}
+          </div>
         </div>
 
-        <div className="gms-card p-4">
-          <div className="mb-2 text-sm font-medium text-navy">Vector Index (Qdrant)</div>
-          <StatusChip
-            label={isLoading ? "Checking…" : data?.qdrant.reachable ? "Ready" : "Unreachable"}
-            tone={toneFor(data?.qdrant.reachable, isLoading)}
-          />
-          {data?.qdrant.error && <p className="mt-2 text-xs text-muted-text">{data.qdrant.error}</p>}
+        <div>
+          <h2 className="mb-4 text-lg font-semibold text-navy">How It Works</h2>
+          <Card className="p-5">
+            <HowItWorksStep index={1} icon={Upload} label="Input" description="Paste clinical text or ask a question." />
+            <HowItWorksStep index={2} icon={ScanSearch} label="Extract" description="AI extracts key clinical entities." />
+            <HowItWorksStep
+              index={3}
+              icon={Sparkles}
+              label="Summarize"
+              description="AI generates a concise, structured summary."
+            />
+            <HowItWorksStep
+              index={4}
+              icon={MessageSquare}
+              label="Assist"
+              description="Get cited answers and guidance."
+              isLast
+            />
+          </Card>
         </div>
-      </div>
+      </section>
+
+      {/* Clinical activity snapshot (real data only — see component docstring) */}
+      <section>
+        <DashboardSnapshot />
+      </section>
+
+      {/* System status (real, live-checked) */}
+      <section>
+        <SystemStatusPanel />
+      </section>
+
+      {/* Trust trio */}
+      <section className="grid grid-cols-1 gap-4 border-t border-border pt-10 sm:grid-cols-3">
+        {TRUST_ITEMS.map((item) => (
+          <div key={item.title} className="flex flex-col items-center text-center">
+            <IconBadge icon={item.icon} tone="blue" />
+            <h3 className="mt-3 text-sm font-semibold text-navy">{item.title}</h3>
+            <p className="mt-1 text-sm text-muted-text">{item.description}</p>
+          </div>
+        ))}
+      </section>
 
       <div className="gms-card p-4 text-xs text-muted-text">
         Clinical Decision Support — evidence and generated content must be reviewed by
