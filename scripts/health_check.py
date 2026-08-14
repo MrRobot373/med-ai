@@ -27,7 +27,10 @@ from app.integrations.reranker_health import check_reranker_health  # noqa: E402
 
 def _line(name: str, ok: bool, detail: str = "") -> bool:
     icon = "OK  " if ok else "FAIL"
-    print(f"[{icon}] {name}" + (f" — {detail}" if detail else ""))
+    # Plain hyphen, not an em dash: this script is invoked from health-check.bat via
+    # plain cmd.exe, whose default console codepage (cp1252/850) mangles non-ASCII
+    # punctuation into "?"/garbage — an em dash is exactly that kind of silent breakage.
+    print(f"[{icon}] {name}" + (f" - {detail}" if detail else ""))
     return ok
 
 
