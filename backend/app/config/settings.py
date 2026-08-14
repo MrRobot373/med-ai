@@ -87,6 +87,14 @@ class Settings(BaseSettings):
     upload_max_mb: int = Field(default=25, alias="UPLOAD_MAX_MB")
     session_timeout_minutes: int = Field(default=60, alias="SESSION_TIMEOUT_MINUTES")
 
+    # --- Auth (Phase 03) ---
+    session_cookie_name: str = Field(default="gms_session", alias="SESSION_COOKIE_NAME")
+    # False by default (plain HTTP on localhost during the demo). Set true explicitly
+    # once the deployment is behind HTTPS — never inferred/guessed, per spec §103.
+    cookie_secure: bool = Field(default=False, alias="COOKIE_SECURE")
+    login_rate_limit_attempts: int = Field(default=5, alias="LOGIN_RATE_LIMIT_ATTEMPTS")
+    login_rate_limit_window_seconds: int = Field(default=900, alias="LOGIN_RATE_LIMIT_WINDOW_SECONDS")
+
     # --- Logging ---
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     debug_mode: bool = Field(default=False, alias="DEBUG_MODE")

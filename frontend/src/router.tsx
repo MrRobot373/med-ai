@@ -1,13 +1,20 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppShell } from "@/layouts/AppShell";
+import { RequireAuth } from "@/components/RequireAuth";
+import LoginPage from "@/pages/Login";
 import OverviewPage from "@/pages/Overview";
 import { NotYetBuilt } from "@/pages/NotYetBuilt";
 
 export const router = createBrowserRouter(
   [
+    { path: "/login", element: <LoginPage /> },
     {
       path: "/",
-      element: <AppShell />,
+      element: (
+        <RequireAuth>
+          <AppShell />
+        </RequireAuth>
+      ),
       children: [
         { index: true, element: <Navigate to="/overview" replace /> },
         { path: "overview", element: <OverviewPage /> },

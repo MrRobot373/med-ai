@@ -20,6 +20,12 @@ use at any time.
 | pytest / pytest-asyncio | https://github.com/pytest-dev/pytest | MIT |
 | Ruff | https://github.com/astral-sh/ruff | MIT |
 
+## Backend (Phase 03 — auth)
+
+| Package | Project | License |
+|---|---|---|
+| email-validator | https://github.com/JoshData/python-email-validator | CC0-1.0 |
+
 ## Backend (declared now, used starting Phase 07 — RAG core)
 
 | Package | Project | License |
@@ -51,6 +57,7 @@ use at any time.
 | lucide-react | https://github.com/lucide-icons/lucide | ISC |
 | TypeScript | https://github.com/microsoft/TypeScript | Apache-2.0 |
 | Vitest / Testing Library | https://github.com/vitest-dev/vitest / https://github.com/testing-library/react-testing-library | MIT |
+| @testing-library/user-event | https://github.com/testing-library/user-event | MIT |
 
 ## Domain reference data (not source code)
 

@@ -5,12 +5,12 @@ Master Build Prompt in this repo's root (`MASTER BUILD PROMPT — GMS Local Mult
 Clinical RAG & Decision-Support Platform.md`) as a 16-phase program — see
 [docs/architecture.md](docs/architecture.md) for the phase roadmap and current status.
 
-> **Current status: Phase 02 — UI Shell.** Backend foundation (Phase 01) plus a full
-> screenshot-matched dashboard (hero, capability cards, how-it-works, live system
-> status) exist so far. Patient management, authentication, RAG, chat, vision, and
-> every other clinical feature are not implemented yet — the nav in the running app
-> tells you exactly which phase each section lands in, and every capability card links
-> to a real (if not-yet-built) destination rather than a dead end.
+> **Current status: Phase 03 — Authentication.** Backend foundation (Phase 01), the
+> screenshot-matched dashboard (Phase 02), and now real login/logout/session/role
+> handling all exist. Patient management, RAG, chat, vision, and every other clinical
+> feature are not implemented yet — the nav in the running app tells you exactly which
+> phase each section lands in, and every capability card links to a real (if
+> not-yet-built) destination rather than a dead end.
 
 The initial knowledge-base domain for this deployment is **ophthalmology** — see
 `data/*.pdf` (anatomy, disease, referral-guideline, and instrument references) and
@@ -51,6 +51,10 @@ npm install
 cd ..
 copy .env.example .env
 :: edit .env if your ports/URLs differ from the defaults
+
+:: Demo accounts (admin/doctor/viewer) — passwords are generated, never hardcoded;
+:: printed once and saved to data/sqlite/.demo_credentials.txt (gitignored)
+backend\.venv\Scripts\python scripts\seed_demo.py
 ```
 
 ## Running

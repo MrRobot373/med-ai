@@ -3,16 +3,16 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
 echo ============================================================
-echo  GMS Clinical AI — start-demo (Phase 01 minimal version)
+echo  GMS Clinical AI - start-demo (Phase 03 version)
 echo ============================================================
-echo NOTE: this is the Foundation-phase startup script. It brings
-echo up Qdrant, runs migrations, and starts the backend/frontend
-echo with real health polling. The full 15-step sequence from
-echo spec section 86 (SearXNG, model warm-up, seed-data checks,
-echo etc.) is added as those phases are built.
+echo NOTE: this brings up Qdrant, runs migrations, seeds demo
+echo accounts, and starts the backend/frontend with real health
+echo polling. The full 15-step sequence from spec section 86
+echo (SearXNG, model warm-up, full seed-data checks, etc.) is
+echo added as those later phases are built.
 echo.
 
-echo [1/6] Checking Docker...
+echo [1/7] Checking Docker...
 docker info >nul 2>&1
 if errorlevel 1 (
     echo   FAIL: Docker does not appear to be running. Start Docker Desktop and re-run this script.
@@ -20,7 +20,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [2/6] Starting Qdrant...
+echo [2/7] Starting Qdrant...
 docker compose up -d qdrant
 if errorlevel 1 (
     echo   FAIL: could not start Qdrant. See docker compose output above.
@@ -28,7 +28,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [3/6] Checking Ollama...
+echo [3/7] Checking Ollama...
 curl -s -m 5 http://localhost:11434/api/version >nul 2>&1
 if errorlevel 1 (
     echo   WARNING: Ollama does not appear to be reachable at http://localhost:11434.
@@ -37,11 +37,12 @@ if errorlevel 1 (
     echo   OK
 )
 
-echo [4/6] Running database migrations...
 if not exist backend\.venv\Scripts\python.exe (
     echo   FAIL: backend\.venv not found. Run: cd backend ^&^& python -m venv .venv ^&^& .venv\Scripts\pip install -r requirements.txt
     exit /b 1
 )
+
+echo [4/7] Running database migrations...
 pushd backend
 .venv\Scripts\python.exe -m alembic upgrade head
 if errorlevel 1 (
@@ -52,11 +53,19 @@ if errorlevel 1 (
 popd
 echo   OK
 
-echo [5/6] Starting backend and frontend...
+echo [5/7] Seeding demo accounts...
+backend\.venv\Scripts\python.exe scripts\seed_demo.py
+if errorlevel 1 (
+    echo   FAIL: seeding demo accounts failed.
+    exit /b 1
+)
+echo   OK
+
+echo [6/7] Starting backend and frontend...
 start "GMS Backend" cmd /k "cd /d "%~dp0backend" && .venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
 start "GMS Frontend" cmd /k "cd /d "%~dp0frontend" && npm run dev"
 
-echo [6/6] Waiting for backend health...
+echo [7/7] Waiting for backend health...
 set /a attempts=0
 :poll
 set /a attempts+=1
@@ -70,8 +79,9 @@ timeout /t 2 >nul
 goto poll
 
 :ready
-echo   OK — backend is responding.
+echo   OK - backend is responding.
 echo.
+echo Demo account credentials: data\sqlite\.demo_credentials.txt
 echo Run "python scripts\health_check.py" for full dependency status.
 start "" http://localhost:5173
 echo Done. Frontend: http://localhost:5173  Backend docs: http://localhost:8000/docs

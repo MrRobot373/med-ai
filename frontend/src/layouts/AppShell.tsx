@@ -2,6 +2,7 @@ import { Lock, Plus } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useSystemHealth } from "@/api/health";
 import { StatusChip, type StatusTone } from "@/components/StatusChip";
+import { UserMenu } from "@/components/UserMenu";
 
 // Nav order matches spec §19 exactly. Only "Overview" has a real feature behind it in
 // Phase 01 — the rest route to an explicit NotYetBuilt placeholder (see router.tsx)
@@ -73,6 +74,7 @@ export function AppShell() {
               }
               tone={overallTone(data?.status, isLoading, isError)}
             />
+            <UserMenu />
           </div>
         </div>
       </header>

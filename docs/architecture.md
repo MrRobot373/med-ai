@@ -31,7 +31,7 @@ GMS CLINICAL AI
 |---|---|---|
 | 01 | Foundation: repo scaffold, backend/frontend skeleton, SQLite+Alembic, Qdrant (Docker), Ollama integration, real health checks | **Done** |
 | 02 | Screenshot-matched UI shell (full nav, dashboard cards, responsive layout) | **Done** |
-| 03 | Authentication: login/logout, roles, sessions, protected routes | Not started |
+| 03 | Authentication: login/logout, roles, sessions, protected routes | **Done** |
 | 04 | Patient system: CRUD, search, workspace, encounters, conditions, allergies, medications, timeline | Not started |
 | 05 | Report ingestion: upload, PDF/DOCX/XLSX/image parsing, OCR, identity checking, ingestion jobs | Not started |
 | 06 | Structured clinical data: lab extraction, trend engine, medication reconciliation, change engine | Not started |
@@ -93,6 +93,54 @@ or a NotYetBuilt screen naming the phase that will complete it. Verified via Pla
 screenshots at 1366×768 / 1440×900 / 1920×1080 (no layout breakage, no console errors) and
 a scripted click-through (capability card → correct NotYetBuilt page, correct nav
 highlighting).
+```
+
+## Phase 03 — what exists right now
+
+```text
+backend/app/
+  auth/security.py       Argon2id password hashing; session tokens are a separate
+                          256-bit random value, only its SHA-256 lives in the DB
+  auth/service.py         authenticate_user / create_session / get_user_by_session_token /
+                           revoke_session — framework-agnostic, no FastAPI imports
+  auth/dependencies.py    get_current_user (cookie → session → user), require_role(*roles)
+  auth/rate_limit.py      In-process sliding-window login limiter (documented single-
+                           process limitation — no Redis, per spec §135)
+  api/deps.py              Shared Annotated[X, Depends(y)] aliases (DbDep, SettingsDep)
+  api/auth.py               POST /api/auth/login, /logout, GET /me
+  schemas/auth.py           LoginRequest (deliberately NOT EmailStr — see regression
+                             note below), UserOut
+
+scripts/seed_demo.py     Creates admin/doctor/viewer accounts. Passwords are never
+                          hardcoded: read from env or randomly generated, printed once,
+                          saved to data/sqlite/.demo_credentials.txt (gitignored).
+                          Idempotent — safe to re-run.
+
+frontend/src/
+  api/auth.ts              useMe / useLogin / useLogout (TanStack Query)
+  pages/Login/               Matches spec §21; identical error message for wrong-
+                              password/unknown-email/inactive-account (anti-enumeration)
+  components/RequireAuth.tsx  Route guard — 401 from /me is the "logged out" signal,
+                               not an exceptional error
+  components/UserMenu.tsx     Real name/email/role + Logout; no Profile/Preferences/
+                               System Information items since those pages don't exist
+  router.tsx                  /login public; everything else behind RequireAuth
+
+Two real bugs were caught during live verification (not just unit tests) and fixed:
+1. Backend: pydantic's `EmailStr` rejects `.local`/other reserved TLDs, which broke
+   login for the very accounts scripts/seed_demo.py creates, and some configurations
+   perform live DNS/MX lookups — wrong for an app required to work offline (§136).
+   Replaced with a light shape check that doesn't touch the network.
+2. Frontend: `apiFetch` assumed FastAPI's `detail` field is always a string; its
+   automatic 422 validation errors return an array, which rendered as the literal
+   text "[object Object]". Fixed to flatten either shape into a readable message.
+Both have regression tests (backend pytest + frontend vitest) so they can't reappear
+silently.
+
+Verified end-to-end with Playwright against the real running app: unauthenticated
+redirect → invalid-credentials error → successful login → user menu → logout → session
+genuinely revoked server-side (reloading a protected route redirects again, not just a
+client-side flag).
 ```
 
 ## Domain note

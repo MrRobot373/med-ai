@@ -21,6 +21,7 @@ frontend/*.tsbuildinfo
 # --- Data (never commit local demo/runtime state) ---
 data/sqlite/*.db
 data/sqlite/*.db-journal
+data/sqlite/.demo_credentials.txt
 data/uploads/*
 !data/uploads/.gitkeep
 data/documents/*
