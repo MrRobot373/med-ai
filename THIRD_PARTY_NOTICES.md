@@ -26,6 +26,29 @@ use at any time.
 |---|---|---|
 | email-validator | https://github.com/JoshData/python-email-validator | CC0-1.0 |
 
+## Backend (Phase 05 — report ingestion)
+
+| Package | Project | License |
+|---|---|---|
+| PyMuPDF | https://github.com/pymupdf/PyMuPDF | AGPL-3.0 (also offers a commercial license; used here as a local, non-distributed tool — see note below) |
+| python-docx | https://github.com/python-openxml/python-docx | MIT |
+| openpyxl | https://foss.heptapod.net/openpyxl/openpyxl | MIT |
+| Pillow | https://github.com/python-pillow/Pillow | MIT-CMU |
+| pydicom | https://github.com/pydicom/pydicom | MIT |
+| EasyOCR | https://github.com/JaidedAI/EasyOCR | Apache-2.0 |
+
+PyMuPDF's AGPL-3.0 obliges anyone who *distributes* a modified or unmodified copy (or
+runs it as a network service reachable by others) to make the corresponding source
+available under the same terms. This project runs it purely as a local, offline
+processing tool on the operator's own machine (spec §136) and is not distributed as a
+hosted service to third parties; re-verify this before any SaaS/hosted deployment, or
+switch to PyMuPDF's commercial license for that use case.
+
+EasyOCR is used here as an open-source, Windows-reliable substitute for the Master Build
+Prompt's suggested PaddleOCR (spec §51) — both are CPU-capable, license-compatible OCR
+engines; the choice is purely an installation-reliability decision, not a capability
+downgrade.
+
 ## Backend (declared now, used starting Phase 07 — RAG core)
 
 | Package | Project | License |

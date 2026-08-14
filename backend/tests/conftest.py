@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -16,6 +17,13 @@ if _TEST_DB_PATH.exists():
 os.environ["DATABASE_URL"] = f"sqlite:///{_TEST_DB_PATH.as_posix()}"
 os.environ["APP_ENV"] = "test"
 os.environ["APP_SECRET_KEY"] = "test-only-secret-key"
+
+# Same isolation for uploaded-report storage — without this, running the test suite
+# would write real files into the demo's actual data/uploads/ directory.
+_TEST_UPLOAD_DIR = BACKEND_ROOT / "tests" / ".tmp_uploads"
+if _TEST_UPLOAD_DIR.exists():
+    shutil.rmtree(_TEST_UPLOAD_DIR)
+os.environ["UPLOAD_DIR"] = str(_TEST_UPLOAD_DIR)
 
 import pytest
 from fastapi.testclient import TestClient
@@ -34,6 +42,8 @@ def _create_test_schema():
     engine.dispose()
     if _TEST_DB_PATH.exists():
         _TEST_DB_PATH.unlink()
+    if _TEST_UPLOAD_DIR.exists():
+        shutil.rmtree(_TEST_UPLOAD_DIR)
 
 
 @pytest.fixture()

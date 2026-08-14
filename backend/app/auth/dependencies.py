@@ -43,3 +43,9 @@ def require_role(*allowed_roles: UserRole):
         return user
 
     return dependency
+
+
+# Shared by every router with clinician-write endpoints (patients, encounters, reports,
+# ...) — spec §18: only admin/doctor can modify clinical data, viewer is read-only. A
+# single definition here means every write route enforces the exact same role set.
+WriteUser = Annotated[User, Depends(require_role(UserRole.ADMIN, UserRole.DOCTOR))]

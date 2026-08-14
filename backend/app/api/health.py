@@ -12,6 +12,7 @@ from fastapi import APIRouter
 
 from app.config.settings import get_settings
 from app.db.session import check_database_reachable
+from app.ingestion.ocr import check_ocr_health
 from app.integrations.embedding_health import check_embedding_health
 from app.integrations.ollama_client import check_ollama_health
 from app.integrations.qdrant_client import check_qdrant_health
@@ -82,6 +83,7 @@ async def get_models_health() -> ModelsStatus:
     ollama = await check_ollama_health(settings)
     embedding = check_embedding_health(settings)
     reranker = check_reranker_health(settings)
+    ocr = check_ocr_health(settings)
 
     return ModelsStatus(
         llm=OllamaStatus(
@@ -104,5 +106,12 @@ async def get_models_health() -> ModelsStatus:
             status=reranker.status,
             package_installed=reranker.package_installed,
             error=reranker.error,
+        ),
+        ocr=ModelComponentStatus(
+            configured_model="easyocr (en)",
+            device="cpu",
+            status=ocr.status,
+            package_installed=ocr.package_installed,
+            error=ocr.error,
         ),
     )

@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.patients import router as patients_router
+from app.api.reports import router as reports_router
 from app.config.settings import get_settings
 from app.logging import configure_logging, get_logger
 
@@ -47,6 +48,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(patients_router)
+app.include_router(reports_router)
 
 
 @app.get("/", include_in_schema=False)

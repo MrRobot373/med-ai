@@ -37,6 +37,7 @@ class ModelsStatus(BaseModel):
     llm: OllamaStatus
     embedding: ModelComponentStatus
     reranker: ModelComponentStatus
+    ocr: ModelComponentStatus
 
 
 class OverallHealth(BaseModel):

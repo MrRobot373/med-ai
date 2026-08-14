@@ -33,7 +33,7 @@ GMS CLINICAL AI
 | 02 | Screenshot-matched UI shell (full nav, dashboard cards, responsive layout) | **Done** |
 | 03 | Authentication: login/logout, roles, sessions, protected routes | **Done** |
 | 04 | Patient system: CRUD, search, workspace, encounters, conditions, allergies, medications, timeline | **Done** |
-| 05 | Report ingestion: upload, PDF/DOCX/XLSX/image parsing, OCR, identity checking, ingestion jobs | Not started |
+| 05 | Report ingestion: upload, PDF/DOCX/XLSX/image parsing, OCR, identity checking, ingestion jobs | **Done** |
 | 06 | Structured clinical data: lab extraction, trend engine, medication reconciliation, change engine | Not started |
 | 07 | Local RAG core: embeddings, Qdrant collections, dense+BM25 retrieval, RRF fusion, reranking, dedup | Not started |
 | 08 | Clinical chat: conversations, streaming, evidence panel, citation/grounding validation | Not started |
@@ -208,6 +208,103 @@ seeded patient → real conditions/allergies/medications/encounters render → a
 condition → stop a medication (history preserved, not deleted) → new encounter →
 unknown-patient-id shows a clean not-found state, not a broken page → logged in as
 viewer, every write control is absent (not shown-then-403).
+```
+
+## Phase 05 — what exists right now
+
+```text
+backend/app/
+  models/report.py            Report: ReportType/IngestionStatus/ExtractionStatus/
+                                PatientMatchStatus enums, source_filename (display) vs.
+                                stored_filename (random on disk) kept separate, file_hash
+                                (sha256, indexed, dedup key), extracted_content (JSON,
+                                page-tagged text so every extracted value traces back to
+                                an exact source page per spec §133)
+  models/ingestion_job.py     IngestionJob + PIPELINE_STAGES for UI progress display
+
+  ingestion/validators.py     Magic-byte sniffing (extension alone is never trusted),
+                                sanitize_display_filename
+  ingestion/storage.py         reports_dir(), random stored filename, sha256, write/delete
+  ingestion/pdf.py              PyMuPDF: per-page text + table extraction, page->PNG
+                                 render (OCR fallback input)
+  ingestion/docx.py, xlsx.py    python-docx / openpyxl: paragraphs+tables / per-sheet pages
+  ingestion/image.py, dicom.py  Pillow / pydicom: image normalization, DICOM summary +
+                                 de-identified preview PNG (broad try/except - a malformed
+                                 DICOM degrades to "no preview," never a 500)
+  ingestion/ocr.py               Lazy-loaded easyocr singleton (CPU), used only when a
+                                 page's native text falls under ocr_min_chars_per_page -
+                                 open-source substitute for the spec's suggested
+                                 PaddleOCR (more reliable to install on Windows)
+  ingestion/classification.py    Keyword-heuristic report-type classifier tuned for the
+                                 ophthalmology domain; never fabricates a confidence score
+  ingestion/identity.py           Extracts patient name/MRN from document text and
+                                 compares against the current chart. Conservative by
+                                 design (spec §30): only ever claims MATCHED or MISMATCH
+                                 when reasonably confident, else UNCONFIRMED - a document
+                                 is never silently auto-attached on uncertainty
+  ingestion/pipeline.py          run_ingestion() orchestrator: stage-by-stage IngestionJob
+                                 updates, dispatches by mime type, never raises past its
+                                 own boundary (a parser crash fails that one report, not
+                                 the request or the background worker)
+
+  services/reports.py           create_report() (dedup by file_hash+patient unless
+                                 explicitly overridden), run_ingestion_task() (FastAPI
+                                 BackgroundTasks - not Celery/Redis, per spec §135's
+                                 "avoid unnecessary infrastructure" - opens its own fresh
+                                 DB session since the request's session is closed by the
+                                 time it runs), confirm_patient_match(), archive_report()
+  api/reports.py                 Upload/list/detail/status/file-download/preview/
+                                 confirm-match/archive; files are only ever served through
+                                 an authenticated endpoint, never a static/public path
+
+scripts/generate_sample_reports.py  Synthetic ophthalmology report files for the upload
+                                      demo (normal PDF/DOCX/XLSX, a scanned no-text-layer
+                                      PDF and PNG to exercise real OCR, and one deliberate
+                                      identity-mismatch PDF) - gitignored, regenerated by
+                                      start-demo.bat step 7
+
+frontend/src/
+  api/reports.ts                  Upload/list/detail/confirm-match/archive hooks; list
+                                    polling dynamically enables only while a report is
+                                    still queued/processing, stops once settled
+  components/UploadReportModal.tsx  File picker; a 409 duplicate conflict offers an
+                                      explicit "Upload Anyway" retry rather than failing
+                                      silently or auto-overwriting
+  components/ReportCard.tsx          Status badge, OCR/page-count detail; a mismatch
+                                      renders the exact spec §30 banner ("Patient
+                                      mismatch detected" / current vs. detected identity)
+                                      with confirm/cancel actions gated by useCanWrite()
+  pages/PatientWorkspace/Reports.tsx  Replaces the Phase 04 NotYetBuilt placeholder
+  pages/PatientWorkspace/Overview.tsx  "Recent Reports" card (spec §25)
+
+Two real bugs were caught during live verification (not just unit tests) and fixed, both
+with regression tests so they can't reappear silently:
+1. Spreadsheet extraction renders "Label | Value" (pipe-separated cells), not
+   "Label: Value" — the identity regexes only recognized `:`/whitespace separators and
+   silently missed every XLSX-sourced identity field until fixed.
+2. When a document (or OCR-flattened image/table text) puts more than one labeled field
+   on a single line with nothing but whitespace between them — e.g.
+   "Patient: Elena Novak MRN: DEMO-1003" — the name pattern swallowed the next field's
+   label into its own capture ("Elena Novak MRN"), and the MRN pattern separately
+   truncated its own value at the first internal space. Both regexes now stop at an
+   explicit label/line boundary instead of matching greedily past it. This surfaces
+   independently of OCR quality (a perfectly-read single-line document hits it too),
+   though it was found via a live scanned-image upload where OCR also legitimately
+   misread the MRN's hyphen as a space — which correctly still produces a MISMATCH
+   (spec §30's "never silently guess"), just with a clean extracted name in the banner
+   instead of a garbled one.
+
+A third finding was investigated and determined to be correct, *intended* behavior, not
+a bug: real (unmocked) OCR occasionally misreads a surname (e.g. "Wallace" -> "Wallce"),
+which correctly triggers a MISMATCH rather than a false MATCH — exactly what spec §30
+requires ("never silently attach" beats "usually right"). Left unchanged.
+
+Verified end-to-end with Playwright against the real running app, one fresh browser
+session per scenario: normal PDF upload (text extraction, classification, matched
+identity), DOCX, XLSX (pipe-separated identity, post-fix), a scanned image/PDF with no
+text layer through the real (unmocked) easyocr pipeline end-to-end, and a deliberate
+identity mismatch (banner text, confirm/cancel actions, archive). Also checked: viewer
+role sees no write controls on the Reports tab (covered by frontend unit tests).
 ```
 
 ## Domain note

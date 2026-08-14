@@ -5,13 +5,14 @@ Master Build Prompt in this repo's root (`MASTER BUILD PROMPT — GMS Local Mult
 Clinical RAG & Decision-Support Platform.md`) as a 16-phase program — see
 [docs/architecture.md](docs/architecture.md) for the phase roadmap and current status.
 
-> **Current status: Phase 04 — Patient System.** Foundation (01), the dashboard (02),
-> authentication (03), and now real patient management — search, workspace, encounters,
-> conditions, allergies, medications, and a derived timeline — all exist and are backed
-> by 3 seeded synthetic ophthalmology patients. Report ingestion, labs, RAG, chat, and
-> vision are not implemented yet — the nav and patient-workspace tabs tell you exactly
-> which phase each section lands in, and every capability card links to a real (if
-> not-yet-built) destination rather than a dead end.
+> **Current status: Phase 05 — Report Ingestion.** Foundation (01), the dashboard (02),
+> authentication (03), patient management (04), and now report ingestion — upload,
+> PDF/DOCX/XLSX/image/DICOM parsing, OCR fallback (real, unmocked, CPU-only), report-type
+> classification, and conservative patient-identity mismatch checking — all exist and
+> work end-to-end. Structured labs, RAG, chat, and vision are not implemented yet — the
+> nav and patient-workspace tabs tell you exactly which phase each section lands in, and
+> every capability card links to a real (if not-yet-built) destination rather than a dead
+> end.
 
 The initial knowledge-base domain for this deployment is **ophthalmology** — see
 `data/*.pdf` (anatomy, disease, referral-guideline, and instrument references) and
@@ -61,6 +62,10 @@ backend\.venv\Scripts\python scripts\seed_demo.py
 :: Demo patients (3 synthetic ophthalmology cases — cataract, glaucoma, diabetic
 :: retinopathy — with several months of encounter history). Idempotent.
 backend\.venv\Scripts\python scripts\seed_demo_patients.py
+
+:: Sample report files for the upload demo (normal + scanned/OCR + a deliberate
+:: identity-mismatch example). Gitignored — regenerate anytime.
+backend\.venv\Scripts\python scripts\generate_sample_reports.py
 ```
 
 ## Running
@@ -70,9 +75,9 @@ start-demo.bat
 ```
 
 This checks Docker, starts Qdrant, checks Ollama, runs migrations, seeds demo accounts
-and patients, starts the backend (`:8000`) and frontend (`:5173`) in separate windows,
-polls `/api/health` until it responds, and opens the browser. `stop-demo.bat` shuts
-services down.
+and patients, generates sample report files for the upload demo, starts the backend
+(`:8000`) and frontend (`:5173`) in separate windows, polls `/api/health` until it
+responds, and opens the browser. `stop-demo.bat` shuts services down.
 `health-check.bat` runs the same checks as `/api/health` from the command line.
 `reset-demo.bat` is a stub until Phase 14 (synthetic demo dataset) — it says so and
 exits non-zero rather than pretending to do something.

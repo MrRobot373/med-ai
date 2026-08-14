@@ -7,6 +7,7 @@ import OverviewPage from "@/pages/Overview";
 import PatientsPage from "@/pages/Patients";
 import PatientOverviewTab from "@/pages/PatientWorkspace/Overview";
 import PatientTimelineTab from "@/pages/PatientWorkspace/Timeline";
+import PatientReportsTab from "@/pages/PatientWorkspace/Reports";
 import PatientConditionsTab from "@/pages/PatientWorkspace/Conditions";
 import PatientMedicationsTab from "@/pages/PatientWorkspace/Medications";
 import { NotYetBuilt } from "@/pages/NotYetBuilt";
@@ -32,7 +33,7 @@ export const router = createBrowserRouter(
             { index: true, element: <Navigate to="overview" replace /> },
             { path: "overview", element: <PatientOverviewTab /> },
             { path: "timeline", element: <PatientTimelineTab /> },
-            { path: "reports", element: <NotYetBuilt title="Reports" phase="Phase 05" /> },
+            { path: "reports", element: <PatientReportsTab /> },
             { path: "labs", element: <NotYetBuilt title="Labs" phase="Phase 06" /> },
             { path: "medications", element: <PatientMedicationsTab /> },
             { path: "conditions", element: <PatientConditionsTab /> },

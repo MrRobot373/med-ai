@@ -6,6 +6,7 @@ import { usePatientConditions } from "@/api/clinical";
 import { usePatientAllergies } from "@/api/clinical";
 import { usePatientMedications } from "@/api/clinical";
 import { usePatientEncounters } from "@/api/encounters";
+import { usePatientReports } from "@/api/reports";
 
 const SEVERITY_STYLE: Record<string, string> = {
   severe: "bg-danger/10 text-danger",
@@ -20,10 +21,12 @@ export default function OverviewTab() {
   const { data: allergies } = usePatientAllergies(patient.id);
   const { data: medications } = usePatientMedications(patient.id);
   const { data: encounters } = usePatientEncounters(patient.id);
+  const { data: reports } = usePatientReports(patient.id);
 
   const activeConditions = conditions?.filter((c) => c.status === "active") ?? [];
   const activeMedications = medications?.filter((m) => m.active) ?? [];
   const recentEncounters = encounters?.slice(0, 3) ?? [];
+  const recentReports = reports?.slice(0, 3) ?? [];
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -97,6 +100,29 @@ export default function OverviewTab() {
                 <div className="text-navy">{e.chief_complaint || e.encounter_type}</div>
                 <div className="text-xs text-muted-text">
                   {new Date(e.start_datetime).toLocaleDateString()} · {e.status}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card className="p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-navy">Recent Reports</h2>
+          <Link to="../reports" className="text-xs font-medium text-primary-blue hover:underline">
+            View all
+          </Link>
+        </div>
+        {recentReports.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-text">No reports uploaded yet.</p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {recentReports.map((r) => (
+              <li key={r.id} className="text-sm">
+                <div className="text-navy">{r.title}</div>
+                <div className="text-xs text-muted-text">
+                  {r.report_date ?? new Date(r.created_at).toLocaleDateString()} · {r.ingestion_status}
                 </div>
               </li>
             ))}

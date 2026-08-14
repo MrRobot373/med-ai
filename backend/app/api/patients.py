@@ -8,18 +8,15 @@ access, cannot modify patient information."
 
 from __future__ import annotations
 
-from typing import Annotated
+from fastapi import APIRouter, HTTPException, status
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
+from app.api.common import get_patient_or_404 as _get_patient_or_404
 from app.api.deps import DbDep
-from app.auth.dependencies import CurrentUser, require_role
+from app.auth.dependencies import CurrentUser, WriteUser
 from app.models.allergy import Allergy
 from app.models.condition import Condition
 from app.models.encounter import Encounter
 from app.models.medication import Medication
-from app.models.patient import Patient
-from app.models.user import User, UserRole
 from app.schemas.allergy import AllergyCreate, AllergyOut, AllergyUpdate
 from app.schemas.condition import ConditionCreate, ConditionOut, ConditionUpdate
 from app.schemas.encounter import EncounterCreate, EncounterOut, EncounterUpdate
@@ -32,17 +29,6 @@ from app.services import patients as patient_service
 from app.services import timeline as timeline_service
 
 router = APIRouter(prefix="/api", tags=["patients"])
-
-# A distinct Annotated alias (not a reused CurrentUser + a default value, which would
-# silently NOT apply the role check — Annotated's Depends is fixed at declaration time).
-WriteUser = Annotated[User, Depends(require_role(UserRole.ADMIN, UserRole.DOCTOR))]
-
-
-def _get_patient_or_404(db: DbDep, patient_id: str) -> Patient:
-    patient = patient_service.get_patient(db, patient_id)
-    if patient is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
-    return patient
 
 
 def _get_encounter_or_404(db: DbDep, encounter_id: str) -> Encounter:

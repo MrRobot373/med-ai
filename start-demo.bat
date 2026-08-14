@@ -3,16 +3,16 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
 echo ============================================================
-echo  GMS Clinical AI - start-demo (Phase 04 version)
+echo  GMS Clinical AI - start-demo (Phase 05 version)
 echo ============================================================
 echo NOTE: this brings up Qdrant, runs migrations, seeds demo
-echo accounts and patients, and starts the backend/frontend with
-echo real health polling. The full 15-step sequence from spec
-echo section 86 (SearXNG, model warm-up, etc.) is added as those
-echo later phases are built.
+echo accounts/patients/sample reports, and starts the backend/
+echo frontend with real health polling. The full 15-step sequence
+echo from spec section 86 (SearXNG, model warm-up, etc.) is added
+echo as those later phases are built.
 echo.
 
-echo [1/8] Checking Docker...
+echo [1/9] Checking Docker...
 docker info >nul 2>&1
 if errorlevel 1 (
     echo   FAIL: Docker does not appear to be running. Start Docker Desktop and re-run this script.
@@ -20,7 +20,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [2/8] Starting Qdrant...
+echo [2/9] Starting Qdrant...
 docker compose up -d qdrant
 if errorlevel 1 (
     echo   FAIL: could not start Qdrant. See docker compose output above.
@@ -28,7 +28,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [3/8] Checking Ollama...
+echo [3/9] Checking Ollama...
 curl -s -m 5 http://localhost:11434/api/version >nul 2>&1
 if errorlevel 1 (
     echo   WARNING: Ollama does not appear to be reachable at http://localhost:11434.
@@ -42,7 +42,7 @@ if not exist backend\.venv\Scripts\python.exe (
     exit /b 1
 )
 
-echo [4/8] Running database migrations...
+echo [4/9] Running database migrations...
 pushd backend
 .venv\Scripts\python.exe -m alembic upgrade head
 if errorlevel 1 (
@@ -53,7 +53,7 @@ if errorlevel 1 (
 popd
 echo   OK
 
-echo [5/8] Seeding demo accounts...
+echo [5/9] Seeding demo accounts...
 backend\.venv\Scripts\python.exe scripts\seed_demo.py
 if errorlevel 1 (
     echo   FAIL: seeding demo accounts failed.
@@ -61,7 +61,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [6/8] Seeding demo patients...
+echo [6/9] Seeding demo patients...
 backend\.venv\Scripts\python.exe scripts\seed_demo_patients.py
 if errorlevel 1 (
     echo   FAIL: seeding demo patients failed.
@@ -69,11 +69,19 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [7/8] Starting backend and frontend...
+echo [7/9] Generating sample report files for upload demos...
+backend\.venv\Scripts\python.exe scripts\generate_sample_reports.py
+if errorlevel 1 (
+    echo   FAIL: generating sample reports failed.
+    exit /b 1
+)
+echo   OK
+
+echo [8/9] Starting backend and frontend...
 start "GMS Backend" cmd /k "cd /d "%~dp0backend" && .venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
 start "GMS Frontend" cmd /k "cd /d "%~dp0frontend" && npm run dev"
 
-echo [8/8] Waiting for backend health...
+echo [9/9] Waiting for backend health...
 set /a attempts=0
 :poll
 set /a attempts+=1
@@ -90,6 +98,7 @@ goto poll
 echo   OK - backend is responding.
 echo.
 echo Demo account credentials: data\sqlite\.demo_credentials.txt
+echo Sample report files to upload: data\sample_reports\
 echo Run "python scripts\health_check.py" for full dependency status.
 start "" http://localhost:5173
 echo Done. Frontend: http://localhost:5173  Backend docs: http://localhost:8000/docs

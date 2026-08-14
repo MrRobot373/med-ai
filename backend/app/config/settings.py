@@ -22,6 +22,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # the same default SQLite file rather than silently creating divergent databases.
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_SQLITE_PATH = PROJECT_ROOT / "data" / "sqlite" / "gms.db"
+DEFAULT_UPLOAD_DIR = PROJECT_ROOT / "data" / "uploads"
 
 
 class RagProfile(str, Enum):
@@ -85,7 +86,14 @@ class Settings(BaseSettings):
 
     # --- Uploads / sessions ---
     upload_max_mb: int = Field(default=25, alias="UPLOAD_MAX_MB")
+    upload_dir: str = Field(default=str(DEFAULT_UPLOAD_DIR), alias="UPLOAD_DIR")
     session_timeout_minutes: int = Field(default=60, alias="SESSION_TIMEOUT_MINUTES")
+
+    # --- Ingestion (Phase 05) ---
+    # OCR is auto-detected (package installed or not) — this only lets an operator
+    # force it off even when installed, e.g. to keep a low-resource demo machine fast.
+    enable_ocr: bool = Field(default=True, alias="ENABLE_OCR")
+    ocr_min_chars_per_page: int = Field(default=40, alias="OCR_MIN_CHARS_PER_PAGE")
 
     # --- Auth (Phase 03) ---
     session_cookie_name: str = Field(default="gms_session", alias="SESSION_COOKIE_NAME")
