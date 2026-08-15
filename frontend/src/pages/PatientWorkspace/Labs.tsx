@@ -1,6 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 import { Card } from "@/components/Card";
 import { TrendChart } from "@/components/TrendChart";
+import { AskAIButton } from "@/components/AskAIButton";
 import { usePatientContext } from "@/layouts/PatientWorkspace";
 import { usePatientObservationTrends, usePatientObservations } from "@/api/observations";
 
@@ -50,12 +51,18 @@ export default function LabsTab() {
             <Card key={trend.normalized_name} className="p-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-navy">{trend.display_name}</h2>
-                {hasAbnormal && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-[11px] font-medium text-danger">
-                    <AlertTriangle className="h-3 w-3" />
-                    Abnormal result
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {hasAbnormal && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-[11px] font-medium text-danger">
+                      <AlertTriangle className="h-3 w-3" />
+                      Abnormal result
+                    </span>
+                  )}
+                  <AskAIButton
+                    question={`Explain this patient's ${trend.display_name} trend and whether it's clinically concerning.`}
+                    className="text-xs"
+                  />
+                </div>
               </div>
 
               <div className="mt-3">

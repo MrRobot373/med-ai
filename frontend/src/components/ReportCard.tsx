@@ -3,6 +3,7 @@ import { AlertTriangle, FileText, Pill, ScanEye } from "lucide-react";
 import { Card } from "@/components/Card";
 import { StatusChip, type StatusTone } from "@/components/StatusChip";
 import { ReconciliationModal } from "@/components/ReconciliationModal";
+import { AskAIButton } from "@/components/AskAIButton";
 import {
   reportFileUrl,
   reportPreviewUrl,
@@ -138,6 +139,13 @@ export function ReportCard({ report, patientName }: { report: ReportListItem; pa
             <Pill className="h-3.5 w-3.5" />
             Reconcile Medications
           </button>
+        )}
+        {report.ingestion_status === "completed" && report.patient_match_status !== "mismatch" && (
+          <AskAIButton
+            question={`Summarize this report ("${report.title}") and highlight anything clinically significant.`}
+            scope="selected_report"
+            reportId={report.id}
+          />
         )}
         {canWrite && report.patient_match_status !== "mismatch" && (
           <button

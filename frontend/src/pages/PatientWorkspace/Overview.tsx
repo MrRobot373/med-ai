@@ -139,10 +139,10 @@ export default function OverviewTab() {
           <h2 className="text-sm font-semibold text-navy">AI Case Summary</h2>
         </div>
         <p className="mt-2 text-sm text-muted-text">
-          Generated case summaries arrive with Clinical AI (Phases 08–10) — evidence-grounded, sourced
-          from this patient's actual record. Nothing is fabricated here in the meantime.{" "}
+          Ask Clinical AI a question about this patient and get an evidence-grounded answer sourced from their
+          actual record — never fabricated. Automatic case summaries arrive in a later phase.{" "}
           <Link to="../clinical-ai" className="text-primary-blue hover:underline">
-            View Clinical AI status
+            Open Clinical AI
           </Link>
           .
         </p>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Card } from "@/components/Card";
 import { AddMedicationModal } from "@/components/AddMedicationModal";
+import { AskAIButton } from "@/components/AskAIButton";
 import { usePatientContext } from "@/layouts/PatientWorkspace";
 import { usePatientMedications, useStopMedication } from "@/api/clinical";
 import { useCanWrite } from "@/api/auth";
@@ -50,16 +51,22 @@ export default function MedicationsTab() {
                       {m.start_date && <> · started {m.start_date}</>}
                     </div>
                   </div>
-                  {canWrite && (
-                    <button
-                      type="button"
-                      onClick={() => stopMedication.mutate(m.id)}
-                      disabled={stopMedication.isPending}
-                      className="shrink-0 text-xs font-medium text-danger hover:underline disabled:opacity-60"
-                    >
-                      Stop
-                    </button>
-                  )}
+                  <div className="flex shrink-0 items-center gap-3">
+                    <AskAIButton
+                      question={`What is ${m.medication_name} used for, and are there any interaction or allergy concerns given this patient's other medications?`}
+                      className="text-xs"
+                    />
+                    {canWrite && (
+                      <button
+                        type="button"
+                        onClick={() => stopMedication.mutate(m.id)}
+                        disabled={stopMedication.isPending}
+                        className="text-xs font-medium text-danger hover:underline disabled:opacity-60"
+                      >
+                        Stop
+                      </button>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

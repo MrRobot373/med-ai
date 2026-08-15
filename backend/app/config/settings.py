@@ -98,6 +98,21 @@ class Settings(BaseSettings):
     # chunks from the same source are considered overlapping enough to merge.
     rag_dedup_similarity_threshold: float = Field(default=0.92, alias="RAG_DEDUP_SIMILARITY_THRESHOLD")
 
+    # --- Clinical chat / generation (Phase 08, spec §50) ---
+    # "Low, deterministic temperature... suggested default 0.1-0.2" — a clinical
+    # answer generator prioritizes reproducibility over creative variation.
+    chat_temperature: float = Field(default=0.15, alias="CHAT_TEMPERATURE")
+    chat_max_output_tokens: int = Field(default=1024, alias="CHAT_MAX_OUTPUT_TOKENS")
+    # Spec §121: "do not launch multiple simultaneous heavy Qwen generations for the
+    # same user unintentionally" — a single shared slot is enough for a one-machine
+    # demo without adding a real task queue (spec §135 "avoid unnecessary infrastructure").
+    chat_max_concurrent_generations: int = Field(default=1, alias="CHAT_MAX_CONCURRENT_GENERATIONS")
+    # How many prior turns (user+assistant pairs) are replayed into the prompt so the
+    # model can resolve conversational references ("what about the second one?") itself
+    # — a deliberately simpler alternative to a separate query-rewriting LLM call (spec
+    # §43 Stage 3); see rag-design notes in docs/architecture.md's Phase 08 section.
+    chat_history_turns: int = Field(default=4, alias="CHAT_HISTORY_TURNS")
+
     # --- Research Mode (off by default — privacy-first per §64) ---
     enable_research: bool = Field(default=False, alias="ENABLE_RESEARCH")
     searxng_url: str = Field(default="http://localhost:8080", alias="SEARXNG_URL")

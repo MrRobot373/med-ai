@@ -5,17 +5,26 @@ Master Build Prompt in this repo's root (`MASTER BUILD PROMPT — GMS Local Mult
 Clinical RAG & Decision-Support Platform.md`) as a 16-phase program — see
 [docs/architecture.md](docs/architecture.md) for the phase roadmap and current status.
 
-> **Current status: Phase 07 — Local RAG Core.** Foundation (01), the dashboard (02),
+> **Current status: Phase 08 — Clinical Chat.** Foundation (01), the dashboard (02),
 > authentication (03), patient management (04), report ingestion (05), structured
-> clinical data (06), and now the local retrieval pipeline — real local embedding
-> (Qwen3-Embedding-0.6B) and reranking (Qwen3-Reranker-0.6B), Qdrant collections, hybrid
-> dense+BM25 retrieval with Reciprocal Rank Fusion, deduplication/parent expansion, and
-> mandatory patient-isolation filtering with an automated test proving it — all exist and
-> work end-to-end against real models and a real running Qdrant instance. There's no chat
-> UI yet (that's Phase 08, which calls into this retrieval pipeline) and vision isn't
-> implemented — the nav and patient-workspace tabs tell you exactly which phase each
-> section lands in, and every capability card links to a real (if not-yet-built)
-> destination rather than a dead end.
+> clinical data (06), the local retrieval pipeline (07), and now clinical chat — a
+> three-column Conversations/Assistant/Evidence UI, real token streaming over SSE
+> (never client-chunked), conversation scopes (general, this patient, this encounter,
+> this report, local-knowledge-only), citation extraction/validation against real
+> offered evidence, an LLM grounding-validation pass that classifies each claim as
+> supported/partially/unsupported, and a deterministic (never fabricated-percentage)
+> evidence-quality label — all verified end-to-end against real Ollama/Qdrant/reranker,
+> not mocked. Vision isn't implemented yet — the nav and patient-workspace tabs tell you
+> exactly which phase each section lands in, and every capability card links to a real
+> (if not-yet-built) destination rather than a dead end.
+>
+> **Known latency issue, not yet fixed:** reranking a patient-scoped chat question
+> against the knowledge base measured ~6-7 minutes in live testing — see
+> docs/architecture.md's Phase 08 section ("Hybrid-reasoning model latency") for the
+> full finding (a separate, already-fixed bug in this same session made `qwen3.5:9b`'s
+> default "thinking" mode silently swallow the entire response budget before emitting
+> any visible content — that part is fixed; the reranker latency is a pre-existing
+> Phase 07 characteristic flagged here as a follow-up, not newly introduced).
 
 The initial knowledge-base domain for this deployment is **ophthalmology** — see
 `data/*.pdf` (anatomy, disease, referral-guideline, and instrument references) and
@@ -128,6 +137,8 @@ npm run build
 | Frontend can't reach the backend | Confirm backend is on `:8000` and `frontend/vite.config.ts`'s dev proxy target matches; check `FRONTEND_ORIGIN` in `.env` for CORS. |
 | `alembic upgrade head` fails | Confirm `DATABASE_URL` in `.env` points at a writable path under `data/sqlite/`. |
 | `scripts/ingest_knowledge.py` (or a report upload) seems to hang | It's very likely still running, not hung — CPU embedding is genuinely slow (see docs/architecture.md's Phase 07 section). A single ~500-token chunk can take tens of seconds on CPU; give it several minutes, and check Task Manager for active CPU usage on the python process before assuming it's stuck. |
+| A patient-scoped Clinical AI question takes several minutes before the first token appears | Likely still running, not hung — see docs/architecture.md's Phase 08 section ("Hybrid-reasoning model latency"). Reranking against `medical_knowledge` measured ~6-7 minutes live; `general`/`local_knowledge_only` scope questions and questions answerable from structured facts alone are much faster since they skip reranking or retrieval entirely. |
+| Clinical AI streams zero tokens and abstains even though the patient clearly has relevant data | Should not reproduce after this session's fix (`"think": false` is now sent on every Ollama chat request) — if it does, confirm the running backend was restarted after pulling this change, since `qwen3.5:9b`'s default "thinking" mode can silently consume the entire response budget before any visible content is emitted. |
 
 ## Repository layout
 

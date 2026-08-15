@@ -36,7 +36,7 @@ GMS CLINICAL AI
 | 05 | Report ingestion: upload, PDF/DOCX/XLSX/image parsing, OCR, identity checking, ingestion jobs | **Done** |
 | 06 | Structured clinical data: lab extraction, trend engine, medication reconciliation, change engine | **Done** |
 | 07 | Local RAG core: embeddings, Qdrant collections, dense+BM25 retrieval, RRF fusion, reranking, dedup | **Done** |
-| 08 | Clinical chat: conversations, streaming, evidence panel, citation/grounding validation | Not started |
+| 08 | Clinical chat: conversations, streaming, evidence panel, citation/grounding validation | **Done** |
 | 09 | Vision: image upload, structured extraction, image-to-RAG, comparison | Not started |
 | 10 | Clinical modules: summary, SOAP, entity extraction, guideline Q&A, differential support | Not started |
 | 11 | Web research: Research Mode, de-identification, PubMed/FDA, optional SearXNG, web cache | Not started |
@@ -629,6 +629,143 @@ match its own SQLite chunk-row count after a full test run; fixed by mocking bot
 call sites, verified by asserting the point count is bit-for-bit identical before and
 after a full backend test run (100 passed, 0 net new Qdrant points).
 ```
+
+## Phase 08 — what exists right now
+
+```text
+backend/app/
+  models/conversation.py           Conversation: user_id, optional patient_id/
+                                    encounter_id/selected_report_id, ConversationScope
+                                    (general, current_patient, current_encounter,
+                                    selected_report, selected_reports_comparison
+                                    [Phase 10], local_knowledge_only, research_mode
+                                    [Phase 11]), title (set from the first user
+                                    message, spec §39's conversation list)
+  models/message.py                Message: role, content, structured_payload (JSON —
+                                    task_classification/evidence_quality/grounding
+                                    ONLY; never chain-of-thought, spec §125),
+                                    generation_error (distinct from an honest
+                                    abstention, which is a normal successful message)
+  models/citation.py               Citation: label ("P1"/"L1"), source_type, chunk_id
+                                    (nullable, SET NULL — citation survives reindexing/
+                                    deletion), report_id, source_title/page/section,
+                                    source_excerpt copied at generation time, relevance_score
+
+  chat/prompts.py                  Centralized, versioned system prompts (spec §137
+                                    "one place, versioned") — clinical_chat-v1,
+                                    grounding_validation-v1. Evidence-as-data/prompt-
+                                    injection boundary, exact-wording abstention
+                                    instruction, never invent patient values, never
+                                    state numeric confidence
+  chat/generation.py                Ollama /api/chat streaming client. `"think": false`
+                                    on every request — see "Hybrid-reasoning model
+                                    latency" below for why this is not optional.
+                                    Process-wide asyncio.Semaphore (spec §121, sized
+                                    from CHAT_MAX_CONCURRENT_GENERATIONS)
+  chat/patient_context.py          Structured facts (name/MRN/age/sex, active
+                                    conditions, allergies, active medications) — spec
+                                    §43 Stage 4's "don't embed every row unnecessarily"
+  chat/query_classifier.py         Deterministic regex greeting detector
+                                    (general_conversation vs. clinical_question) — the
+                                    full spec §43 task-category list (SOAP, coding,
+                                    vision...) routes to modules that don't exist until
+                                    Phase 09-10
+  chat/context_builder.py          Labels retrieved passages P1/P2.../L1/L2... in
+                                    order, formats the evidence block the LLM sees
+  chat/citation_validator.py       Strips any `[P9]`-style marker the model emits that
+                                    doesn't match real offered evidence (spec §52 —
+                                    never trust the LLM's own citation numbering)
+  chat/grounding_validator.py      One structured LLM pass classifies each major
+                                    claim as supported/partially_supported/unsupported
+                                    against its cited passages (spec §52/§53 combined —
+                                    same underlying judgment). One controlled retry;
+                                    returns None (never a fabricated "pass") if both
+                                    attempts fail to parse
+  chat/evidence_quality.py         Deterministic STRONG/MODERATE/LIMITED/INSUFFICIENT
+                                    label from the reranker's own logit sign + citation
+                                    coverage + distinct-source count — never a
+                                    fabricated confidence percentage (spec §54)
+  chat/orchestrator.py             prepare_turn() (classify -> retrieve -> assemble
+                                    context, sync, no LLM call) / finalize_turn()
+                                    (citation + grounding validation, async, runs once
+                                    the full streamed answer is in hand — spec §119
+                                    "preserve citations when the final answer
+                                    completes"). Abstains only when there is truly
+                                    nothing to answer from (no retrieval hits AND no
+                                    structured facts) — structured facts alone answer
+                                    many questions with zero retrieval needed.
+                                    SELECTED_REPORT scope deliberately does not widen
+                                    to medical_knowledge; every other patient scope does
+
+  services/chat.py                 DB persistence + the run_turn() SSE-event generator
+                                    glueing chat/orchestrator.py to the API layer
+  api/chat.py                      /api/conversations CRUD + /api/conversations/{id}/
+                                    messages — real StreamingResponse over text/event-
+                                    stream (spec §119, not client-chunked), checking
+                                    request.is_disconnected() before every yield (spec
+                                    §120 cancellation)
+
+frontend/src/
+  api/chat.ts                       Types mirroring schemas/chat.py, TanStack Query
+                                     hooks for conversation CRUD, and streamMessage() —
+                                     fetch + a hand-parsed `data: {...}\n\n` SSE body
+                                     (not EventSource, which can't POST a body or take
+                                     an AbortSignal). useChatStream() owns the per-
+                                     conversation streaming lifecycle + Stop
+  pages/ClinicalAI/                 The shared three-column surface (Conversations |
+                                     Clinical Assistant | Evidence, spec §39), used by
+                                     both the global /clinical-ai route (general /
+                                     local_knowledge_only scopes only) and the
+                                     per-patient tab (current_patient/current_encounter/
+                                     selected_report). The patient-tab route wrapper
+                                     keys the workspace on patient.id so switching
+                                     patients fully remounts it — spec §40, never
+                                     silently continue a patient-specific conversation
+                                     under a different patient
+  components/AskAIButton.tsx        "Ask AI About This" (spec §41) on Report/Lab/
+                                     Medication cards — auto-passes real object context
+                                     as an already-composed question via router state,
+                                     lands on the patient's Clinical AI tab and actually
+                                     sends it, never decorative. Hidden for viewers
+                                     (starting a conversation is a write action)
+```
+
+### Hybrid-reasoning model latency — a real, measured finding
+
+Live end-to-end testing (real Ollama, real Qdrant, real reranker — not mocked) surfaced
+a correctness bug, not just a slow model: `qwen3.5:9b` is a hybrid-reasoning model that,
+left at its default, spends its *entire* generation budget on an invisible "thinking"
+phase before emitting any visible content. A trivial 3-word prompt against this Ollama
+instance produced 2,200 thinking tokens and took **293 seconds** before Ollama's response
+even contained a `content` field — and under the chat endpoint's configured
+`num_predict` (1,024, spec §50's response-length budget), thinking alone consumed the
+whole budget, so `content` stayed empty for the entire stream. The result: an apparently
+successful generation with **zero visible tokens**, silently falling through to look like
+an evidence-quality-insufficient answer with nothing wrong logged.
+
+Fixed in `chat/generation.py`: every request now sends `"think": false`. This is not
+just a latency fix — it is also the more correct behavior for spec §125's "no hidden
+chain-of-thought" requirement, since a model that only *appears* to skip thinking but
+still reasons internally is a weaker guarantee than one that has it disabled outright.
+Verified live after the fix: a real `current_patient`-scope question ("summarize active
+conditions and medications, mention relevant guideline evidence") streamed 455 real
+tokens, cited `[P1]` (the patient's own consultation note) and `[L2]`/`[L3]` (ICO
+glaucoma guideline passages), scored `evidence_quality: limited` (correctly — the
+reranker's own logits were negative for all three passages), and the grounding validator
+correctly flagged the model's opening demographic claim as `unsupported` (the cited
+passage doesn't literally state age) while confirming the medication and guideline
+claims as `supported`. This is the whole Phase 08 pipeline working end-to-end against
+real content, not a mocked approximation of it.
+
+A second, separate, **not yet fixed** latency source was also observed live: reranking a
+`current_patient`-scope query against `medical_knowledge` took **~397-398 seconds**,
+consistently, across two separate cold backend processes (so it is not a one-time
+JIT/model-load cost — see Phase 07's CPU embedding section above for the fixes that
+already went into `rag/reranker.py`). This dominates total turn latency far more than
+generation itself once thinking is disabled. Root cause is not yet isolated (candidate
+count vs. per-candidate sequence length vs. thread configuration) — flagged here as a
+known follow-up rather than guessed at and "fixed" blind, since `rag/reranker.py` is
+Phase 07's already-tested, already-committed code and this session's scope is Phase 08.
 
 ## Domain note
 
