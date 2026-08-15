@@ -1,9 +1,6 @@
-"""Builds the patient timeline (spec §26) from structured data that exists today.
-
-Deliberately NOT report/lab-derived yet — those events join once Phase 05/06 add the
-`reports`/`observations` tables. The `TimelineEvent` shape already anticipates them
-(a generic event_type/date/title/description), so adding those sources later doesn't
-require reshaping anything a frontend already consumes.
+"""Builds the patient timeline (spec §26) from structured data across every phase
+that's landed so far: encounters, conditions, medications, allergies (Phase 04),
+completed report uploads, and abnormal lab results (Phase 05/06).
 """
 
 from __future__ import annotations
@@ -13,9 +10,12 @@ from datetime import date, datetime, time
 from sqlalchemy.orm import Session as DbSession
 
 from app.models.condition import ConditionStatus
+from app.models.report import IngestionStatus
 from app.schemas.timeline import TimelineEvent, TimelineEventType
 from app.services.clinical import list_allergies, list_conditions, list_medications
 from app.services.encounters import list_encounters
+from app.services.observations import list_observations
+from app.services.reports import list_reports
 
 
 def _as_datetime(value: date | datetime) -> datetime:
@@ -90,6 +90,35 @@ def build_timeline(db: DbSession, patient_id: str) -> list[TimelineEvent]:
                 title=f"Allergy documented: {allergy.substance}",
                 description=allergy.reaction,
                 source_id=allergy.id,
+            )
+        )
+
+    for report in list_reports(db, patient_id):
+        if report.ingestion_status != IngestionStatus.COMPLETED:
+            continue  # a still-processing/failed upload isn't a real clinical event yet
+        events.append(
+            TimelineEvent(
+                event_type=TimelineEventType.REPORT_UPLOADED,
+                event_date=_as_datetime(report.report_date or report.created_at),
+                title=f"Report: {report.title}",
+                description=report.report_type.value.replace("_", " ").title(),
+                encounter_id=report.encounter_id,
+                source_id=report.id,
+            )
+        )
+
+    for observation in list_observations(db, patient_id):
+        if not observation.abnormal_flag:
+            continue  # normal/unknown results stay on the Labs tab, not the timeline
+        value = observation.value_numeric if observation.value_numeric is not None else observation.value_text
+        unit = f" {observation.unit}" if observation.unit and observation.value_numeric is not None else ""
+        events.append(
+            TimelineEvent(
+                event_type=TimelineEventType.ABNORMAL_RESULT,
+                event_date=_as_datetime(observation.measured_at or observation.created_at),
+                title=f"Abnormal result: {observation.observation_name} = {value}{unit}",
+                encounter_id=observation.encounter_id,
+                source_id=observation.id,
             )
         )
 

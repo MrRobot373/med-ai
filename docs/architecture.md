@@ -34,7 +34,7 @@ GMS CLINICAL AI
 | 03 | Authentication: login/logout, roles, sessions, protected routes | **Done** |
 | 04 | Patient system: CRUD, search, workspace, encounters, conditions, allergies, medications, timeline | **Done** |
 | 05 | Report ingestion: upload, PDF/DOCX/XLSX/image parsing, OCR, identity checking, ingestion jobs | **Done** |
-| 06 | Structured clinical data: lab extraction, trend engine, medication reconciliation, change engine | Not started |
+| 06 | Structured clinical data: lab extraction, trend engine, medication reconciliation, change engine | **Done** |
 | 07 | Local RAG core: embeddings, Qdrant collections, dense+BM25 retrieval, RRF fusion, reranking, dedup | Not started |
 | 08 | Clinical chat: conversations, streaming, evidence panel, citation/grounding validation | Not started |
 | 09 | Vision: image upload, structured extraction, image-to-RAG, comparison | Not started |
@@ -305,6 +305,141 @@ identity), DOCX, XLSX (pipe-separated identity, post-fix), a scanned image/PDF w
 text layer through the real (unmocked) easyocr pipeline end-to-end, and a deliberate
 identity mismatch (banner text, confirm/cancel actions, archive). Also checked: viewer
 role sees no write controls on the Reports tab (covered by frontend unit tests).
+```
+
+## Phase 06 — what exists right now
+
+```text
+backend/app/
+  models/observation.py       Observation: reference_low/high and abnormal_flag are
+                                populated ONLY from what the source document itself
+                                states (a Reference Range/Target table column, or an
+                                explicit "(elevated)"-style annotation) — never a
+                                hardcoded "normal" threshold. Real reference intervals
+                                vary by lab/sex/age/method; baking one in would be
+                                exactly the invented clinical fact spec §2 prohibits.
+
+  ingestion/_tabular.py         Shared pipe-delimited table parser (reused by labs.py
+                                 and medications.py). Finds genuine header rows within
+                                 a contiguous pipe-run rather than always trusting the
+                                 first line — needed because e.g. XLSX drops fully-
+                                 empty rows instead of preserving them as a blank-line
+                                 separator, so an identity preamble and the real data
+                                 table can land in the same contiguous block
+  ingestion/labs.py              Lab/observation extraction (spec §33): long-format
+                                 tables ("Test | Result | Unit | Reference Range"),
+                                 wide-format tables (a column header names a known
+                                 test, e.g. "IOP (mmHg)", one series per row/qualifier
+                                 like OD/OS), and inline free-text mentions. A small
+                                 registry provides canonical names/aliases/typical
+                                 units for grouping ONLY, never reference ranges
+  ingestion/medications.py       Medication-list extraction scoped to a clearly
+                                 delimited "Current Medications:"-style section
+                                 (table or line list) rather than free-text NLP over
+                                 an entire document — higher precision, every hit
+                                 traceable to its exact source line
+
+  services/observations.py       Persists extracted observations per report
+                                 (idempotent — replaces, never accumulates,
+                                 on re-processing); build_trends() groups by
+                                 normalized test, with a small trusted-conversion
+                                 table (spec §33: "convert only when a trusted
+                                 conversion is defined... otherwise flag the
+                                 incompatible units" — non-convertible readings are
+                                 excluded from the trend series, never compared
+                                 unsafely, and still visible in the full list)
+  services/reconciliation.py     Medication reconciliation (spec §36): compares a
+                                 specific report's detected medications against the
+                                 patient's current active list. Fuzzy name matching
+                                 (a drug's strength is sometimes folded into its name
+                                 in one place, split out in another); dose text
+                                 differences are surfaced as "needs review," never a
+                                 confident "increased"/"decreased" claim, since the
+                                 two sides often encode "dose" as different concepts
+                                 entirely (administration volume vs. strength).
+                                 Absence from one document is worded as "not
+                                 mentioned in this document," never "discontinued" —
+                                 spec §37's "potential inconsistency" framing, not an
+                                 overclaimed fact. Read-only; never writes to
+                                 `medications` — a clinician acts on what it surfaces
+  services/change_engine.py      Deterministic "What Changed?" engine (spec §35 —
+                                 "an actual backend change engine," no LLM). Diffs
+                                 conditions/medications/allergies/observations
+                                 between a `since` date and now. A medication "dose
+                                 changed" isn't its own concept in the append-only
+                                 medication model — it's a stop+start pair for the
+                                 same drug, paired up here rather than shown as a
+                                 misleading separate stop and start. Observation
+                                 changes report "increased"/"decreased"/"unchanged" —
+                                 deliberately NOT "worsened"/"improved", since
+                                 whether a rising value is good or bad is test-
+                                 specific clinical judgment this deterministic code
+                                 has no basis to assert. `since` is a required query
+                                 param, never a silently-guessed default window
+  services/timeline.py            Extended with completed report uploads and
+                                 abnormal-only lab results (normal results stay on
+                                 the Labs tab — the timeline isn't drowned in noise)
+
+  api/patients.py                 GET .../observations, .../observations/trends,
+                                    .../changes?since=<date>
+  api/reports.py                  GET .../medication-reconciliation
+
+frontend/src/
+  components/TrendChart.tsx        Plain inline SVG line chart (no charting library —
+                                     matches the original-artwork approach from Phase
+                                     02): 2px line, ≥8px markers with a surface ring,
+                                     abnormal points colored distinctly, direct end-
+                                     label. Single reading -> a dot and an honest "need
+                                     at least two to show a trend line" note, not a
+                                     fabricated line
+  pages/PatientWorkspace/Labs.tsx    Replaces the Phase 04 placeholder: one card per
+                                       test with its trend chart + full reading table
+                                       (reference range shown exactly as the source
+                                       document stated it, or "Not stated in source")
+  components/ReconciliationModal.tsx  Current (system) vs. Detected (this document)
+                                        table, triggered from a report's "Reconcile
+                                        Medications" action; read-only, non-committal
+                                        wording per the backend design above
+  components/ChangesCard.tsx          "What's Changed" card on Overview, since the
+                                        patient's previous encounter — needs at least
+                                        two encounters to have a "previous visit" to
+                                        compare against; says so honestly otherwise
+                                        rather than falling back to an arbitrary
+                                        window like "last 30 days"
+
+Timeline (Phase 04) also gained report/abnormal-result icons; the "Recent Reports"
+card pattern from Phase 05 is now joined by the Changes card on Overview.
+
+A real, non-obvious bug was found and fixed during unit testing (not live testing this
+time): a data row like `"HbA1c | 8.1 | % | 4.0-5.6"` also matches the wide-format
+"looks like a header" heuristic (its own name cell, "HbA1c", matches the test
+registry just as readily as a genuine column header like "IOP (mmHg)" would) — without
+a fix, every data row was treated as the start of a new (headerless) table, and the
+real header never got the chance to accumulate any rows under it. Fixed with a numeric
+guard: a row holding an actual measured value is data, not a header, regardless of
+whether its own name cell happens to match a known test.
+
+Deliberate simplifications vs. the spec's literal wording, documented rather than
+silently narrowed:
+- The change engine covers conditions/medications/allergies/observations — spec §35's
+  full list also names vitals/symptoms/procedures/reports, none of which any earlier
+  phase modeled as structured data. Nothing here would need to change shape to add
+  them later.
+- Medication reconciliation compares "current system list" vs. "this one document,"
+  not spec §36's literal two-arbitrary-points-in-time UI — the natural source of a
+  "previous" medication list in this system is a document, not a second manually
+  chosen system snapshot.
+
+Verified end-to-end with Playwright against the real running app: Labs tab renders
+real extracted values (correct abnormal flags, correct reference ranges, correct
+single-vs-multi-point chart states) after a fresh XLSX upload; medication
+reconciliation against a real consultation note correctly classifies newly-detected,
+matched-with-a-dose-difference, and not-mentioned medications (confirmed the
+"not-in-document" case never claims "discontinued"); the Changes card on Overview
+renders a real diff (new condition, stopped medication, new allergy, new lab results)
+computed from actual accumulated demo-patient data; Timeline correctly shows report-
+upload and abnormal-result events interleaved chronologically with existing event
+types, with normal results correctly absent.
 ```
 
 ## Domain note

@@ -19,7 +19,9 @@ from app.api.deps import DbDep, SettingsDep
 from app.auth.dependencies import CurrentUser, WriteUser
 from app.ingestion import dicom as dicom_module
 from app.models.report import Report
+from app.schemas.reconciliation import ReconciliationResult
 from app.schemas.report import ReportDetail, ReportListItem, ReportPage, ReportStatus
+from app.services import reconciliation as reconciliation_service
 from app.services import reports as report_service
 
 router = APIRouter(prefix="/api", tags=["reports"])
@@ -143,3 +145,13 @@ def archive_report(report_id: str, db: DbDep, _current_user: WriteUser) -> Repor
     report = _get_report_or_404(db, report_id)
     updated = report_service.archive_report(db, report)
     return ReportListItem.model_validate(updated)
+
+
+@router.get("/reports/{report_id}/medication-reconciliation", response_model=ReconciliationResult)
+def get_medication_reconciliation(report_id: str, db: DbDep, _current_user: CurrentUser) -> ReconciliationResult:
+    """Read-only comparison (spec §36) — never mutates the medication list, so any
+    authenticated role may view it (write-gating happens if/when a clinician acts on
+    what it surfaces, e.g. adding a newly-detected medication through the normal
+    medications endpoint)."""
+    report = _get_report_or_404(db, report_id)
+    return reconciliation_service.reconcile_report(db, report)

@@ -16,7 +16,7 @@ from datetime import UTC, date, datetime
 from sqlalchemy.orm import Session as DbSession
 
 from app.config.settings import Settings
-from app.ingestion import classification, identity, ocr, pdf, xlsx
+from app.ingestion import classification, identity, labs, ocr, pdf, xlsx
 from app.ingestion import dicom as dicom_module
 from app.ingestion import docx as docx_parser
 from app.ingestion import image as image_module
@@ -25,6 +25,7 @@ from app.logging import get_logger
 from app.models.ingestion_job import IngestionJob
 from app.models.patient import Patient
 from app.models.report import ExtractionStatus, IngestionStatus, PatientMatchStatus, Report
+from app.services.observations import save_extracted_observations
 
 logger = get_logger(__name__)
 
@@ -125,6 +126,18 @@ def run_ingestion(db: DbSession, report_id: str, settings: Settings) -> None:
         report.patient_match_status = (
             identity.match_patient(detected, patient) if patient else PatientMatchStatus.UNCONFIRMED
         )
+
+        job.stage = "extracting_labs"
+        db.commit()
+        try:
+            extracted_observations = labs.extract_observations(pages)
+            save_extracted_observations(db, report, extracted_observations)
+        except Exception:
+            # Best-effort per spec §122 (never let one stage's failure sink the whole
+            # ingestion) — the report's text/identity results already committed above
+            # remain valid even if lab extraction itself hits an unexpected error.
+            logger.warning("Lab extraction failed for report_id=%s", report_id, exc_info=True)
+            db.rollback()
 
         job.stage = "finalizing"
         report.ingestion_status = IngestionStatus.COMPLETED

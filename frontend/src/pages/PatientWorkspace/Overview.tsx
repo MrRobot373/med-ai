@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { AlertTriangle, Sparkles } from "lucide-react";
 import { Card } from "@/components/Card";
+import { ChangesCard } from "@/components/ChangesCard";
 import { usePatientContext } from "@/layouts/PatientWorkspace";
 import { usePatientConditions } from "@/api/clinical";
 import { usePatientAllergies } from "@/api/clinical";
@@ -129,6 +130,8 @@ export default function OverviewTab() {
           </ul>
         )}
       </Card>
+
+      <ChangesCard />
 
       <Card className="p-5 lg:col-span-2">
         <div className="flex items-center gap-1.5">

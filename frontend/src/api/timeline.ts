@@ -7,7 +7,9 @@ export type TimelineEventType =
   | "condition_resolved"
   | "medication_started"
   | "medication_stopped"
-  | "allergy_recorded";
+  | "allergy_recorded"
+  | "report_uploaded"
+  | "abnormal_result";
 
 export interface TimelineEvent {
   event_type: TimelineEventType;

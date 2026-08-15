@@ -2,8 +2,10 @@ import {
   AlertTriangle,
   CheckCircle2,
   ClipboardPlus,
+  FileText,
   Pill,
   Stethoscope,
+  TrendingUp,
   XCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -18,6 +20,8 @@ const EVENT_ICON: Record<TimelineEventType, LucideIcon> = {
   medication_started: Pill,
   medication_stopped: XCircle,
   allergy_recorded: AlertTriangle,
+  report_uploaded: FileText,
+  abnormal_result: TrendingUp,
 };
 
 const EVENT_TONE: Record<TimelineEventType, string> = {
@@ -27,6 +31,8 @@ const EVENT_TONE: Record<TimelineEventType, string> = {
   medication_started: "bg-cyan/10 text-cyan",
   medication_stopped: "bg-navy/10 text-navy",
   allergy_recorded: "bg-danger/10 text-danger",
+  report_uploaded: "bg-light-blue text-primary-blue",
+  abnormal_result: "bg-danger/10 text-danger",
 };
 
 function formatEventDate(iso: string): string {

@@ -8,6 +8,8 @@ access, cannot modify patient information."
 
 from __future__ import annotations
 
+from datetime import date
+
 from fastapi import APIRouter, HTTPException, status
 
 from app.api.common import get_patient_or_404 as _get_patient_or_404
@@ -18,13 +20,17 @@ from app.models.condition import Condition
 from app.models.encounter import Encounter
 from app.models.medication import Medication
 from app.schemas.allergy import AllergyCreate, AllergyOut, AllergyUpdate
+from app.schemas.changes import ChangesSummary
 from app.schemas.condition import ConditionCreate, ConditionOut, ConditionUpdate
 from app.schemas.encounter import EncounterCreate, EncounterOut, EncounterUpdate
 from app.schemas.medication import MedicationCreate, MedicationOut, MedicationStop
+from app.schemas.observation import ObservationOut, ObservationTrend
 from app.schemas.patient import PatientCreate, PatientListItem, PatientOut, PatientUpdate
 from app.schemas.timeline import TimelineEvent
+from app.services import change_engine as change_engine_service
 from app.services import clinical
 from app.services import encounters as encounter_service
+from app.services import observations as observation_service
 from app.services import patients as patient_service
 from app.services import timeline as timeline_service
 
@@ -204,3 +210,32 @@ def create_patient_medication(
 def stop_medication(medication_id: str, payload: MedicationStop, db: DbDep, _current_user: WriteUser) -> MedicationOut:
     medication = _get_medication_or_404(db, medication_id)
     return MedicationOut.model_validate(clinical.stop_medication(db, medication, payload))
+
+
+# --- Observations / Labs (spec §33) ------------------------------------------------
+
+
+@router.get("/patients/{patient_id}/observations", response_model=list[ObservationOut])
+def list_patient_observations(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[ObservationOut]:
+    _get_patient_or_404(db, patient_id)
+    return [ObservationOut.model_validate(o) for o in observation_service.list_observations(db, patient_id)]
+
+
+@router.get("/patients/{patient_id}/observations/trends", response_model=list[ObservationTrend])
+def get_patient_observation_trends(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[ObservationTrend]:
+    _get_patient_or_404(db, patient_id)
+    observations = observation_service.list_observations(db, patient_id)
+    return observation_service.build_trends(observations)
+
+
+# --- Change Engine (spec §35) --------------------------------------------------------
+
+
+@router.get("/patients/{patient_id}/changes", response_model=ChangesSummary)
+def get_patient_changes(patient_id: str, since: date, db: DbDep, _current_user: CurrentUser) -> ChangesSummary:
+    """`since` is a required query param rather than a silently-guessed default window
+    (e.g. "last 90 days") — spec §2 "never invent" applies to the comparison window
+    itself, not just the data inside it. The frontend supplies a real reference point
+    (typically the patient's previous encounter date)."""
+    _get_patient_or_404(db, patient_id)
+    return change_engine_service.build_changes_summary(db, patient_id, since)

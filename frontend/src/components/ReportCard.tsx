@@ -1,6 +1,8 @@
-import { AlertTriangle, FileText, ScanEye } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, FileText, Pill, ScanEye } from "lucide-react";
 import { Card } from "@/components/Card";
 import { StatusChip, type StatusTone } from "@/components/StatusChip";
+import { ReconciliationModal } from "@/components/ReconciliationModal";
 import {
   reportFileUrl,
   reportPreviewUrl,
@@ -43,6 +45,7 @@ export function ReportCard({ report, patientName }: { report: ReportListItem; pa
   const canWrite = useCanWrite();
   const confirmMatch = useConfirmReportMatch(report.patient_id);
   const archive = useArchiveReport(report.patient_id);
+  const [showReconciliation, setShowReconciliation] = useState(false);
 
   return (
     <Card className="p-4">
@@ -126,6 +129,16 @@ export function ReportCard({ report, patientName }: { report: ReportListItem; pa
             Preview
           </a>
         )}
+        {report.ingestion_status === "completed" && report.patient_match_status !== "mismatch" && (
+          <button
+            type="button"
+            onClick={() => setShowReconciliation(true)}
+            className="inline-flex items-center gap-1 text-primary-blue hover:underline"
+          >
+            <Pill className="h-3.5 w-3.5" />
+            Reconcile Medications
+          </button>
+        )}
         {canWrite && report.patient_match_status !== "mismatch" && (
           <button
             type="button"
@@ -137,6 +150,8 @@ export function ReportCard({ report, patientName }: { report: ReportListItem; pa
           </button>
         )}
       </div>
+
+      {showReconciliation && <ReconciliationModal reportId={report.id} onClose={() => setShowReconciliation(false)} />}
     </Card>
   );
 }

@@ -27,6 +27,7 @@ PIPELINE_STAGES = (
     "extracting_text",
     "running_ocr",
     "checking_identity",
+    "extracting_labs",
     "finalizing",
 )
 

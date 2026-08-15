@@ -13,13 +13,15 @@ class TimelineEventType(str, Enum):
     MEDICATION_STARTED = "medication_started"
     MEDICATION_STOPPED = "medication_stopped"
     ALLERGY_RECORDED = "allergy_recorded"
+    REPORT_UPLOADED = "report_uploaded"
+    ABNORMAL_RESULT = "abnormal_result"
 
 
 class TimelineEvent(BaseModel):
-    """A single chronological entry (spec §26). Built entirely from structured
-    encounters/conditions/medications/allergies data that exists today — report and
-    lab events join the same timeline once Phase 05/06 land, without changing this
-    shape."""
+    """A single chronological entry (spec §26): encounters, conditions, medications,
+    allergies, completed report uploads, and abnormal lab results (not every normal
+    result — that would drown the timeline in noise; the full list is on the Labs
+    tab)."""
 
     event_type: TimelineEventType
     event_date: datetime

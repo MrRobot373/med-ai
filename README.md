@@ -5,14 +5,15 @@ Master Build Prompt in this repo's root (`MASTER BUILD PROMPT — GMS Local Mult
 Clinical RAG & Decision-Support Platform.md`) as a 16-phase program — see
 [docs/architecture.md](docs/architecture.md) for the phase roadmap and current status.
 
-> **Current status: Phase 05 — Report Ingestion.** Foundation (01), the dashboard (02),
-> authentication (03), patient management (04), and now report ingestion — upload,
-> PDF/DOCX/XLSX/image/DICOM parsing, OCR fallback (real, unmocked, CPU-only), report-type
-> classification, and conservative patient-identity mismatch checking — all exist and
-> work end-to-end. Structured labs, RAG, chat, and vision are not implemented yet — the
-> nav and patient-workspace tabs tell you exactly which phase each section lands in, and
-> every capability card links to a real (if not-yet-built) destination rather than a dead
-> end.
+> **Current status: Phase 06 — Structured Clinical Data.** Foundation (01), the
+> dashboard (02), authentication (03), patient management (04), report ingestion (05),
+> and now structured clinical data — automatic lab/observation extraction with a
+> deterministic trend engine, medication reconciliation against uploaded documents, and
+> a real backend "what changed since the last visit" diff engine — all exist and work
+> end-to-end, with a Labs tab, reconciliation view, and Overview changes card to match.
+> RAG, chat, and vision are not implemented yet — the nav and patient-workspace tabs
+> tell you exactly which phase each section lands in, and every capability card links to
+> a real (if not-yet-built) destination rather than a dead end.
 
 The initial knowledge-base domain for this deployment is **ophthalmology** — see
 `data/*.pdf` (anatomy, disease, referral-guideline, and instrument references) and
