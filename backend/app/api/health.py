@@ -52,6 +52,7 @@ async def get_overall_health() -> OverallHealth:
         qdrant=QdrantStatus(
             reachable=qdrant.reachable,
             collections=qdrant.collections,
+            points_by_collection=qdrant.points_by_collection,
             error=qdrant.error,
         ),
     )
@@ -74,7 +75,12 @@ async def get_ollama_health() -> OllamaStatus:
 async def get_qdrant_health() -> QdrantStatus:
     settings = get_settings()
     result = await check_qdrant_health(settings)
-    return QdrantStatus(reachable=result.reachable, collections=result.collections, error=result.error)
+    return QdrantStatus(
+        reachable=result.reachable,
+        collections=result.collections,
+        points_by_collection=result.points_by_collection,
+        error=result.error,
+    )
 
 
 @router.get("/models", response_model=ModelsStatus)
@@ -98,6 +104,7 @@ async def get_models_health() -> ModelsStatus:
             device=embedding.device,
             status=embedding.status,
             package_installed=embedding.package_installed,
+            dimension=embedding.dimension,
             error=embedding.error,
         ),
         reranker=ModelComponentStatus(

@@ -1,13 +1,12 @@
 """Embedding-model health/status (spec §5).
 
-Phase 01 deliberately does NOT eagerly load the embedding model on every health check —
-`Qwen3-Embedding-0.6B` is a ~600 MB download and loading it per-request would make the
-health endpoint slow and would trigger surprise network usage. Instead we report whether
-the `sentence-transformers` package is installed and the configured model name/device;
-actual lazy loading (with programmatic dimension detection, never hardcoded) is wired up
-in Phase 07 when the RAG pipeline starts using it for real. This is real status, not a
-placeholder pretending to be "Ready" — an honest "not loaded yet" is exactly what spec
-§103 ("no silent fallback" / no fake status) calls for.
+This deliberately does NOT eagerly load the embedding model just to answer a health
+check — `Qwen3-Embedding-0.6B` is a ~600 MB download and loading it per-request would
+make the health endpoint slow and trigger surprise network usage. Instead it reports
+whether the model is *already* loaded (`app.rag.embeddings.is_loaded()` — true once
+anything has actually indexed or queried) with its real, programmatically-detected
+dimension, or an honest "not loaded yet" otherwise — never a hardcoded "Ready"
+placeholder (spec §103 "no silent fallback").
 """
 
 from __future__ import annotations
@@ -23,7 +22,7 @@ class EmbeddingHealth:
     package_installed: bool
     configured_model: str
     device: str
-    status: str  # "not_loaded" | "package_missing"
+    status: str  # "ready" | "not_loaded" | "package_missing"
     dimension: int | None = None
     error: str | None = None
 
@@ -39,10 +38,20 @@ def check_embedding_health(settings: Settings) -> EmbeddingHealth:
             error="sentence-transformers is not installed. Install the 'rag' extra "
             "(pip install -r requirements.txt) to enable local embedding.",
         )
+
+    from app.rag.embeddings import get_embedding_dimension, is_loaded
+
+    if not is_loaded():
+        return EmbeddingHealth(
+            package_installed=True,
+            configured_model=settings.embedding_model,
+            device=settings.embedding_device,
+            status="not_loaded",
+        )
     return EmbeddingHealth(
         package_installed=True,
         configured_model=settings.embedding_model,
         device=settings.embedding_device,
-        status="not_loaded",
-        error=None,
+        status="ready",
+        dimension=get_embedding_dimension(settings),
     )

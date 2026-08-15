@@ -6,6 +6,7 @@ document_versions) land in Phase 12 per the build plan.
 """
 
 from app.models.allergy import Allergy
+from app.models.chunk import Chunk
 from app.models.condition import Condition
 from app.models.encounter import Encounter
 from app.models.ingestion_job import IngestionJob
@@ -18,6 +19,7 @@ from app.models.user import User
 
 __all__ = [
     "Allergy",
+    "Chunk",
     "Condition",
     "Encounter",
     "IngestionJob",

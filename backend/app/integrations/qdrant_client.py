@@ -1,8 +1,7 @@
-"""Qdrant integration — real reachability check.
-
-Phase 01 only verifies the service is up and lists existing collections; collection
-creation (`medical_knowledge`, `patient_documents`, `patient_vision`, `web_cache` per
-spec §14) happens in Phase 07 when the RAG pipeline is built.
+"""Qdrant integration — real reachability check, including real per-collection point
+counts (spec §84 — no hardcoded "Ready" placeholder) once Phase 07's collections
+(`medical_knowledge`, `patient_documents`) exist. `patient_vision` (Phase 09) and
+`web_cache` (Phase 11) join the same way once those phases create them.
 """
 
 from __future__ import annotations
@@ -18,6 +17,7 @@ from app.config.settings import Settings
 class QdrantHealth:
     reachable: bool
     collections: list[str]
+    points_by_collection: dict[str, int]
     error: str | None = None
 
 
@@ -30,10 +30,21 @@ async def check_qdrant_health(settings: Settings) -> QdrantHealth:
             resp.raise_for_status()
             payload = resp.json()
             names = [c.get("name", "") for c in payload.get("result", {}).get("collections", [])]
-            return QdrantHealth(reachable=True, collections=names)
+
+            points_by_collection: dict[str, int] = {}
+            for name in names:
+                try:
+                    detail = await client.get(f"{base_url}/collections/{name}")
+                    detail.raise_for_status()
+                    points_by_collection[name] = detail.json().get("result", {}).get("points_count", 0)
+                except (httpx.HTTPError, ValueError):
+                    pass  # a per-collection detail failure shouldn't sink the whole health check
+
+            return QdrantHealth(reachable=True, collections=names, points_by_collection=points_by_collection)
         except (httpx.HTTPError, ValueError) as exc:
             return QdrantHealth(
                 reachable=False,
                 collections=[],
+                points_by_collection={},
                 error=f"Qdrant unreachable at {base_url}: {exc}",
             )

@@ -27,12 +27,21 @@ dev = [
     "pytest-asyncio>=0.24",
     "ruff>=0.7",
 ]
-# RAG-stage dependencies land in Phase 07; declared here early per §11 so the
-# embedding-health check in Phase 01 can optionally exercise them if installed.
+# RAG-stage dependencies, used for real starting Phase 07 (declared early, back in
+# Phase 01, per §11, so the embedding/reranker health checks could optionally exercise
+# them if already installed).
 rag = [
     "qdrant-client>=1.12",
     "sentence-transformers>=3.2",
     "transformers>=4.46",
+    # Sparse/lexical retrieval (spec §43 Stage 6, §44 hybrid retrieval) — a small,
+    # permissively-licensed (Apache-2.0), pure-Python BM25 implementation. Computed
+    # in-process over the SQLite chunk corpus at query time rather than stored inside
+    # Qdrant's sparse-vector API: at this deployment's scale (one demo instance, a
+    # handful of patients/knowledge documents) that's simpler and avoids the extra
+    # IDF-fitting infrastructure a persistent sparse index would need, per spec §135
+    # "avoid unnecessary infrastructure" — and it never goes stale against the corpus.
+    "rank-bm25>=0.2.2",
 ]
 # OCR is optional/degradable, same pattern as embedding/reranker in Phase 01: ingestion
 # reports an honest "OCR unavailable" status rather than failing hard if this isn't

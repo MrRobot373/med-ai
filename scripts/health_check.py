@@ -48,20 +48,23 @@ async def main() -> int:
     )
 
     qdrant = await check_qdrant_health(settings)
-    all_ok &= _line("Qdrant service", qdrant.reachable, qdrant.error or f"{len(qdrant.collections)} collections")
+    points_summary = ", ".join(f"{name}={count}" for name, count in qdrant.points_by_collection.items())
+    all_ok &= _line(
+        "Qdrant service", qdrant.reachable, qdrant.error or f"{len(qdrant.collections)} collections ({points_summary})"
+    )
 
     embedding = check_embedding_health(settings)
     _line(
-        f"Embedding model '{settings.embedding_model}' package",
+        f"Embedding model '{settings.embedding_model}'",
         embedding.package_installed,
-        embedding.error or "installed (loads lazily in Phase 07 RAG pipeline)",
+        embedding.error or f"status={embedding.status} (loads lazily on first real use, not at startup)",
     )
 
     reranker = check_reranker_health(settings)
     _line(
-        f"Reranker model '{settings.reranker_model}' package",
+        f"Reranker model '{settings.reranker_model}'",
         reranker.package_installed,
-        reranker.error or "installed (loads lazily in Phase 07 RAG pipeline)",
+        reranker.error or f"status={reranker.status} (loads lazily on first real use, not at startup)",
     )
 
     print()

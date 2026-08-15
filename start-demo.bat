@@ -3,16 +3,21 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
 echo ============================================================
-echo  GMS Clinical AI - start-demo (Phase 05 version)
+echo  GMS Clinical AI - start-demo (Phase 07 version)
 echo ============================================================
 echo NOTE: this brings up Qdrant, runs migrations, seeds demo
-echo accounts/patients/sample reports, and starts the backend/
-echo frontend with real health polling. The full 15-step sequence
-echo from spec section 86 (SearXNG, model warm-up, etc.) is added
-echo as those later phases are built.
+echo accounts/patients/sample reports, ingests reference clinical
+echo guidelines into the RAG knowledge base, and starts the
+echo backend/frontend with real health polling. The full 15-step
+echo sequence from spec section 86 (SearXNG, model warm-up, etc.)
+echo is added as those later phases are built.
+echo.
+echo Knowledge ingestion (step 8) runs Qwen3-Embedding-0.6B on CPU
+echo and can take several minutes the first time a model needs to
+echo download - this is expected, not a hang.
 echo.
 
-echo [1/9] Checking Docker...
+echo [1/10] Checking Docker...
 docker info >nul 2>&1
 if errorlevel 1 (
     echo   FAIL: Docker does not appear to be running. Start Docker Desktop and re-run this script.
@@ -20,7 +25,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [2/9] Starting Qdrant...
+echo [2/10] Starting Qdrant...
 docker compose up -d qdrant
 if errorlevel 1 (
     echo   FAIL: could not start Qdrant. See docker compose output above.
@@ -28,7 +33,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [3/9] Checking Ollama...
+echo [3/10] Checking Ollama...
 curl -s -m 5 http://localhost:11434/api/version >nul 2>&1
 if errorlevel 1 (
     echo   WARNING: Ollama does not appear to be reachable at http://localhost:11434.
@@ -42,7 +47,7 @@ if not exist backend\.venv\Scripts\python.exe (
     exit /b 1
 )
 
-echo [4/9] Running database migrations...
+echo [4/10] Running database migrations...
 pushd backend
 .venv\Scripts\python.exe -m alembic upgrade head
 if errorlevel 1 (
@@ -53,7 +58,7 @@ if errorlevel 1 (
 popd
 echo   OK
 
-echo [5/9] Seeding demo accounts...
+echo [5/10] Seeding demo accounts...
 backend\.venv\Scripts\python.exe scripts\seed_demo.py
 if errorlevel 1 (
     echo   FAIL: seeding demo accounts failed.
@@ -61,7 +66,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [6/9] Seeding demo patients...
+echo [6/10] Seeding demo patients...
 backend\.venv\Scripts\python.exe scripts\seed_demo_patients.py
 if errorlevel 1 (
     echo   FAIL: seeding demo patients failed.
@@ -69,7 +74,7 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [7/9] Generating sample report files for upload demos...
+echo [7/10] Generating sample report files for upload demos...
 backend\.venv\Scripts\python.exe scripts\generate_sample_reports.py
 if errorlevel 1 (
     echo   FAIL: generating sample reports failed.
@@ -77,11 +82,21 @@ if errorlevel 1 (
 )
 echo   OK
 
-echo [8/9] Starting backend and frontend...
+echo [8/10] Ingesting reference clinical guidelines into the RAG knowledge base...
+backend\.venv\Scripts\python.exe scripts\ingest_knowledge.py
+if errorlevel 1 (
+    echo   WARNING: knowledge ingestion failed - guideline Q^&A will have no
+    echo   evidence to retrieve until "python scripts\ingest_knowledge.py" is
+    echo   re-run successfully. Not fatal to the rest of the demo.
+) else (
+    echo   OK
+)
+
+echo [9/10] Starting backend and frontend...
 start "GMS Backend" cmd /k "cd /d "%~dp0backend" && .venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
 start "GMS Frontend" cmd /k "cd /d "%~dp0frontend" && npm run dev"
 
-echo [9/9] Waiting for backend health...
+echo [10/10] Waiting for backend health...
 set /a attempts=0
 :poll
 set /a attempts+=1

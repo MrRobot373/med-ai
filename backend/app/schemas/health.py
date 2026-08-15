@@ -22,6 +22,9 @@ class OllamaStatus(BaseModel):
 class QdrantStatus(BaseModel):
     reachable: bool
     collections: list[str]
+    # Real point counts (spec §84 — no fake "Ready" placeholder), keyed by collection
+    # name. Empty until Phase 07's collections are created and populated.
+    points_by_collection: dict[str, int] = {}
     error: str | None = None
 
 
@@ -30,6 +33,7 @@ class ModelComponentStatus(BaseModel):
     device: str
     status: str
     package_installed: bool
+    dimension: int | None = None
     error: str | None = None
 
 

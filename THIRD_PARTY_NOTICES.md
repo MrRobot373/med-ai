@@ -49,13 +49,14 @@ Prompt's suggested PaddleOCR (spec §51) — both are CPU-capable, license-compa
 engines; the choice is purely an installation-reliability decision, not a capability
 downgrade.
 
-## Backend (declared now, used starting Phase 07 — RAG core)
+## Backend (Phase 07 — RAG core)
 
 | Package | Project | License |
 |---|---|---|
 | qdrant-client | https://github.com/qdrant/qdrant-client | Apache-2.0 |
 | sentence-transformers | https://github.com/UKPLab/sentence-transformers | Apache-2.0 |
 | transformers | https://github.com/huggingface/transformers | Apache-2.0 |
+| rank-bm25 | https://github.com/dorianbrown/rank_bm25 | Apache-2.0 |
 | Qwen3-Embedding-0.6B | https://huggingface.co/Qwen/Qwen3-Embedding-0.6B | Apache-2.0 |
 | Qwen3-Reranker-0.6B | https://huggingface.co/Qwen/Qwen3-Reranker-0.6B | Apache-2.0 |
 | Qwen3.5 (via Ollama) | https://ollama.com/library/qwen3.5 | Qwen license (see model card) |

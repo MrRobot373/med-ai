@@ -22,9 +22,11 @@ from app.ingestion import docx as docx_parser
 from app.ingestion import image as image_module
 from app.ingestion.storage import reports_dir
 from app.logging import get_logger
+from app.models.chunk import ChunkCollection
 from app.models.ingestion_job import IngestionJob
 from app.models.patient import Patient
 from app.models.report import ExtractionStatus, IngestionStatus, PatientMatchStatus, Report
+from app.rag.indexing import index_document
 from app.services.observations import save_extracted_observations
 
 logger = get_logger(__name__)
@@ -138,6 +140,33 @@ def run_ingestion(db: DbSession, report_id: str, settings: Settings) -> None:
             # remain valid even if lab extraction itself hits an unexpected error.
             logger.warning("Lab extraction failed for report_id=%s", report_id, exc_info=True)
             db.rollback()
+
+        job.stage = "indexing"
+        db.commit()
+        # Never index a report flagged MISMATCH (spec §16 patient isolation): its
+        # content is suspected to belong to a *different* patient, so indexing it
+        # under this one's patient_id would make it searchable in the wrong patient's
+        # clinical AI context — exactly what patient isolation exists to prevent.
+        # Indexing runs once the mismatch is confirmed instead (see
+        # services/reports.py's confirm_patient_match).
+        if report.patient_match_status != PatientMatchStatus.MISMATCH:
+            try:
+                index_document(
+                    db,
+                    settings,
+                    pages,
+                    collection=ChunkCollection.PATIENT_DOCUMENTS,
+                    source_title=report.title,
+                    source_filename=report.source_filename,
+                    file_hash=report.file_hash,
+                    patient_id=report.patient_id,
+                    report_id=report.id,
+                )
+            except Exception:
+                # Best-effort per spec §122 — e.g. Qdrant unreachable shouldn't leave
+                # the report stuck; it just isn't retrievable until reindexed.
+                logger.warning("RAG indexing failed for report_id=%s", report_id, exc_info=True)
+                db.rollback()
 
         job.stage = "finalizing"
         report.ingestion_status = IngestionStatus.COMPLETED

@@ -134,16 +134,16 @@ def get_report_preview(report_id: str, db: DbDep, settings: SettingsDep, _curren
 
 
 @router.post("/reports/{report_id}/confirm-match", response_model=ReportListItem)
-def confirm_report_match(report_id: str, db: DbDep, current_user: WriteUser) -> ReportListItem:
+def confirm_report_match(report_id: str, db: DbDep, settings: SettingsDep, current_user: WriteUser) -> ReportListItem:
     report = _get_report_or_404(db, report_id)
-    updated = report_service.confirm_patient_match(db, report, current_user.id)
+    updated = report_service.confirm_patient_match(db, settings, report, current_user.id)
     return ReportListItem.model_validate(updated)
 
 
 @router.post("/reports/{report_id}/archive", response_model=ReportListItem)
-def archive_report(report_id: str, db: DbDep, _current_user: WriteUser) -> ReportListItem:
+def archive_report(report_id: str, db: DbDep, settings: SettingsDep, _current_user: WriteUser) -> ReportListItem:
     report = _get_report_or_404(db, report_id)
-    updated = report_service.archive_report(db, report)
+    updated = report_service.archive_report(db, settings, report)
     return ReportListItem.model_validate(updated)
 
 

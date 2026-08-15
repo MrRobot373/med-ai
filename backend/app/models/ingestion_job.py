@@ -28,6 +28,7 @@ PIPELINE_STAGES = (
     "running_ocr",
     "checking_identity",
     "extracting_labs",
+    "indexing",
     "finalizing",
 )
 

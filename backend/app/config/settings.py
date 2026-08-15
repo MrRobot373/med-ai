@@ -66,6 +66,13 @@ class Settings(BaseSettings):
     embedding_model: str = Field(default="Qwen/Qwen3-Embedding-0.6B", alias="EMBEDDING_MODEL")
     embedding_device: str = Field(default="cpu", alias="EMBEDDING_DEVICE")
     embedding_batch_size: int = Field(default=16, alias="EMBEDDING_BATCH_SIZE")
+    # Qwen3-Embedding defaults to a 32,768-token max sequence length (it supports very
+    # long context) — sentence-transformers sizes its attention computation off that
+    # max, not the actual input length, so leaving it uncapped makes embedding even a
+    # short ~500-token chunk dramatically (60x+, measured) slower than necessary on
+    # CPU. Our chunks target 400-700 tokens (spec §55); 2048 leaves comfortable margin
+    # for the real tokenizer producing more tokens than chunking.py's approximation.
+    embedding_max_seq_length: int = Field(default=2048, alias="EMBEDDING_MAX_SEQ_LENGTH")
     reranker_model: str = Field(default="Qwen/Qwen3-Reranker-0.6B", alias="RERANKER_MODEL")
     reranker_device: str = Field(default="cpu", alias="RERANKER_DEVICE")
 
@@ -73,9 +80,23 @@ class Settings(BaseSettings):
     rag_profile: RagProfile = Field(default=RagProfile.FAST_DEMO, alias="RAG_PROFILE")
     rag_dense_top_k: int = Field(default=30, alias="RAG_DENSE_TOP_K")
     rag_sparse_top_k: int = Field(default=30, alias="RAG_SPARSE_TOP_K")
+    # Post-fusion candidate count kept for reranking — spec §46 "retain approximately
+    # 15-20 candidates" before the reranker runs.
     rag_fusion_top_k: int = Field(default=20, alias="RAG_FUSION_TOP_K")
+    # Final passages kept after reranking — spec §46 "keep approximately 6-8".
     rag_rerank_top_k: int = Field(default=8, alias="RAG_RERANK_TOP_K")
     rag_default_context_tokens: int = Field(default=8192, alias="RAG_DEFAULT_CONTEXT_TOKENS")
+    # RRF's rank-damping constant (spec §44) — 60 is the standard default from the
+    # original Reciprocal Rank Fusion paper, not a value this deployment has tuned.
+    rag_rrf_k: int = Field(default=60, alias="RAG_RRF_K")
+    # Chunking (Phase 07, spec §55): "approximately 400-700 tokens" / "60-100 token
+    # overlap" — token count is an approximation (see ingestion/chunking.py), not a
+    # real tokenizer's count, so these sit mid-range rather than at either edge.
+    rag_chunk_target_tokens: int = Field(default=550, alias="RAG_CHUNK_TARGET_TOKENS")
+    rag_chunk_overlap_tokens: int = Field(default=80, alias="RAG_CHUNK_OVERLAP_TOKENS")
+    # Deduplication (spec §47): cosine-similarity threshold above which two adjacent
+    # chunks from the same source are considered overlapping enough to merge.
+    rag_dedup_similarity_threshold: float = Field(default=0.92, alias="RAG_DEDUP_SIMILARITY_THRESHOLD")
 
     # --- Research Mode (off by default — privacy-first per §64) ---
     enable_research: bool = Field(default=False, alias="ENABLE_RESEARCH")

@@ -35,7 +35,7 @@ GMS CLINICAL AI
 | 04 | Patient system: CRUD, search, workspace, encounters, conditions, allergies, medications, timeline | **Done** |
 | 05 | Report ingestion: upload, PDF/DOCX/XLSX/image parsing, OCR, identity checking, ingestion jobs | **Done** |
 | 06 | Structured clinical data: lab extraction, trend engine, medication reconciliation, change engine | **Done** |
-| 07 | Local RAG core: embeddings, Qdrant collections, dense+BM25 retrieval, RRF fusion, reranking, dedup | Not started |
+| 07 | Local RAG core: embeddings, Qdrant collections, dense+BM25 retrieval, RRF fusion, reranking, dedup | **Done** |
 | 08 | Clinical chat: conversations, streaming, evidence panel, citation/grounding validation | Not started |
 | 09 | Vision: image upload, structured extraction, image-to-RAG, comparison | Not started |
 | 10 | Clinical modules: summary, SOAP, entity extraction, guideline Q&A, differential support | Not started |
@@ -440,6 +440,194 @@ renders a real diff (new condition, stopped medication, new allergy, new lab res
 computed from actual accumulated demo-patient data; Timeline correctly shows report-
 upload and abnormal-result events interleaved chronologically with existing event
 types, with normal results correctly absent.
+```
+
+## Phase 07 — what exists right now
+
+```text
+backend/app/
+  models/chunk.py               Chunk: the SQLite-side twin of every Qdrant point.
+                                  A chunk's `id` IS its Qdrant point ID (one row, one
+                                  point, no separate mapping table). patient_id is
+                                  nullable (NULL = medical_knowledge, not patient-
+                                  scoped) but mandatory in every patient_documents
+                                  query — enforced in code, not just by convention
+
+  ingestion/chunking.py          Section-aware chunking (spec §55): blank-line-
+                                  separated blocks (our own extractors already emit
+                                  these for paragraphs/[Table] blocks), a short
+                                  punctuation-free line tracked as the current
+                                  section, ~550-token target / ~80-token overlap
+                                  (configurable). A `[Table]` block is never split
+                                  across chunks (spec §56) even if that makes one
+                                  chunk larger than target. Token counts are an
+                                  approximation (~1.3x word count) — no real Qwen
+                                  tokenizer is wired in, and an approximation is
+                                  sufficient for sizing chunks
+
+  rag/embeddings.py               Qwen3-Embedding-0.6B via sentence-transformers,
+                                   lazy-loaded singleton (same pattern as Phase 05's
+                                   OCR reader), dimension read from the loaded model
+                                   (never hardcoded). embed_query() vs.
+                                   embed_documents() — Qwen3-Embedding's asymmetric
+                                   query/document convention
+  rag/reranker.py                 Qwen3-Reranker-0.6B via sentence-transformers'
+                                   CrossEncoder, same lazy-singleton pattern. A
+                                   generic interface (query, [(chunk_id, text), ...])
+                                   -> reranked hits — nothing outside this module
+                                   knows the reranker is specifically a Qwen model
+  rag/qdrant_setup.py              Creates medical_knowledge/patient_documents on
+                                   first real use (vector size from the embedding
+                                   model, spec §5); a payload index on patient_id
+                                   for fast mandatory filtering (spec §16).
+                                   patient_vision (Phase 09)/web_cache (Phase 11)
+                                   join later the same way
+  rag/dense_retriever.py           Embedding-similarity search. Raises if
+                                   patient_documents is queried without a
+                                   patient_id — patient isolation enforced in code,
+                                   at the one place every query passes through
+  rag/sparse_retriever.py          BM25 (spec §43 Stage 6 — critical for drug
+                                   names/ICD codes/exact phrases dense embedding can
+                                   blur past) via rank-bm25, computed in-process over
+                                   the SQLite chunk corpus at query time rather than
+                                   stored as a Qdrant sparse vector — simpler than
+                                   the IDF-fitting infrastructure a persistent sparse
+                                   index needs at this deployment's scale, and never
+                                   goes stale against the corpus. Same mandatory
+                                   patient_id rule as dense_retriever
+  rag/fusion.py                    Reciprocal Rank Fusion (spec §44's named default),
+                                   standalone and swappable per spec's "keep fusion
+                                   strategy configurable"
+  rag/deduplicator.py              Deduplication + parent expansion (spec §47):
+                                   adjacent same-section chunks from one source merge
+                                   into one passage with full chunk-level provenance;
+                                   max_per_source caps one document from dominating
+                                   the result just because several overlapping
+                                   chunks matched
+  rag/indexing.py                  index_document(): chunk -> embed -> upsert to
+                                   Qdrant + persist Chunk rows, idempotent per source
+                                   (re-indexing replaces, never accumulates). Shared
+                                   by report ingestion (patient_documents) and
+                                   scripts/ingest_knowledge.py (medical_knowledge) —
+                                   matches spec §29's own pipeline diagram ("RAG
+                                   chunking -> Embedding -> Qdrant indexing")
+  rag/pipeline.py                  retrieve(): composes dense + sparse + fusion +
+                                   rerank + dedup into one call. No knowledge of the
+                                   LLM or conversation state — query classification/
+                                   rewriting/context construction is Phase 08's job,
+                                   which calls into this package
+
+  ingestion/pipeline.py (extended) New "indexing" stage after lab extraction. Never
+                                   indexes a report flagged MISMATCH — its content is
+                                   suspected to belong to a *different* patient, so
+                                   indexing it under this one's patient_id would
+                                   defeat the isolation guarantee it's meant to
+                                   protect. Indexing runs instead once
+                                   confirm_patient_match() clears the mismatch.
+                                   archive_report()/delete_report_and_file() now
+                                   deindex too — an archived report stops being
+                                   retrievable immediately, not left searchable
+
+  api/health.py (extended)         /api/health/qdrant now reports real per-
+                                   collection point counts, not just reachability.
+                                   Embedding/reranker health flips from "not_loaded"
+                                   to "ready" (with real detected dimension for
+                                   embedding) once something has actually used them —
+                                   still never a hardcoded "Ready" (spec §103)
+
+scripts/ingest_knowledge.py        Ingests data/*.pdf into medical_knowledge. Default
+                                    scope is a curated set of small, genuinely
+                                    clinical ophthalmology guideline documents
+                                    (ICO Clinical Guidelines, Ophthalmology Referral
+                                    Guidelines, Instruments book — 136 pages total);
+                                    --all opts into the remaining multi-hundred-page
+                                    textbooks (up to ~1,900 pages). See "CPU
+                                    embedding performance" below for why that's a
+                                    deliberate scope decision, not laziness
+
+evaluation/
+  golden_questions.jsonl           spec §96's golden set, scoped to what Phase 07
+                                    can actually test: exact_medication_query,
+                                    semantic_symptom_query, numerical_lab_query,
+                                    patient_history_query, guideline_query,
+                                    no_evidence_query, patient_isolation_attack.
+                                    report_comparison/prompt_injection_document/
+                                    citation_validation/vision_report_extraction/
+                                    web_deidentification need Phase 08/09/11
+                                    features that don't exist yet — added when those
+                                    phases land, per spec §96's own list
+  retrieval_eval.py                Recall@5/10/20 + MRR at the fusion stage (dense+
+                                   sparse+RRF, before reranking — reranking's final
+                                   top-8 is too small a pool to compute Recall@20
+                                   meaningfully), using keyword containment as a
+                                   relevance proxy. The full evaluation/ suite
+                                   (citation/groundedness/hallucination/vision) lands
+                                   in Phase 15 once 08/09/11 exist to produce
+                                   anything to evaluate
+
+## CPU embedding performance — a real, measured finding
+
+Live testing surfaced a genuine, non-obvious performance bug, not just a slow model:
+`Qwen3-Embedding-0.6B` defaults to a 32,768-token max sequence length (it supports
+very long context), and `sentence-transformers` sizes its attention computation off
+that configured max — not the actual input length. Left uncapped, embedding a single
+~400-word chunk took **141-179 seconds** on this 16-core CPU machine. Two fixes,
+applied in `rag/embeddings.py`/`rag/reranker.py`:
+
+1. **Cap `model.max_seq_length`** to `settings.embedding_max_seq_length` (default
+   2048 — comfortable headroom over the ~550-token chunk target). This is the
+   single most impactful line for CPU throughput on this model.
+2. **Force `attn_implementation="sdpa"`** (PyTorch's fused scaled-dot-product-
+   attention kernel) instead of the default "eager" implementation — both Qwen3-
+   Embedding and Qwen3-Reranker are decoder-based, and eager attention is
+   measurably slower on CPU for this architecture (~2.2x, measured on a clean,
+   uncontended run). Falls back to the default if `sdpa` isn't available rather
+   than failing the whole pipeline over a throughput optimization.
+
+With both fixes, a clean (no CPU contention from other processes) measurement showed
+**~11 seconds/chunk** once the model is warm — a ~46-page clinical guideline PDF
+(38 chunks) indexes in roughly 7 minutes. This is still genuinely CPU-slow (spec §12
+"prefer CPU execution" for embedding/reranker, keeping the GPU free for the main LLM,
+has a real throughput cost) — which is exactly why `scripts/ingest_knowledge.py`'s
+default scope is small, curated, and clinically real rather than attempting the full
+multi-thousand-page reference library inline. A production deployment populating a
+large knowledge base would either run ingestion as a long background/overnight job or
+use a GPU-capable `EMBEDDING_DEVICE`.
+
+Deliberate simplifications vs. the spec's literal wording, documented rather than
+silently narrowed:
+- Sparse retrieval is computed in-process (rank-bm25 over the SQLite chunk corpus at
+  query time), not stored as a Qdrant sparse vector — see `rag/sparse_retriever.py`'s
+  docstring. Spec §44 requires hybrid dense+lexical retrieval with RRF fusion; it
+  doesn't mandate lexical retrieval specifically live *inside* Qdrant.
+- `evaluation/golden_questions.jsonl` covers 7 of spec §96's 12 categories — the
+  other 5 need chat (08), vision (09), or web research (11) features to exist first.
+
+Verified end-to-end with real (unmocked) models against the real running Qdrant
+instance: `scripts/ingest_knowledge.py`'s default 3 files indexed 111 real chunks into
+`medical_knowledge`; 4 real demo-patient reports (Wallace/Klein/Novak) indexed into
+`patient_documents`. The golden retrieval set (`evaluation/retrieval_eval.py`) scores
+**7/7 passing** against this real content — Recall@5/10/20 and MRR all 0.71 (5 of 7
+categories have a findable answer to rank; the other 2, `no_evidence_query` and
+`patient_isolation_attack`, correctly find *nothing*, which is the right answer for
+both). Notably, `semantic_symptom_query` ("trouble seeing at night or with bright
+lights") correctly ranked Wallace's actual chief complaint ("glare while driving at
+night") first — genuine semantic match, not keyword overlap, real evidence the
+embedding model is doing its job. The critical patient-isolation test
+(`backend/tests/test_rag_pipeline.py`) proves a chunk built from patient A's own real
+clinical content, queried with maximal semantic/lexical relevance while scoped to
+patient B, never appears in patient B's results — the spec §14 guarantee, checked as
+an automated test that runs on every CI pass (part of the full 100-test backend
+suite), not just verified once by hand.
+
+A second real bug was found live, not in unit testing: `services/reports.py`'s
+`confirm_patient_match()` calls `index_document()` through a separate import than
+`ingestion/pipeline.py`'s — the test suite's mock only covered the first call site,
+so every mismatch-confirmation test left one real, un-cleaned-up point in the shared
+dev Qdrant instance. Caught by noticing `patient_documents`' real point count didn't
+match its own SQLite chunk-row count after a full test run; fixed by mocking both
+call sites, verified by asserting the point count is bit-for-bit identical before and
+after a full backend test run (100 passed, 0 net new Qdrant points).
 ```
 
 ## Domain note
