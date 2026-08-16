@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from qdrant_client.http import models as qmodels
 
 from app.config.settings import Settings
-from app.models.chunk import ChunkCollection
+from app.models.chunk import PATIENT_SCOPED_COLLECTIONS, ChunkCollection
 from app.rag.embeddings import embed_query
 from app.rag.qdrant_setup import get_qdrant_client
 
@@ -25,11 +25,11 @@ def dense_search(
     patient_id: str | None = None,
     top_k: int | None = None,
 ) -> list[DenseHit]:
-    """Patient filtering is mandatory, not optional (spec §16): querying
-    `patient_documents` without a `patient_id` raises rather than silently searching
-    across every patient's chunks."""
-    if collection == ChunkCollection.PATIENT_DOCUMENTS and not patient_id:
-        raise ValueError("patient_id is required when searching the patient_documents collection")
+    """Patient filtering is mandatory, not optional (spec §16): querying any
+    patient-scoped collection (`patient_documents`, `patient_vision`) without a
+    `patient_id` raises rather than silently searching across every patient's chunks."""
+    if collection in PATIENT_SCOPED_COLLECTIONS and not patient_id:
+        raise ValueError(f"patient_id is required when searching the {collection.value} collection")
 
     client = get_qdrant_client(settings)
     query_vector = embed_query(query, settings)

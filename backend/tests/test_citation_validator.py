@@ -50,3 +50,11 @@ def test_no_citations_at_all():
     cleaned, used = validate_citations("A plain answer with no sources.", [])
     assert used == []
     assert cleaned == "A plain answer with no sources."
+
+
+def test_vision_derived_v_labels_are_recognized():
+    evidence = [_FakeLabeledEvidence(label="V1")]
+    text = "The optic disc shows mild pallor on the retinal image [V1]."
+    cleaned, used = validate_citations(text, evidence)
+    assert cleaned == text
+    assert used == ["V1"]

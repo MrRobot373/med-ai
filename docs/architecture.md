@@ -37,7 +37,7 @@ GMS CLINICAL AI
 | 06 | Structured clinical data: lab extraction, trend engine, medication reconciliation, change engine | **Done** |
 | 07 | Local RAG core: embeddings, Qdrant collections, dense+BM25 retrieval, RRF fusion, reranking, dedup | **Done** |
 | 08 | Clinical chat: conversations, streaming, evidence panel, citation/grounding validation | **Done** |
-| 09 | Vision: image upload, structured extraction, image-to-RAG, comparison | Not started |
+| 09 | Vision: image upload, structured extraction, image-to-RAG, comparison | **Done** |
 | 10 | Clinical modules: summary, SOAP, entity extraction, guideline Q&A, differential support | Not started |
 | 11 | Web research: Research Mode, de-identification, PubMed/FDA, optional SearXNG, web cache | Not started |
 | 12 | Knowledge administration: upload, versioning, reindex, admin settings | Not started |
@@ -766,6 +766,154 @@ generation itself once thinking is disabled. Root cause is not yet isolated (can
 count vs. per-candidate sequence length vs. thread configuration) — flagged here as a
 known follow-up rather than guessed at and "fixed" blind, since `rag/reranker.py` is
 Phase 07's already-tested, already-committed code and this session's scope is Phase 08.
+
+## Phase 09 — what exists right now
+
+```text
+backend/app/
+  llm/generation.py                 REFACTORED from app/chat/generation.py (Phase 08)
+                                     into a shared package: chat and vision are both
+                                     just callers of one Ollama client, one process-
+                                     wide concurrency semaphore (spec §58 "use Qwen3.5
+                                     vision capability rather than loading a second
+                                     large VLM" — one model, one budget, whether the
+                                     call carries images or not). `ChatMessage` gained
+                                     an `images: list[str] | None` field (base64,
+                                     Ollama's per-message `images` key)
+
+  models/vision_analysis.py         VisionAnalysis: one row per report (re-running
+                                     analysis updates it, never accumulates history —
+                                     same idempotent-per-source convention as
+                                     `index_document`). `payload` is spec §60's exact
+                                     JSON schema (image_type/visible_text/observations/
+                                     measurements_visible/clinical_entities/
+                                     quality_limitations/uncertainties) — the only
+                                     "acceptable provenance," same rule as Phase 08's
+                                     Message.structured_payload. status:
+                                     success/failed/not_applicable (a DICOM whose pixel
+                                     data can't decode into a preview is NOT_APPLICABLE,
+                                     distinct from an attempted-and-failed analysis)
+  models/chunk.py (extended)        ChunkCollection.PATIENT_VISION joins
+                                     patient_documents/medical_knowledge;
+                                     PATIENT_SCOPED_COLLECTIONS (both patient_documents
+                                     and patient_vision) is the single set every
+                                     patient-isolation check (mandatory patient_id
+                                     filter, spec §16) now tests membership against,
+                                     rather than one hardcoded collection name
+  models/citation.py (extended)     CitationSourceType.PATIENT_VISION — image-derived
+                                     evidence gets its own citation source type, "V#"
+                                     label space (spec §51-style, alongside P#/L#)
+
+  vision/prompts.py                 Centralized, versioned (spec §124): vision_analysis
+                                     ("describe OBSERVABLE findings, never a diagnosis
+                                     as fact" — spec §58/§59's central rule, repeated
+                                     not just stated once) and vision_comparison
+                                     (previous image sent first, current second — the
+                                     prompt states that ordering explicitly)
+  vision/analyzer.py                analyze_image()/compare_images(): Pydantic-
+                                     validated structured JSON output over
+                                     llm/generation.py, same validate/repair-retry/
+                                     never-fabricate discipline as Phase 08's
+                                     grounding_validator (one retry, `None` — never a
+                                     fabricated result — if both attempts fail to parse)
+
+  services/vision.py                Persistence + orchestration. run_analysis():
+                                     reads real image bytes (a DICOM report's is a
+                                     rendered preview PNG, via ingestion/dicom.py's
+                                     existing Phase 05 renderer) -> analyze_image() ->
+                                     stores the result -> indexes into patient_vision
+                                     (skipped for a MISMATCH report, same spec §16 rule
+                                     as text reports — resumes once
+                                     services/reports.py's confirm_patient_match()
+                                     calls reindex_if_present(), which re-indexes from
+                                     the already-stored payload rather than re-calling
+                                     the model). compare_reports(): stateless — spec
+                                     §61 only asks to "support selecting two images"
+                                     and "show" the comparison, nothing requires
+                                     versioning/persisting it, so it's computed fresh
+                                     every call rather than adding a table+migration
+                                     for an inherently ad-hoc feature. Its
+                                     `clinical_evidence` is a REAL deterministic
+                                     `rag.pipeline.retrieve()` call against
+                                     `medical_knowledge`, querying on the model's own
+                                     `differences` list (spec §61 "where useful,
+                                     retrieve relevant local knowledge based on
+                                     extracted differences") — never text the model
+                                     invented itself
+  ingestion/pipeline.py (extended)  run_ingestion() is now async (a real awaited
+                                     Ollama call lives inside it) and, for image/DICOM
+                                     mime types only, runs vision analysis
+                                     automatically after lab extraction — same
+                                     automatic, best-effort-never-blocks pattern as OCR
+                                     (spec §122). A PDF/DOCX/XLSX report never gets a
+                                     VisionAnalysis row at all, vs. an explicit
+                                     `POST .../vision/analyze` call against one, which
+                                     honestly records NOT_APPLICABLE
+  chat/orchestrator.py (extended)   Image-to-RAG, for real (spec §59's own pipeline
+                                     diagram ends in "RAG query generation -> local
+                                     knowledge retrieval"): current_patient/
+                                     current_encounter scopes now also retrieve from
+                                     patient_vision, labeled V1/V2/... alongside P#/L#.
+                                     SELECTED_REPORT scope deliberately does not widen
+                                     to the whole patient_vision corpus (same rationale
+                                     as its medical_knowledge exclusion) — but if the
+                                     selected report itself has a vision analysis, it's
+                                     surfaced in that report's own "SELECTED REPORT
+                                     FACTS" section, since it's directly on-topic there
+  chat/citation_validator.py/       Citation regex extended [PLW] -> [PLVW]; V-labels
+  context_builder.py (extended)     validated/stripped exactly like P#/L#
+
+  api/vision.py                     GET .../vision (read), POST .../vision/analyze and
+                                     POST .../vision/compare (write-gated — both invoke
+                                     real generation, same rationale as sending a chat
+                                     message in Phase 08)
+
+frontend/src/
+  api/vision.ts                     Types mirroring schemas/vision.py; useVisionAnalysis
+                                     treats a 404 ("never run yet") as a normal empty
+                                     state, not an error to alert on
+  components/VisionAnalysisPanel.tsx Structured findings shown inline on ReportCard for
+                                     any image/DICOM report — usually already populated
+                                     by the time a clinician looks (ingestion ran it
+                                     automatically), with a Re-analyze action for a
+                                     retry after failure
+  components/ImageCompareModal.tsx  Spec §61's exact layout: previous/current image
+                                     thumbnails, previous findings, current findings,
+                                     observable changes, differences, clinical
+                                     evidence, limitations. Reachable from the Reports
+                                     tab once a patient has ≥2 analyzable images
+```
+
+### A real bug found live: a second unmocked indexing call site (again)
+
+Live end-to-end testing (real upload, real Ollama vision analysis, real Qdrant
+indexing, real comparison — not mocked) worked correctly end to end: a synthetic
+fundus-style test image was correctly described as "a schematic diagram of an eye"
+with honest `quality_limitations` ("stylized schematic, not a clinical photograph, no
+anatomical detail... beyond simplified shapes") rather than the model pretending it
+was a real clinical photo — exactly the "describe observable findings, never
+diagnosis-as-fact" behavior spec §58 requires. A two-image comparison then correctly
+ran as one real joint vision-model call and, on genuinely subtle synthetic circle-size
+differences, honestly reported "no visible differences" rather than fabricating a fake
+progression — the right call given spec's "never fabricate" priority, even though it
+means this particular synthetic test case wasn't a good discriminating example.
+
+Live testing also caught a real bug before it reached this doc as a clean success
+story: the very first post-refactor `pytest` run took 128s instead of the usual ~30s
+(some DICOM-upload tests carry real, decodable synthetic pixel data), because
+`services/vision.py` imports `index_document` as its own direct reference — a second
+call site the existing `_mock_rag_indexing` fixture didn't cover, exactly the same
+class of bug Phase 07's architecture notes already documented once
+(`services/reports.py`'s confirm_patient_match import). Fixed by adding
+`app.services.vision.index_document` to that fixture (and a matching
+`_mock_vision_generation` fixture, since `analyze_image`/`compare_images` were also
+unmocked and made real ~30-100s+ Ollama calls per image-upload test). By the time this
+was caught, two real points had already leaked into the dev Qdrant's `patient_vision`
+collection from that one slow pre-fix run — found via the exact same "real point count
+doesn't match SQLite chunk rows" check Phase 07's notes describe, and deleted by hand.
+The fix itself is verified structurally, not just by inference: `points_by_collection`
+for `patient_vision` was confirmed at 0 both before and after the full live upload ->
+analyze -> index -> archive/deindex cycle performed for this section.
 
 ## Domain note
 

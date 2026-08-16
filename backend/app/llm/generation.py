@@ -1,11 +1,17 @@
-"""Ollama chat generation — real token streaming (spec §119 "no fake streaming"),
+"""Ollama generation client — shared by `app/chat/` (Phase 08) and `app/vision/`
+(Phase 09), since both are just different callers of the same local model (spec §58
+"use Qwen3.5 vision capability rather than loading a second large VLM into GPU
+memory" — there is exactly one model, one endpoint, one concurrency budget, whether
+the call carries images or not). Real token streaming (spec §119 "no fake streaming"),
 never simulated by chunking an already-complete response client-side.
 
 A single process-wide semaphore enforces spec §121 ("do not launch multiple
 simultaneous heavy Qwen generations for the same user unintentionally") — sized from
 `settings.chat_max_concurrent_generations` (default 1, appropriate for a one-machine
 demo; a real multi-user deployment would raise it, still without needing a separate
-task queue per spec §135).
+task queue per spec §135). Vision calls share this exact semaphore rather than getting
+their own, so a chat generation and a vision analysis can never run concurrently and
+contend for the same 8 GB of VRAM.
 """
 
 from __future__ import annotations
@@ -38,6 +44,10 @@ def _get_semaphore(settings: Settings) -> asyncio.Semaphore:
 class ChatMessage:
     role: str  # "system" | "user" | "assistant"
     content: str
+    # Base64-encoded image bytes (no data: URI prefix) — Ollama's per-message
+    # `images` field. None/empty for every text-only chat call; vision analysis is
+    # the only caller that populates this (spec §59's "Qwen3.5 Vision" stage).
+    images: list[str] | None = None
 
 
 class GenerationError(Exception):
@@ -47,8 +57,18 @@ class GenerationError(Exception):
     generation fails")."""
 
 
+def _message_dict(m: ChatMessage) -> dict:
+    d = {"role": m.role, "content": m.content}
+    if m.images:
+        d["images"] = m.images
+    return d
+
+
 async def generate_stream(
-    messages: list[ChatMessage], settings: Settings, temperature: float | None = None
+    messages: list[ChatMessage],
+    settings: Settings,
+    temperature: float | None = None,
+    max_output_tokens: int | None = None,
 ) -> AsyncIterator[str]:
     """Yields content deltas as they arrive from Ollama. The caller breaking out of
     iteration early (e.g. spec §120 cancellation on client disconnect) closes the
@@ -58,7 +78,7 @@ async def generate_stream(
     async with semaphore:
         payload = {
             "model": settings.ollama_model,
-            "messages": [{"role": m.role, "content": m.content} for m in messages],
+            "messages": [_message_dict(m) for m in messages],
             "stream": True,
             # Hybrid-reasoning models (e.g. qwen3.5) default to an extended "thinking"
             # phase that Ollama returns in a separate `message.thinking` field, never
@@ -72,7 +92,7 @@ async def generate_stream(
             "think": False,
             "options": {
                 "temperature": settings.chat_temperature if temperature is None else temperature,
-                "num_predict": settings.chat_max_output_tokens,
+                "num_predict": settings.chat_max_output_tokens if max_output_tokens is None else max_output_tokens,
             },
         }
         url = f"{settings.ollama_base_url.rstrip('/')}/api/chat"
@@ -101,17 +121,27 @@ async def generate_stream(
             raise GenerationError(f"Could not reach Ollama at {url}: {exc}") from exc
 
 
-async def generate_complete(messages: list[ChatMessage], settings: Settings, json_format: bool = False) -> str:
-    """Non-streaming — used for the grounding-validation pass, which needs one
-    complete, parseable response rather than a token stream a clinician watches."""
+async def generate_complete(
+    messages: list[ChatMessage],
+    settings: Settings,
+    json_format: bool = False,
+    temperature: float | None = None,
+    max_output_tokens: int | None = None,
+) -> str:
+    """Non-streaming — used for the grounding-validation pass and vision structured
+    extraction, both of which need one complete, parseable response rather than a
+    token stream a clinician watches live."""
     semaphore = _get_semaphore(settings)
     async with semaphore:
         payload = {
             "model": settings.ollama_model,
-            "messages": [{"role": m.role, "content": m.content} for m in messages],
+            "messages": [_message_dict(m) for m in messages],
             "stream": False,
             "think": False,  # see generate_stream's comment on why thinking is disabled outright
-            "options": {"temperature": settings.chat_temperature, "num_predict": settings.chat_max_output_tokens},
+            "options": {
+                "temperature": settings.chat_temperature if temperature is None else temperature,
+                "num_predict": settings.chat_max_output_tokens if max_output_tokens is None else max_output_tokens,
+            },
         }
         if json_format:
             payload["format"] = "json"

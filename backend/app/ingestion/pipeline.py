@@ -27,6 +27,7 @@ from app.models.ingestion_job import IngestionJob
 from app.models.patient import Patient
 from app.models.report import ExtractionStatus, IngestionStatus, PatientMatchStatus, Report
 from app.rag.indexing import index_document
+from app.services import vision as vision_service
 from app.services.observations import save_extracted_observations
 
 logger = get_logger(__name__)
@@ -83,7 +84,10 @@ def _extract_report_date(text: str) -> date | None:
     return None
 
 
-def run_ingestion(db: DbSession, report_id: str, settings: Settings) -> None:
+_VISION_ANALYZABLE_MIME_TYPES = {"image/png", "image/jpeg", "image/webp", "application/dicom"}
+
+
+async def run_ingestion(db: DbSession, report_id: str, settings: Settings) -> None:
     report = db.get(Report, report_id)
     if report is None:
         logger.error("Ingestion requested for missing report_id=%s", report_id)
@@ -140,6 +144,21 @@ def run_ingestion(db: DbSession, report_id: str, settings: Settings) -> None:
             # remain valid even if lab extraction itself hits an unexpected error.
             logger.warning("Lab extraction failed for report_id=%s", report_id, exc_info=True)
             db.rollback()
+
+        # Vision analysis (spec §58/§59) — only attempted for mime types it can
+        # actually run against; a PDF/DOCX/XLSX report never gets a VisionAnalysis
+        # row at all rather than an always-NOT_APPLICABLE one cluttering every report.
+        if report.mime_type in _VISION_ANALYZABLE_MIME_TYPES:
+            job.stage = "analyzing_image"
+            db.commit()
+            try:
+                await vision_service.run_analysis(db, settings, report)
+            except Exception:
+                # Best-effort per spec §122 — same rationale as lab extraction above:
+                # a vision failure never sinks the rest of ingestion, which already
+                # succeeded (text/identity/OCR results committed above remain valid).
+                logger.warning("Vision analysis failed for report_id=%s", report_id, exc_info=True)
+                db.rollback()
 
         job.stage = "indexing"
         db.commit()
@@ -247,7 +266,7 @@ def _extract_content(
         job.stage = "running_ocr"
         db.commit()
         try:
-            normalized = image_module.normalize_for_ocr(content)
+            normalized = image_module.normalize_image(content)
             ocr_result = ocr.run_ocr(normalized)
             status = ExtractionStatus.SUCCESS if ocr_result.text.strip() else ExtractionStatus.PARTIAL
             return [{"page": 1, "text": ocr_result.text, "method": "ocr"}], True, status

@@ -26,12 +26,12 @@ from app.chat.context_builder import (
     label_evidence,
 )
 from app.chat.evidence_quality import EvidenceQuality, score_evidence_quality
-from app.chat.generation import ChatMessage
 from app.chat.grounding_validator import GroundingResult, validate_grounding
 from app.chat.patient_context import build_encounter_facts, build_patient_facts, build_report_facts
 from app.chat.prompts import CLINICAL_CHAT_SYSTEM_PROMPT
 from app.chat.query_classifier import classify_query
 from app.config.settings import Settings
+from app.llm.generation import ChatMessage
 from app.models.chunk import ChunkCollection
 from app.models.conversation import Conversation, ConversationScope
 from app.models.encounter import Encounter
@@ -76,7 +76,7 @@ def prepare_turn(
     if conversation.scope == ConversationScope.SELECTED_REPORT and conversation.selected_report_id:
         report = db.get(Report, conversation.selected_report_id)
         if report:
-            report_facts = build_report_facts(report)
+            report_facts = build_report_facts(db, report)
 
     patient_passages = []
     if conversation.scope in _PATIENT_SCOPED and conversation.patient_id:
@@ -85,15 +85,23 @@ def prepare_turn(
         )
 
     knowledge_passages = []
+    vision_passages = []
     if conversation.scope != ConversationScope.SELECTED_REPORT:
         # Even patient-scoped questions often want guideline grounding alongside
         # patient evidence (spec §42's own suggested question: "Find guideline
         # evidence relevant to this case") — SELECTED_REPORT is the one scope that's
         # deliberately narrow, since the point of picking a specific report is to
-        # discuss *that* document, not the whole knowledge base.
+        # discuss *that* document, not the whole knowledge base/patient image corpus
+        # (its own vision analysis, if any, is already in `report_facts` above).
         knowledge_passages = retrieve(db, user_text, settings, collection=ChunkCollection.MEDICAL_KNOWLEDGE)
+        if conversation.scope in _PATIENT_SCOPED and conversation.patient_id:
+            # Image-to-RAG (spec §59): vision-derived observations become real,
+            # retrievable chat evidence the same way patient_documents chunks do.
+            vision_passages = retrieve(
+                db, user_text, settings, collection=ChunkCollection.PATIENT_VISION, patient_id=conversation.patient_id
+            )
 
-    labeled = label_evidence(patient_passages, knowledge_passages)
+    labeled = label_evidence(patient_passages, knowledge_passages, vision_passages)
 
     # Abstain only when there's truly nothing to answer from — not just when
     # free-text retrieval came up empty. Structured facts (e.g. "what medications is

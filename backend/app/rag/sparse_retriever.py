@@ -15,7 +15,7 @@ from rank_bm25 import BM25Okapi
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
 
-from app.models.chunk import Chunk, ChunkCollection
+from app.models.chunk import PATIENT_SCOPED_COLLECTIONS, Chunk, ChunkCollection
 
 _TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 
@@ -37,10 +37,10 @@ def sparse_search(
     patient_id: str | None = None,
     top_k: int = 30,
 ) -> list[SparseHit]:
-    """Patient filtering is mandatory for `patient_documents`, matching
+    """Patient filtering is mandatory for patient-scoped collections, matching
     `dense_retriever.dense_search` — same rule, same reason (spec §16)."""
-    if collection == ChunkCollection.PATIENT_DOCUMENTS and not patient_id:
-        raise ValueError("patient_id is required when searching the patient_documents collection")
+    if collection in PATIENT_SCOPED_COLLECTIONS and not patient_id:
+        raise ValueError(f"patient_id is required when searching the {collection.value} collection")
 
     stmt = select(Chunk.id, Chunk.text).where(Chunk.collection == collection)
     if patient_id:

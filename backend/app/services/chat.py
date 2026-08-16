@@ -13,9 +13,9 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
 
-from app.chat.generation import ChatMessage, GenerationError, generate_stream
 from app.chat.orchestrator import ABSTENTION_TEXT, finalize_turn, prepare_turn
 from app.config.settings import Settings
+from app.llm.generation import ChatMessage, GenerationError, generate_stream
 from app.logging import get_logger
 from app.models.citation import Citation, CitationSourceType
 from app.models.conversation import Conversation, ConversationScope
@@ -26,6 +26,11 @@ logger = get_logger(__name__)
 # Report comparison (Phase 10) and web research (Phase 11) don't exist yet — reject
 # these scopes explicitly at creation time rather than silently mishandling them.
 _UNIMPLEMENTED_SCOPES = {ConversationScope.SELECTED_REPORTS_COMPARISON, ConversationScope.RESEARCH_MODE}
+
+_SOURCE_TYPE_BY_COLLECTION = {
+    "patient_documents": CitationSourceType.PATIENT_REPORT,
+    "patient_vision": CitationSourceType.PATIENT_VISION,
+}
 
 
 class UnsupportedScopeError(Exception):
@@ -180,13 +185,17 @@ async def run_turn(
     citation_rows: list[Citation] = []
     for item in result.citations:
         passage = item.passage
-        is_patient = passage.collection == "patient_documents"
+        source_type = _SOURCE_TYPE_BY_COLLECTION.get(passage.collection, CitationSourceType.KNOWLEDGE_DOCUMENT)
+        # Both patient_documents and patient_vision chunks carry a report_id
+        # (patient_vision's is the image report the analysis was run against) — only
+        # medical_knowledge chunks have no report to link back to.
+        has_report = passage.collection in _SOURCE_TYPE_BY_COLLECTION
         citation = Citation(
             message_id=assistant_message.id,
             label=item.label,
-            source_type=CitationSourceType.PATIENT_REPORT if is_patient else CitationSourceType.KNOWLEDGE_DOCUMENT,
+            source_type=source_type,
             chunk_id=passage.chunk_ids[0] if passage.chunk_ids else None,
-            report_id=passage.source_id if is_patient else None,
+            report_id=passage.source_id if has_report else None,
             source_title=passage.source_title,
             page=passage.page,
             section=passage.section,

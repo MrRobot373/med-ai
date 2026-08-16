@@ -1,7 +1,7 @@
 """Citation validation — spec §52: "Do not simply trust the LLM's citation
-numbering." Parses `[P1]`/`[L1]`-style markers the model emitted, keeps only the ones
-that reference a real, actually-shown-to-the-model piece of evidence, and strips the
-rest from the visible answer text.
+numbering." Parses `[P1]`/`[L1]`/`[V1]`-style markers the model emitted, keeps only
+the ones that reference a real, actually-shown-to-the-model piece of evidence, and
+strips the rest from the visible answer text.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ import re
 
 from app.chat.context_builder import LabeledEvidence
 
-_CITATION_PATTERN = re.compile(r"\[([PLW]\d+)\]")
+_CITATION_PATTERN = re.compile(r"\[([PLVW]\d+)\]")
 
 
 def extract_cited_labels(answer_text: str) -> list[str]:

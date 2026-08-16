@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Images, Upload } from "lucide-react";
 import { Card } from "@/components/Card";
 import { ReportCard } from "@/components/ReportCard";
 import { UploadReportModal } from "@/components/UploadReportModal";
+import { ImageCompareModal } from "@/components/ImageCompareModal";
 import { usePatientContext } from "@/layouts/PatientWorkspace";
 import { usePatientReports } from "@/api/reports";
+import { VISION_ANALYZABLE_MIME_TYPES } from "@/api/vision";
 import { useCanWrite } from "@/api/auth";
 
 export default function ReportsTab() {
@@ -12,22 +14,46 @@ export default function ReportsTab() {
   const { data: reports, isLoading, isError, error } = usePatientReports(patient.id);
   const canWrite = useCanWrite();
   const [showUpload, setShowUpload] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
   const patientName = patient.preferred_name || `${patient.first_name} ${patient.last_name}`;
+
+  // Only reports vision analysis can actually run against, successfully ingested and
+  // not under a patient-mismatch review — the same set the "Compare Images" flow
+  // (spec §61) can meaningfully offer a clinician to choose between.
+  const comparableImages =
+    reports?.filter(
+      (r) =>
+        VISION_ANALYZABLE_MIME_TYPES.has(r.mime_type) &&
+        r.ingestion_status === "completed" &&
+        r.patient_match_status !== "mismatch",
+    ) ?? [];
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-navy">Reports</h2>
-        {canWrite && (
-          <button
-            type="button"
-            onClick={() => setShowUpload(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary-blue px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-blue/90"
-          >
-            <Upload className="h-3.5 w-3.5" />
-            Upload Report
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {canWrite && comparableImages.length >= 2 && (
+            <button
+              type="button"
+              onClick={() => setShowCompare(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-semibold text-navy hover:bg-light-blue"
+            >
+              <Images className="h-3.5 w-3.5" />
+              Compare Images
+            </button>
+          )}
+          {canWrite && (
+            <button
+              type="button"
+              onClick={() => setShowUpload(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary-blue px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-blue/90"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Upload Report
+            </button>
+          )}
+        </div>
       </div>
 
       {isError && (
@@ -52,6 +78,9 @@ export default function ReportsTab() {
       </div>
 
       {showUpload && <UploadReportModal patientId={patient.id} onClose={() => setShowUpload(false)} />}
+      {showCompare && (
+        <ImageCompareModal patientId={patient.id} images={comparableImages} onClose={() => setShowCompare(false)} />
+      )}
     </div>
   );
 }

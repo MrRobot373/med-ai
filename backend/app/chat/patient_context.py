@@ -16,7 +16,9 @@ from sqlalchemy.orm import Session as DbSession
 from app.models.encounter import Encounter
 from app.models.patient import Patient
 from app.models.report import Report
+from app.models.vision_analysis import VisionAnalysisStatus
 from app.services.clinical import list_allergies, list_conditions, list_medications
+from app.services.vision import get_analysis
 
 
 def _age(dob: date) -> int:
@@ -73,17 +75,37 @@ def build_encounter_facts(encounter: Encounter) -> str:
     return "\n".join(lines)
 
 
-def build_report_facts(report: Report) -> str:
+def build_report_facts(db: DbSession, report: Report) -> str:
     lines = [f"Report: {report.title} ({report.report_type.value.replace('_', ' ')})"]
     lines.append(f"Date: {report.report_date.isoformat()}" if report.report_date else "Date: Not detected")
 
-    if not report.extracted_content:
+    if report.extracted_content:
+        pages = json.loads(report.extracted_content)
+        for page in pages:
+            text = (page.get("text") or "").strip()
+            if text:
+                lines.append(f"[Page {page.get('page')}]\n{text}")
+    else:
         lines.append("(No extracted text is available for this report.)")
-        return "\n".join(lines)
 
-    pages = json.loads(report.extracted_content)
-    for page in pages:
-        text = (page.get("text") or "").strip()
-        if text:
-            lines.append(f"[Page {page.get('page')}]\n{text}")
+    # A selected image/DICOM report's vision analysis (Phase 09) is directly on-topic
+    # here — surfaced as a fact about the report itself, the same way OCR/parsed text
+    # is, rather than only via a separate retrieval hit.
+    vision = get_analysis(db, report.id)
+    if vision and vision.status == VisionAnalysisStatus.SUCCESS and vision.payload:
+        payload = json.loads(vision.payload)
+        vision_lines = [f"Image type: {payload['image_type']}"] if payload.get("image_type") else []
+        for key, label in (
+            ("observations", "Observations"),
+            ("measurements_visible", "Measurements visible"),
+            ("clinical_entities", "Clinical entities"),
+            ("quality_limitations", "Image quality limitations"),
+            ("uncertainties", "Uncertainties"),
+        ):
+            values = payload.get(key)
+            if values:
+                vision_lines.append(f"{label}: " + "; ".join(values))
+        if vision_lines:
+            lines.append("Vision analysis:\n" + "\n".join(vision_lines))
+
     return "\n".join(lines)

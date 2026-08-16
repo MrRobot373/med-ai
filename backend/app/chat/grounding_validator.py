@@ -16,9 +16,9 @@ import json
 from pydantic import BaseModel, ValidationError
 
 from app.chat.context_builder import LabeledEvidence
-from app.chat.generation import ChatMessage, GenerationError, generate_complete
 from app.chat.prompts import GROUNDING_VALIDATION_SYSTEM_PROMPT, build_grounding_user_prompt
 from app.config.settings import Settings
+from app.llm.generation import ChatMessage, GenerationError, generate_complete
 from app.logging import get_logger
 
 logger = get_logger(__name__)

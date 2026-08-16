@@ -72,3 +72,21 @@ def _mock_rag_indexing(monkeypatch: pytest.MonkeyPatch) -> None:
     section)."""
     monkeypatch.setattr("app.ingestion.pipeline.index_document", lambda *args, **kwargs: [])
     monkeypatch.setattr("app.services.reports.index_document", lambda *args, **kwargs: [])
+    monkeypatch.setattr("app.services.vision.index_document", lambda *args, **kwargs: [])
+
+
+@pytest.fixture(autouse=True)
+def _mock_vision_generation(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Same rationale as `_mock_rag_indexing` above, for Phase 09: any report upload
+    whose mime type is image/DICOM automatically triggers vision analysis during
+    ingestion (`ingestion/pipeline.py`), which — left unmocked — makes a real,
+    slow (~30-100s+ observed live) Ollama vision call per upload. Tests that
+    specifically exercise vision analysis (test_vision.py) patch
+    `app.vision.analyzer.analyze_image`/`compare_images` themselves with a specific
+    return value rather than relying on this default empty-result stub."""
+
+    async def _no_analysis(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr("app.services.vision.analyze_image", _no_analysis)
+    monkeypatch.setattr("app.services.vision.compare_images", _no_analysis)

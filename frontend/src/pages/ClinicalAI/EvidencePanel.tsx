@@ -1,5 +1,12 @@
-import { FileText, Library } from "lucide-react";
+import { Eye, FileText, Library } from "lucide-react";
 import type { CitationOut, EvidenceQuality, GroundingClaim } from "@/api/chat";
+
+const SOURCE_ICON: Record<CitationOut["source_type"], typeof FileText> = {
+  patient_report: FileText,
+  patient_vision: Eye,
+  knowledge_document: Library,
+  external: Library,
+};
 
 // Deterministic labels, never a fabricated confidence percentage (spec §54) — these
 // map 1:1 to app/chat/evidence_quality.py's EvidenceQuality enum.
@@ -71,25 +78,24 @@ export function EvidencePanel({
         {citations && citations.length > 0 && (
           <div className="space-y-2">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-text">Sources</h3>
-            {citations.map((c) => (
-              <div key={c.id} id={`evidence-${c.label}`} className="scroll-mt-3 rounded-md border border-border p-2.5">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-navy">
-                  <span className="rounded bg-light-blue px-1.5 py-0.5 text-primary-blue">{c.label}</span>
-                  {c.source_type === "patient_report" ? (
-                    <FileText className="h-3.5 w-3.5 text-muted-text" />
-                  ) : (
-                    <Library className="h-3.5 w-3.5 text-muted-text" />
-                  )}
-                  <span className="truncate">{c.source_title}</span>
+            {citations.map((c) => {
+              const SourceIcon = SOURCE_ICON[c.source_type];
+              return (
+                <div key={c.id} id={`evidence-${c.label}`} className="scroll-mt-3 rounded-md border border-border p-2.5">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-navy">
+                    <span className="rounded bg-light-blue px-1.5 py-0.5 text-primary-blue">{c.label}</span>
+                    <SourceIcon className="h-3.5 w-3.5 text-muted-text" />
+                    <span className="truncate">{c.source_title}</span>
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-muted-text">
+                    {c.page && <>Page {c.page}</>}
+                    {c.page && c.section && " · "}
+                    {c.section}
+                  </div>
+                  <p className="mt-1.5 line-clamp-4 text-xs text-muted-text">&ldquo;{c.source_excerpt}&rdquo;</p>
                 </div>
-                <div className="mt-0.5 text-[11px] text-muted-text">
-                  {c.page && <>Page {c.page}</>}
-                  {c.page && c.section && " · "}
-                  {c.section}
-                </div>
-                <p className="mt-1.5 line-clamp-4 text-xs text-muted-text">&ldquo;{c.source_excerpt}&rdquo;</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -113,6 +113,20 @@ class Settings(BaseSettings):
     # §43 Stage 3); see rag-design notes in docs/architecture.md's Phase 08 section.
     chat_history_turns: int = Field(default=4, alias="CHAT_HISTORY_TURNS")
 
+    # --- Vision (Phase 09, spec §58-61) — same model, own image/output tuning ---
+    # Structured JSON output (image_type/observations/measurements/entities/
+    # limitations/uncertainties, spec §60) needs materially more headroom than a
+    # chat answer's 1024-token budget, or a real image with many findings gets
+    # silently truncated mid-JSON and fails to parse.
+    vision_max_output_tokens: int = Field(default=2048, alias="VISION_MAX_OUTPUT_TOKENS")
+    # Low, deterministic — same rationale as chat_temperature (spec §50): structured
+    # observation extraction should be reproducible, not creative.
+    vision_temperature: float = Field(default=0.1, alias="VISION_TEMPERATURE")
+    # Images are downsized before being sent to Ollama (base64 over HTTP) — keeps
+    # request size and vision-model latency bounded without materially hurting
+    # legibility of typical scanned reports/clinical photos.
+    vision_max_image_dimension: int = Field(default=1600, alias="VISION_MAX_IMAGE_DIMENSION")
+
     # --- Research Mode (off by default — privacy-first per §64) ---
     enable_research: bool = Field(default=False, alias="ENABLE_RESEARCH")
     searxng_url: str = Field(default="http://localhost:8080", alias="SEARXNG_URL")

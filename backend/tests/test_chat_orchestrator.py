@@ -15,11 +15,14 @@ from app.chat.context_builder import LabeledEvidence
 from app.chat.grounding_validator import GroundingClaim, GroundingResult
 from app.config.settings import get_settings
 from app.db.session import SessionLocal
+from app.models.chunk import ChunkCollection
 from app.models.conversation import Conversation, ConversationScope
 from app.models.encounter import Encounter, EncounterType
 from app.models.patient import Patient, Sex
 from app.models.report import ExtractionStatus, IngestionStatus, PatientMatchStatus, Report
+from app.models.vision_analysis import VisionAnalysis, VisionAnalysisStatus
 from app.rag.deduplicator import RetrievedPassage
+from app.vision.analyzer import VisionObservation
 
 
 def _make_patient(db) -> Patient:
@@ -74,10 +77,12 @@ def test_general_conversation_skips_retrieval_entirely(monkeypatch: pytest.Monke
         db.close()
 
 
-def test_current_patient_scope_pulls_patient_and_knowledge_evidence(monkeypatch: pytest.MonkeyPatch):
+def test_current_patient_scope_pulls_patient_knowledge_and_vision_evidence(monkeypatch: pytest.MonkeyPatch):
     def fake_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3):
-        if patient_id:
+        if collection == ChunkCollection.PATIENT_DOCUMENTS:
             return [_fake_passage("patient_documents", "report-1", "Patient")]
+        if collection == ChunkCollection.PATIENT_VISION:
+            return [_fake_passage("patient_vision", "report-2", "Vision")]
         return [_fake_passage("medical_knowledge", "knowledge-1", "Guideline")]
 
     monkeypatch.setattr("app.chat.orchestrator.retrieve", fake_retrieve)
@@ -91,13 +96,14 @@ def test_current_patient_scope_pulls_patient_and_knowledge_evidence(monkeypatch:
         prepared = orchestrator.prepare_turn(db, settings, conversation, "What medications is she on?", [])
 
         assert prepared.abstain is False
-        assert [e.label for e in prepared.labeled_evidence] == ["P1", "L1"]
+        assert [e.label for e in prepared.labeled_evidence] == ["P1", "L1", "V1"]
         user_turn = prepared.messages[-1].content
         assert "CURRENT PATIENT FACTS" in user_turn
         assert "Margaret Wallace" in user_turn
         assert "RETRIEVED LOCAL CLINICAL EVIDENCE" in user_turn
         assert "[P1]" in user_turn
         assert "[L1]" in user_turn
+        assert "[V1]" in user_turn
     finally:
         db.query(Patient).filter(Patient.id == patient.id).delete()
         db.commit()
@@ -143,10 +149,62 @@ def test_selected_report_scope_only_searches_patient_documents(monkeypatch: pyte
         prepared = orchestrator.prepare_turn(db, settings, conversation, "Summarize this report", [])
 
         assert "medical_knowledge" not in calls  # SELECTED_REPORT deliberately doesn't broaden to the whole KB
+        assert "patient_vision" not in calls  # nor to the patient's whole image corpus — see same rationale
         user_turn = prepared.messages[-1].content
         assert "SELECTED REPORT FACTS" in user_turn
         assert "Central subfield thickness" in user_turn
     finally:
+        db.query(Report).filter(Report.patient_id == patient.id).delete()
+        db.query(Patient).filter(Patient.id == patient.id).delete()
+        db.commit()
+        db.close()
+
+
+def test_selected_report_scope_includes_its_own_vision_analysis_in_report_facts(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr("app.chat.orchestrator.retrieve", lambda *a, **k: [])
+    settings = get_settings()
+    db = SessionLocal()
+    try:
+        patient = _make_patient(db)
+        report = Report(
+            id=str(uuid.uuid4()),
+            patient_id=patient.id,
+            title="Fundus.png",
+            source_filename="fundus.png",
+            stored_filename=f"{uuid.uuid4().hex}.png",
+            file_hash=uuid.uuid4().hex,
+            mime_type="image/png",
+            file_size_bytes=1,
+            ingestion_status=IngestionStatus.COMPLETED,
+            extraction_status=ExtractionStatus.NOT_APPLICABLE,
+            patient_match_status=PatientMatchStatus.MATCHED,
+        )
+        db.add(report)
+        db.commit()
+        observation = VisionObservation(
+            image_type="fundus photograph", observations=["disc margins well-defined"]
+        )
+        db.add(
+            VisionAnalysis(
+                report_id=report.id, status=VisionAnalysisStatus.SUCCESS, payload=observation.model_dump_json()
+            )
+        )
+        db.commit()
+
+        conversation = Conversation(
+            id=str(uuid.uuid4()),
+            user_id="u1",
+            scope=ConversationScope.SELECTED_REPORT,
+            patient_id=patient.id,
+            selected_report_id=report.id,
+        )
+        prepared = orchestrator.prepare_turn(db, settings, conversation, "What does this image show?", [])
+
+        user_turn = prepared.messages[-1].content
+        assert "Vision analysis" in user_turn
+        assert "disc margins well-defined" in user_turn
+    finally:
+        db.query(VisionAnalysis).filter(VisionAnalysis.report_id == report.id).delete()
         db.query(Report).filter(Report.patient_id == patient.id).delete()
         db.query(Patient).filter(Patient.id == patient.id).delete()
         db.commit()

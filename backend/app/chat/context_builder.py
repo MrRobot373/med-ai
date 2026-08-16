@@ -23,10 +23,15 @@ class LabeledEvidence:
 
 
 def label_evidence(
-    patient_passages: list[RetrievedPassage], knowledge_passages: list[RetrievedPassage]
+    patient_passages: list[RetrievedPassage],
+    knowledge_passages: list[RetrievedPassage],
+    vision_passages: list[RetrievedPassage] | None = None,
 ) -> list[LabeledEvidence]:
     labeled = [LabeledEvidence(label=f"P{i}", passage=p) for i, p in enumerate(patient_passages, start=1)]
     labeled.extend(LabeledEvidence(label=f"L{i}", passage=p) for i, p in enumerate(knowledge_passages, start=1))
+    # V# — image-derived evidence (Phase 09, spec §59 "image-to-RAG"), a separate
+    # label space from P# so a citation always signals its source at a glance.
+    labeled.extend(LabeledEvidence(label=f"V{i}", passage=p) for i, p in enumerate(vision_passages or [], start=1))
     return labeled
 
 

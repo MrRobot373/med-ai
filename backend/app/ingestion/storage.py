@@ -12,14 +12,27 @@ from __future__ import annotations
 import hashlib
 import secrets
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from app.config.settings import Settings
+
+if TYPE_CHECKING:
+    from app.models.report import Report
 
 
 def reports_dir(settings: Settings, patient_id: str) -> Path:
     directory = Path(settings.upload_dir) / "reports" / patient_id
     directory.mkdir(parents=True, exist_ok=True)
     return directory
+
+
+def file_path_for(settings: Settings, report: Report) -> Path:
+    """Lives here (not `services/reports.py`) so both `services/reports.py` and
+    `services/vision.py` can import it without either depending on the other —
+    `services/vision.py` needs it too, and `services/reports.py` already needs
+    `ingestion/pipeline.py` (which now calls into vision analysis), so a
+    `services.vision -> services.reports` edge would cycle back."""
+    return reports_dir(settings, report.patient_id) / report.stored_filename
 
 
 def generate_stored_filename(extension: str) -> str:

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
@@ -15,6 +14,7 @@ from app.ingestion import validators
 from app.ingestion.pipeline import run_ingestion
 from app.ingestion.storage import (
     delete_file,
+    file_path_for,
     generate_stored_filename,
     reports_dir,
     sha256_hex,
@@ -25,6 +25,7 @@ from app.models.chunk import ChunkCollection
 from app.models.ingestion_job import IngestionJob
 from app.models.report import ExtractionStatus, IngestionStatus, PatientMatchStatus, Report
 from app.rag.indexing import delete_indexed_source, index_document
+from app.services import vision as vision_service
 
 logger = get_logger(__name__)
 
@@ -120,9 +121,11 @@ def archive_report(db: DbSession, settings: Settings, report: Report) -> Report:
     # An archived report (wrong/duplicate/withdrawn) stops contributing to this
     # patient's RAG context immediately — never left searchable just because nothing
     # was actively broken about its chunks (spec §16 patient isolation is about
-    # correctness, not just security).
+    # correctness, not just security). Covers both text (patient_documents) and any
+    # vision-derived evidence (patient_vision, Phase 09) for this report.
     try:
         delete_indexed_source(db, settings, ChunkCollection.PATIENT_DOCUMENTS, report_id=report.id)
+        delete_indexed_source(db, settings, ChunkCollection.PATIENT_VISION, report_id=report.id)
     except Exception:
         logger.warning("Failed to deindex archived report_id=%s", report.id, exc_info=True)
     return report
@@ -153,16 +156,16 @@ def confirm_patient_match(db: DbSession, settings: Settings, report: Report, rev
             )
         except Exception:
             logger.warning("Failed to index confirmed report_id=%s", report.id, exc_info=True)
+
+    # Same rule for any vision analysis already run against this report (Phase 09).
+    vision_service.reindex_if_present(db, settings, report)
     return report
-
-
-def file_path_for(settings: Settings, report: Report) -> Path:
-    return reports_dir(settings, report.patient_id) / report.stored_filename
 
 
 def delete_report_and_file(db: DbSession, settings: Settings, report: Report) -> None:
     try:
         delete_indexed_source(db, settings, ChunkCollection.PATIENT_DOCUMENTS, report_id=report.id)
+        delete_indexed_source(db, settings, ChunkCollection.PATIENT_VISION, report_id=report.id)
     except Exception:
         logger.warning("Failed to deindex deleted report_id=%s", report.id, exc_info=True)
     delete_file(file_path_for(settings, report))
@@ -170,14 +173,16 @@ def delete_report_and_file(db: DbSession, settings: Settings, report: Report) ->
     db.commit()
 
 
-def run_ingestion_task(report_id: str, settings: Settings) -> None:
+async def run_ingestion_task(report_id: str, settings: Settings) -> None:
     """The actual `BackgroundTasks` callable — opens its OWN db session rather than
     reusing the request's, since the request's session is closed by the time a
     background task runs (spec-agnostic FastAPI/Starlette lifecycle detail, not
-    something safe to assume away)."""
+    something safe to assume away). Async since Phase 09's vision analysis step
+    (inside `run_ingestion`) makes a real awaited Ollama call — FastAPI's
+    `BackgroundTasks` awaits an async task callable natively, no extra wiring needed."""
     db = SessionLocal()
     try:
-        run_ingestion(db, report_id, settings)
+        await run_ingestion(db, report_id, settings)
     except Exception:
         logger.exception("Unhandled error running ingestion task for report_id=%s", report_id)
     finally:

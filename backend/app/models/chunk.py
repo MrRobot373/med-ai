@@ -20,12 +20,21 @@ from app.db.base import Base
 
 
 class ChunkCollection(str, Enum):
-    """Mirrors the Qdrant collection it's indexed into — spec §14. `patient_vision`
-    (Phase 09) and `web_cache` (Phase 11) join once those phases populate them; the
-    column is a plain string so adding values later needs no migration."""
+    """Mirrors the Qdrant collection it's indexed into — spec §14. `web_cache`
+    (Phase 11) joins once that phase populates it; the column is a plain string so
+    adding values later needs no migration."""
 
     MEDICAL_KNOWLEDGE = "medical_knowledge"
     PATIENT_DOCUMENTS = "patient_documents"
+    # Normalized text/observations produced from images (spec §14): report images,
+    # scanned documents, vision analysis output, OCR output — see app/vision/.
+    PATIENT_VISION = "patient_vision"
+
+
+# Collections that carry per-patient content and therefore require a mandatory
+# patient_id filter on every query (spec §16) — everything except the shared,
+# unscoped medical_knowledge base.
+PATIENT_SCOPED_COLLECTIONS = frozenset({ChunkCollection.PATIENT_DOCUMENTS, ChunkCollection.PATIENT_VISION})
 
 
 class Chunk(Base):

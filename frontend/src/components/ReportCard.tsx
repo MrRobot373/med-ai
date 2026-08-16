@@ -4,6 +4,7 @@ import { Card } from "@/components/Card";
 import { StatusChip, type StatusTone } from "@/components/StatusChip";
 import { ReconciliationModal } from "@/components/ReconciliationModal";
 import { AskAIButton } from "@/components/AskAIButton";
+import { VisionAnalysisPanel } from "@/components/VisionAnalysisPanel";
 import {
   reportFileUrl,
   reportPreviewUrl,
@@ -11,6 +12,7 @@ import {
   useConfirmReportMatch,
   type ReportListItem,
 } from "@/api/reports";
+import { VISION_ANALYZABLE_MIME_TYPES } from "@/api/vision";
 import { useCanWrite } from "@/api/auth";
 
 const REPORT_TYPE_LABEL: Record<ReportListItem["report_type"], string> = {
@@ -114,6 +116,14 @@ export function ReportCard({ report, patientName }: { report: ReportListItem; pa
       {report.patient_match_status === "unconfirmed" && report.ingestion_status === "completed" && (
         <p className="mt-3 text-xs text-muted-text">Patient identity not confirmed from document content.</p>
       )}
+
+      {VISION_ANALYZABLE_MIME_TYPES.has(report.mime_type) &&
+        report.ingestion_status === "completed" &&
+        report.patient_match_status !== "mismatch" && (
+          <div className="mt-3">
+            <VisionAnalysisPanel report={report} />
+          </div>
+        )}
 
       <div className="mt-3 flex items-center gap-3 border-t border-border pt-3 text-xs font-medium">
         <a href={reportFileUrl(report.id)} target="_blank" rel="noreferrer" className="text-primary-blue hover:underline">

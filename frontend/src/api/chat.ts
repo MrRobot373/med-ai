@@ -25,7 +25,7 @@ export interface ConversationOut {
   updated_at: string;
 }
 
-export type CitationSourceType = "patient_report" | "knowledge_document" | "external";
+export type CitationSourceType = "patient_report" | "knowledge_document" | "patient_vision" | "external";
 
 export interface CitationOut {
   id: string;

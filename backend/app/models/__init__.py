@@ -19,6 +19,7 @@ from app.models.patient import Patient
 from app.models.report import Report
 from app.models.session import Session
 from app.models.user import User
+from app.models.vision_analysis import VisionAnalysis
 
 __all__ = [
     "Allergy",
@@ -35,4 +36,5 @@ __all__ = [
     "Report",
     "Session",
     "User",
+    "VisionAnalysis",
 ]

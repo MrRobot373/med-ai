@@ -1,7 +1,7 @@
-"""Qdrant collection management — spec §14. Creates `medical_knowledge` and
-`patient_documents` (the two collections this phase populates; `patient_vision` joins
-in Phase 09, `web_cache` in Phase 11 — adding a collection later is just another call
-to `ensure_collection`, nothing here needs to change shape).
+"""Qdrant collection management — spec §14. Creates `medical_knowledge`,
+`patient_documents`, and `patient_vision` (`web_cache` joins in Phase 11 — adding a
+collection later is just another call to `ensure_collection`, nothing here needs to
+change shape).
 
 Vector size is read from the embedding model at setup time (spec §5 "never manually
 hardcode vector dimension"), not assumed from the model name.
@@ -14,7 +14,7 @@ from qdrant_client.http import models as qmodels
 
 from app.config.settings import Settings
 from app.logging import get_logger
-from app.models.chunk import ChunkCollection
+from app.models.chunk import PATIENT_SCOPED_COLLECTIONS
 
 logger = get_logger(__name__)
 
@@ -38,9 +38,9 @@ def ensure_collection(client: QdrantClient, name: str, vector_size: int) -> None
         collection_name=name,
         vectors_config=qmodels.VectorParams(size=vector_size, distance=qmodels.Distance.COSINE),
     )
-    # patient_id is filtered on every patient_documents query (spec §16 mandatory
+    # patient_id is filtered on every patient-scoped query (spec §16 mandatory
     # isolation) — a payload index makes that filter fast instead of a full scan.
-    if name == ChunkCollection.PATIENT_DOCUMENTS.value:
+    if name in {c.value for c in PATIENT_SCOPED_COLLECTIONS}:
         client.create_payload_index(
             collection_name=name, field_name="patient_id", field_schema=qmodels.PayloadSchemaType.KEYWORD
         )

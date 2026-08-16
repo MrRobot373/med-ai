@@ -1,10 +1,10 @@
 """`citations` table — spec §15 Citations, §51 Citation System.
 
-Maps an assistant message's inline `[P1]`/`[L1]`/`[W1]`-style labels back to the exact
-retrieved passage that supports them — never fabricated (spec §2 "never fabricate
-citations... never fabricate page numbers"). `source_excerpt` is copied at generation
-time rather than only referencing `chunk_id`, so a citation stays fully readable even
-if the underlying chunk is later deleted/reindexed.
+Maps an assistant message's inline `[P1]`/`[L1]`/`[V1]`/`[W1]`-style labels back to the
+exact retrieved passage that supports them — never fabricated (spec §2 "never
+fabricate citations... never fabricate page numbers"). `source_excerpt` is copied at
+generation time rather than only referencing `chunk_id`, so a citation stays fully
+readable even if the underlying chunk is later deleted/reindexed.
 """
 
 from __future__ import annotations
@@ -23,6 +23,7 @@ from app.db.base import Base
 class CitationSourceType(str, Enum):
     PATIENT_REPORT = "patient_report"
     KNOWLEDGE_DOCUMENT = "knowledge_document"
+    PATIENT_VISION = "patient_vision"  # image-derived evidence (Phase 09), label "V#"
     EXTERNAL = "external"  # Phase 11 (web research) — unused until then
 
 
