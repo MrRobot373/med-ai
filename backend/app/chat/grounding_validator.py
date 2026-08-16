@@ -3,25 +3,19 @@ partially supported/unsupported") folded together with spec §52's "ensure the c
 passage reasonably contains/supports the associated claim" into one structured LLM
 pass — see `prompts.py`'s docstring for why these are the same underlying judgment.
 
-Uses Pydantic to validate the model's JSON output (spec §123): validate, attempt one
-controlled repair/retry, and if it's still invalid, return `None` rather than
-fabricating a passing result — a failed safety check must never be silently presented
-as a passed one (spec §103).
+Validate/repair-retry/never-fabricate (spec §123) lives in `app.llm.structured` —
+shared with vision analysis and the clinical modules rather than three separate copies.
 """
 
 from __future__ import annotations
 
-import json
-
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 from app.chat.context_builder import LabeledEvidence
 from app.chat.prompts import GROUNDING_VALIDATION_SYSTEM_PROMPT, build_grounding_user_prompt
 from app.config.settings import Settings
-from app.llm.generation import ChatMessage, GenerationError, generate_complete
-from app.logging import get_logger
-
-logger = get_logger(__name__)
+from app.llm.generation import ChatMessage
+from app.llm.structured import generate_structured
 
 
 class GroundingClaim(BaseModel):
@@ -52,19 +46,4 @@ async def validate_grounding(
         ChatMessage(role="system", content=GROUNDING_VALIDATION_SYSTEM_PROMPT),
         ChatMessage(role="user", content=build_grounding_user_prompt(answer_text, _evidence_block(labeled_evidence))),
     ]
-
-    for attempt in range(2):  # one controlled repair/retry, per spec §123
-        try:
-            raw = await generate_complete(messages, settings, json_format=True)
-            return GroundingResult.model_validate(json.loads(raw))
-        except (GenerationError, ValueError, ValidationError):
-            logger.warning("Grounding validation attempt %s failed", attempt + 1, exc_info=True)
-            if attempt == 0:
-                messages.append(
-                    ChatMessage(
-                        role="user",
-                        content="That was not valid JSON matching the required shape. "
-                        "Return ONLY the JSON object, nothing else.",
-                    )
-                )
-    return None
+    return await generate_structured(messages, GroundingResult, settings)

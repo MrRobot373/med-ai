@@ -127,6 +127,13 @@ class Settings(BaseSettings):
     # legibility of typical scanned reports/clinical photos.
     vision_max_image_dimension: int = Field(default=1600, alias="VISION_MAX_IMAGE_DIMENSION")
 
+    # --- Clinical modules (Phase 10, spec §63) — summary/SOAP/entities/differential/
+    # guideline Q&A/report comparison. Same low-temperature rationale as chat/vision;
+    # a bigger token budget than chat's 1024 since SOAP/differential output is
+    # structured JSON with several sections, easy to silently truncate otherwise.
+    clinical_module_temperature: float = Field(default=0.15, alias="CLINICAL_MODULE_TEMPERATURE")
+    clinical_module_max_output_tokens: int = Field(default=1536, alias="CLINICAL_MODULE_MAX_OUTPUT_TOKENS")
+
     # --- Research Mode (off by default — privacy-first per §64) ---
     enable_research: bool = Field(default=False, alias="ENABLE_RESEARCH")
     searxng_url: str = Field(default="http://localhost:8080", alias="SEARXNG_URL")

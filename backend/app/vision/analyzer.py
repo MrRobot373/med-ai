@@ -1,29 +1,19 @@
 """Ollama vision analysis — spec §58/§59/§60. Single-image structured extraction and
 two-image comparison, both built on the shared `app/llm/generation.py` client (same
 model, same concurrency semaphore as chat — spec §58 "use Qwen3.5 vision capability
-rather than loading a second large VLM").
-
-Same validate/repair-retry/never-fabricate discipline as
-`app/chat/grounding_validator.py` (spec §123): one controlled retry on invalid JSON,
-`None` returned (never a fabricated result) if both attempts fail to parse.
+rather than loading a second large VLM"). Validate/repair-retry/never-fabricate (spec
+§123) lives in `app.llm.structured`.
 """
 
 from __future__ import annotations
 
-import json
-
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 from app.config.settings import Settings
 from app.ingestion.image import normalize_image_b64
-from app.llm.generation import ChatMessage, GenerationError, generate_complete
-from app.logging import get_logger
-from app.vision.prompts import (
-    VISION_ANALYSIS_SYSTEM_PROMPT,
-    VISION_COMPARISON_SYSTEM_PROMPT,
-)
-
-logger = get_logger(__name__)
+from app.llm.generation import ChatMessage
+from app.llm.structured import generate_structured
+from app.vision.prompts import VISION_ANALYSIS_SYSTEM_PROMPT, VISION_COMPARISON_SYSTEM_PROMPT
 
 
 class VisionObservation(BaseModel):
@@ -50,9 +40,6 @@ class VisionComparison(BaseModel):
     limitations: list[str] = []
 
 
-_REPAIR_NUDGE = "That was not valid JSON matching the required shape. Return ONLY the JSON object, nothing else."
-
-
 async def analyze_image(image_bytes: bytes, settings: Settings) -> VisionObservation | None:
     """Returns `None` (never a fabricated result) if the model's output can't be
     parsed as valid structured JSON after one retry, or if Ollama itself is
@@ -63,7 +50,13 @@ async def analyze_image(image_bytes: bytes, settings: Settings) -> VisionObserva
         ChatMessage(role="system", content=VISION_ANALYSIS_SYSTEM_PROMPT),
         ChatMessage(role="user", content="Analyze this image.", images=[image_b64]),
     ]
-    return await _run_structured(messages, VisionObservation, settings)
+    return await generate_structured(
+        messages,
+        VisionObservation,
+        settings,
+        temperature=settings.vision_temperature,
+        max_output_tokens=settings.vision_max_output_tokens,
+    )
 
 
 async def compare_images(previous_bytes: bytes, current_bytes: bytes, settings: Settings) -> VisionComparison | None:
@@ -80,24 +73,10 @@ async def compare_images(previous_bytes: bytes, current_bytes: bytes, settings: 
             images=[previous_b64, current_b64],
         ),
     ]
-    return await _run_structured(messages, VisionComparison, settings)
-
-
-async def _run_structured(
-    messages: list[ChatMessage], schema: type[BaseModel], settings: Settings
-) -> BaseModel | None:
-    for attempt in range(2):  # one controlled repair/retry, per spec §123
-        try:
-            raw = await generate_complete(
-                messages,
-                settings,
-                json_format=True,
-                temperature=settings.vision_temperature,
-                max_output_tokens=settings.vision_max_output_tokens,
-            )
-            return schema.model_validate(json.loads(raw))
-        except (GenerationError, ValueError, ValidationError):
-            logger.warning("Vision analysis attempt %s failed to parse", attempt + 1, exc_info=True)
-            if attempt == 0:
-                messages.append(ChatMessage(role="user", content=_REPAIR_NUDGE))
-    return None
+    return await generate_structured(
+        messages,
+        VisionComparison,
+        settings,
+        temperature=settings.vision_temperature,
+        max_output_tokens=settings.vision_max_output_tokens,
+    )

@@ -5,30 +5,34 @@ Master Build Prompt in this repo's root (`MASTER BUILD PROMPT — GMS Local Mult
 Clinical RAG & Decision-Support Platform.md`) as a 16-phase program — see
 [docs/architecture.md](docs/architecture.md) for the phase roadmap and current status.
 
-> **Current status: Phase 09 — Vision.** Foundation (01), the dashboard (02),
+> **Current status: Phase 10 — Clinical Modules.** Foundation (01), the dashboard (02),
 > authentication (03), patient management (04), report ingestion (05), structured
-> clinical data (06), the local retrieval pipeline (07), clinical chat (08), and now
-> vision — image/DICOM reports are analyzed automatically on upload (structured,
-> spec §60-shaped JSON: image type, observations, measurements, clinical entities,
-> quality limitations, uncertainties — describing observable findings, never
-> presenting a diagnosis as fact), indexed into a real `patient_vision` collection so
-> findings become genuine, citable ([V#]) chat evidence, and a previous/current image
-> comparison tool runs a real joint vision-model call plus a real guideline-evidence
-> lookup on the extracted differences. All verified end-to-end against real
-> Ollama/Qdrant, not mocked. Clinical modules (SOAP, differential support, etc.) aren't
-> implemented yet — the nav and patient-workspace tabs tell you exactly which phase
-> each section lands in, and every capability card links to a real (if not-yet-built)
-> destination rather than a dead end.
+> clinical data (06), the local retrieval pipeline (07), clinical chat (08), vision (09),
+> and now six real structured clinical workflows (spec §63) — each its own schema and
+> prompt, never "the same prompt sent to the chat endpoint": note summarization (4
+> types), SOAP note drafting, clinical entity extraction, Differential Support
+> (evidence-cited, explicitly not autonomous diagnosis), a dedicated Guideline Q&A tool,
+> and report comparison whose numeric value changes are calculated 100% deterministically
+> (never by the model) with an LLM narrating only the non-numeric differences. Every
+> generated result is an explicit, timestamped draft — spec §63's "never automatically
+> saved as finalized clinical record" applies across all six. Live-verified against real
+> Ollama: SOAP/entities/summary all completed correctly in well under 90 seconds each;
+> a real Guideline Q&A question was answered correctly with real citations in ~7 minutes
+> (the known reranker latency below). Clinical modules beyond these six (web research,
+> knowledge administration, etc.) aren't implemented yet — the nav and patient-workspace
+> tabs tell you exactly which phase each section lands in.
 >
-> **Known latency issue, not yet fixed:** reranking a patient-scoped chat question
-> against the knowledge base measured ~6-7 minutes in live testing — see
-> docs/architecture.md's Phase 08 section ("Hybrid-reasoning model latency") for the
-> full finding (a separate, already-fixed bug in that same session made `qwen3.5:9b`'s
-> default "thinking" mode silently swallow the entire response budget before emitting
-> any visible content — that part is fixed; the reranker latency is a pre-existing
-> Phase 07 characteristic flagged here as a follow-up, not newly introduced). Vision
-> analysis itself is fast (`"think": false` applies to every Ollama call, vision
-> included) — a single-image analysis completed in well under a minute in live testing.
+> **Known latency issue, not yet fixed:** reranking a patient-scoped question against
+> the knowledge base measured ~6-7 minutes in live testing (Phase 08's Clinical Chat,
+> and again in Phase 10's Guideline Q&A / Differential Support / Report Comparison,
+> which share the same retrieval code) — see docs/architecture.md's Phase 08 section
+> ("Hybrid-reasoning model latency") for the full finding (a separate, already-fixed bug
+> in that session made `qwen3.5:9b`'s default "thinking" mode silently swallow the
+> entire response budget before emitting any visible content — that part is fixed; the
+> reranker latency is a pre-existing Phase 07 characteristic flagged as a follow-up, not
+> newly introduced). Modules that don't need retrieval (SOAP, summary, entity
+> extraction) are fast — well under 90 seconds live, since `"think": false` applies to
+> every Ollama call across the whole app.
 
 The initial knowledge-base domain for this deployment is **ophthalmology** — see
 `data/*.pdf` (anatomy, disease, referral-guideline, and instrument references) and
@@ -145,6 +149,7 @@ npm run build
 | Clinical AI streams zero tokens and abstains even though the patient clearly has relevant data | Should not reproduce after this session's fix (`"think": false` is now sent on every Ollama chat request) — if it does, confirm the running backend was restarted after pulling this change, since `qwen3.5:9b`'s default "thinking" mode can silently consume the entire response budget before any visible content is emitted. |
 | An image/DICOM report's ingestion status stays `processing` at `stage: "analyzing_image"` for a while | Normal — vision analysis makes a real Ollama call as part of ingestion (automatic for image/DICOM reports, same pattern as OCR). It's fast once thinking is disabled (well under a minute in live testing), but a cold/loaded Ollama can still take longer; check `GET /api/reports/{id}/status` for `error`, not just elapsed time, before assuming it's stuck. |
 | A DICOM report's vision analysis shows `status: "not_applicable"` | Expected when the file's pixel data can't be decoded into a preview (e.g. an unsupported compressed transfer syntax — see docs/architecture.md's Phase 05 DICOM notes). Not a bug; `analysis_error` on the response explains why. |
+| Guideline Q&A / Differential Support / Report Comparison take several minutes | Same reranker latency as patient-scoped Clinical AI questions above — these three modules retrieve from `medical_knowledge` too. SOAP, summary, and entity extraction don't retrieve anything and are fast (well under 90 seconds live). |
 
 ## Repository layout
 

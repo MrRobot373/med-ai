@@ -33,7 +33,7 @@ async def test_analyze_image_parses_valid_json(monkeypatch: pytest.MonkeyPatch):
         assert json_format is True
         return VALID_OBSERVATION_JSON
 
-    monkeypatch.setattr("app.vision.analyzer.generate_complete", fake_generate_complete)
+    monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)
     result = await analyze_image(TINY_PNG, get_settings())
 
     assert isinstance(result, VisionObservation)
@@ -51,7 +51,7 @@ async def test_analyze_image_retries_once_then_succeeds(monkeypatch: pytest.Monk
             return "not valid json at all"
         return VALID_OBSERVATION_JSON
 
-    monkeypatch.setattr("app.vision.analyzer.generate_complete", fake_generate_complete)
+    monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)
     result = await analyze_image(TINY_PNG, get_settings())
 
     assert len(calls) == 2
@@ -64,7 +64,7 @@ async def test_analyze_image_returns_none_never_fabricates_after_two_failures(mo
     async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
         return "still not json"
 
-    monkeypatch.setattr("app.vision.analyzer.generate_complete", fake_generate_complete)
+    monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)
     result = await analyze_image(TINY_PNG, get_settings())
 
     assert result is None
@@ -78,7 +78,7 @@ async def test_compare_images_sends_both_images_in_order(monkeypatch: pytest.Mon
         captured["images"] = messages[-1].images
         return VALID_COMPARISON_JSON
 
-    monkeypatch.setattr("app.vision.analyzer.generate_complete", fake_generate_complete)
+    monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)
     result = await compare_images(TINY_PNG, TINY_PNG, get_settings())
 
     assert isinstance(result, VisionComparison)
@@ -93,7 +93,7 @@ async def test_analyze_image_returns_none_on_generation_error(monkeypatch: pytes
     async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
         raise GenerationError("Ollama unreachable")
 
-    monkeypatch.setattr("app.vision.analyzer.generate_complete", fake_generate_complete)
+    monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)
     result = await analyze_image(TINY_PNG, get_settings())
 
     assert result is None

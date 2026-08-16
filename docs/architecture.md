@@ -38,7 +38,7 @@ GMS CLINICAL AI
 | 07 | Local RAG core: embeddings, Qdrant collections, dense+BM25 retrieval, RRF fusion, reranking, dedup | **Done** |
 | 08 | Clinical chat: conversations, streaming, evidence panel, citation/grounding validation | **Done** |
 | 09 | Vision: image upload, structured extraction, image-to-RAG, comparison | **Done** |
-| 10 | Clinical modules: summary, SOAP, entity extraction, guideline Q&A, differential support | Not started |
+| 10 | Clinical modules: summary, SOAP, entity extraction, guideline Q&A, differential support, report comparison | **Done** |
 | 11 | Web research: Research Mode, de-identification, PubMed/FDA, optional SearXNG, web cache | Not started |
 | 12 | Knowledge administration: upload, versioning, reindex, admin settings | Not started |
 | 13 | Audit & feedback: audit log UI, feedback capture, provenance drawer | Not started |
@@ -914,6 +914,144 @@ doesn't match SQLite chunk rows" check Phase 07's notes describe, and deleted by
 The fix itself is verified structurally, not just by inference: `points_by_collection`
 for `patient_vision` was confirmed at 0 both before and after the full live upload ->
 analyze -> index -> archive/deindex cycle performed for this section.
+
+## Phase 10 — what exists right now
+
+```text
+backend/app/
+  llm/structured.py                 EXTRACTED from three near-identical copies of
+                                     spec §123's validate/repair-retry/never-fabricate
+                                     loop (grounding_validator, vision/analyzer, and
+                                     now six clinical modules) into one shared,
+                                     generic `generate_structured(messages, schema,
+                                     settings) -> SchemaT | None` helper. Refactor
+                                     verified safe by the full test suite before any
+                                     Phase 10 code was written on top of it
+
+  models/clinical_module_run.py     ClinicalModuleRun: ONE table for all six modules
+                                     (module_type discriminates payload shape) rather
+                                     than six near-identical tables — each module still
+                                     has its own real Pydantic schema/prompt/workflow
+                                     (spec §63's actual requirement is "don't send the
+                                     same prompt to the chat endpoint," not "use a
+                                     separate table"). Every row is an explicit,
+                                     timestamped DRAFT — spec §63's SOAP instruction
+                                     ("never automatically saved as finalized clinical
+                                     record") applies to all six; nothing here ever
+                                     writes to Condition/Medication/Encounter. Visible
+                                     to any authenticated clinician viewing that
+                                     patient's chart, unlike Phase 08's private chat
+                                     conversations — a generated draft is chart-adjacent
+                                     work product, not personal history
+
+  modules/prompts.py                Six centralized, versioned prompts (spec §124) —
+                                     summary (parameterized by type: concise/discharge/
+                                     encounter/progress_note), SOAP, entity extraction,
+                                     differential support, guideline Q&A, report-
+                                     comparison narrative. Every prompt restates spec
+                                     §2/§58's core rules itself (never invent a value,
+                                     never state a diagnosis as fact, never a numeric
+                                     confidence) since each is an independent call with
+                                     no shared system prompt to inherit from
+  modules/summarizer.py             SummaryType enum + generate_summary() — the four
+                                     summary variants share one prompt template and
+                                     schema, parameterized rather than duplicated
+  modules/soap.py                   Spec §63's exact SOAP schema
+                                     (subjective/objective/assessment/plan/
+                                     missing_information/source_trace)
+  modules/entity_extraction.py      Structured entity extraction — text/category/
+                                     context per entity, only what's literally present
+                                     in the source, never inferred
+  modules/differential.py           Spec §63's exact Differential Support schema.
+                                     Reuses chat's LabeledEvidence/build_evidence_block
+                                     directly — same evidence formatting as clinical
+                                     chat, not a reimplementation
+  modules/guideline_qa.py           A dedicated single-turn workflow (spec §63: "do not
+                                     implement every capability as send-prompt-to-chat-
+                                     endpoint") — reuses chat's citation_validator and
+                                     evidence_quality scoring rather than reimplementing
+                                     that judgment a second time. Abstains with spec's
+                                     exact wording when nothing relevant is retrieved,
+                                     WITHOUT ever calling the model (verified by test —
+                                     the model call itself is asserted never-invoked)
+  modules/report_comparison.py      LLM narrates only NON-numeric textual differences
+                                     between two reports; the prompt explicitly tells it
+                                     not to recompute or restate numbers as its own
+                                     calculation — see the deterministic engine below
+
+  services/clinical_modules.py      Persistence + orchestration for all six. The
+                                     report-comparison numeric diff
+                                     (`_compute_numeric_changes`) is 100% deterministic
+                                     Python — spec's own acceptance criterion "numeric
+                                     values are calculated deterministically" — reusing
+                                     `services/observations.py`'s trusted-unit-
+                                     conversion table (the same one the lab trend engine
+                                     and change engine already use) and the same
+                                     increased/decreased/unchanged wording convention
+                                     as change_engine.py, plus new/resolved for values
+                                     present on only one report. An untrusted unit pair
+                                     is never compared, matching the trend engine's own
+                                     rule. Differential support strips any evidence_id
+                                     the model invents that wasn't actually offered —
+                                     spec §52's citation-validation rule, applied here
+                                     too, not just in chat
+  api/clinical_modules.py           Per-patient endpoints (summary/SOAP/entities/
+                                     differential/report-comparison) plus one patient-
+                                     independent endpoint (guideline-qa). Every
+                                     generation-triggering endpoint requires WriteUser
+                                     (real Ollama calls — same rationale as chat/
+                                     vision); reading already-generated drafts only
+                                     needs CurrentUser
+
+frontend/src/
+  api/clinicalModules.ts            Types mirroring the six payload schemas exactly;
+                                     each generation call is a mutation (a real,
+                                     billable-latency action), history lists are
+                                     queries
+  pages/PatientWorkspace/ClinicalModules/  Five sub-views (Summary/SOAP/Entities/
+                                     Differential/Compare Reports) behind a local tab
+                                     selector on a new "Clinical Modules" patient-
+                                     workspace tab — deterministic numeric-change table
+                                     rendered directly (never re-derived client-side),
+                                     narrative/citations layered on top
+  pages/Workflow/                   The global "Workflow" nav slot (previously a
+                                     placeholder) now hosts Guideline Q&A — patient-
+                                     independent, so it doesn't belong on a patient tab
+```
+
+### Deliberate scope note: "EHR/Patient Reasoning"
+
+Spec §63 lists six sub-capabilities under "Structured Clinical Modules," including
+"EHR/Patient Reasoning: combine structured patient facts, relevant narrative records,
+and relevant clinical evidence." Phase 10's own explicit implement-list (spec's phase
+table) names only five: "summary, SOAP, entity extraction, guideline Q&A, differential
+support" (report comparison added from the master prompt's separate Phase 10 bullet).
+"EHR/Patient Reasoning" isn't a new deliverable here — it's a description of
+exactly what Phase 08's `current_patient`-scope Clinical Chat already does
+(`chat/orchestrator.py`'s `prepare_turn()`: structured patient facts + retrieved
+patient documents + retrieved knowledge evidence, combined). Treated as already
+satisfied rather than built a second time under a different name.
+
+### Live verification — real Ollama, real patient data, not mocked
+
+Four of the six modules were run live against a real demo patient (Robert Klein,
+glaucoma) with real encounter notes: SOAP note generation (~63s) produced a correct,
+well-structured draft distinguishing subjective/objective/assessment/plan exactly from
+the encounter's own documented findings; entity extraction (~24s) correctly pulled
+"glaucoma" (condition) and the two IOP readings (lab_finding) with accurate context;
+a concise summary (~82s) correctly synthesized three encounters' notes into one
+coherent narrative, honestly flagging that the most recent encounter's source material
+had no IOP data recorded rather than inventing a plausible-sounding value; and a real
+Guideline Q&A question against the local ICO glaucoma guidelines (~6m53s — the
+already-documented Phase 07/08 reranker latency, not a new finding) produced a
+correctly-cited, accurate follow-up-interval answer with real page/section references.
+Differential support and report comparison share the exact same `retrieve()` code path
+already proven live here, in Phase 08, and in Phase 09, plus their own
+non-LLM logic (numeric diffing, citation stripping) is covered by 13 passing direct
+unit tests — live-testing them too would re-confirm the same reranker latency finding
+without exercising new code, at a real time cost (given each RAG-grounded call took
+6-7 minutes live), so they were verified through the test suite rather than a second
+live round trip.
 
 ## Domain note
 

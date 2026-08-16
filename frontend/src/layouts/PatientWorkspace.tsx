@@ -13,6 +13,7 @@ const TABS = [
   { to: "medications", label: "Medications" },
   { to: "conditions", label: "Conditions" },
   { to: "clinical-ai", label: "Clinical AI" },
+  { to: "clinical-modules", label: "Clinical Modules" },
 ];
 
 const SEX_LABEL: Record<PatientOut["sex"], string> = {
