@@ -58,7 +58,7 @@ def get_run(db: DbSession, run_id: str) -> ClinicalModuleRun | None:
     return db.get(ClinicalModuleRun, run_id)
 
 
-def _record(
+def record_run(
     db: DbSession,
     module_type: ClinicalModuleType,
     patient_id: str | None,
@@ -117,10 +117,10 @@ async def run_summary(
     try:
         result = await summarizer_module.generate_summary(summary_type, context, settings)
     except GenerationError as exc:
-        return _record(db, ClinicalModuleType.SUMMARY, patient.id, encounter_id, input_params, None, settings.ollama_model, str(exc), created_by)
+        return record_run(db, ClinicalModuleType.SUMMARY, patient.id, encounter_id, input_params, None, settings.ollama_model, str(exc), created_by)
     if result is None:
-        return _record(db, ClinicalModuleType.SUMMARY, patient.id, encounter_id, input_params, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
-    return _record(
+        return record_run(db, ClinicalModuleType.SUMMARY, patient.id, encounter_id, input_params, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
+    return record_run(
         db, ClinicalModuleType.SUMMARY, patient.id, encounter_id, input_params, result.model_dump(mode="json"), settings.ollama_model, None, created_by
     )
 
@@ -137,10 +137,10 @@ async def run_soap(db: DbSession, settings: Settings, patient: Patient, encounte
     try:
         result = await soap_module.generate_soap(context, settings)
     except GenerationError as exc:
-        return _record(db, ClinicalModuleType.SOAP, patient.id, encounter.id, {}, None, settings.ollama_model, str(exc), created_by)
+        return record_run(db, ClinicalModuleType.SOAP, patient.id, encounter.id, {}, None, settings.ollama_model, str(exc), created_by)
     if result is None:
-        return _record(db, ClinicalModuleType.SOAP, patient.id, encounter.id, {}, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
-    return _record(db, ClinicalModuleType.SOAP, patient.id, encounter.id, {}, result.model_dump(mode="json"), settings.ollama_model, None, created_by)
+        return record_run(db, ClinicalModuleType.SOAP, patient.id, encounter.id, {}, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
+    return record_run(db, ClinicalModuleType.SOAP, patient.id, encounter.id, {}, result.model_dump(mode="json"), settings.ollama_model, None, created_by)
 
 
 # --- Entity extraction -------------------------------------------------------------------
@@ -172,10 +172,10 @@ async def run_entity_extraction(
     try:
         result = await entity_module.extract_entities(source_title, text, settings)
     except GenerationError as exc:
-        return _record(db, ClinicalModuleType.ENTITY_EXTRACTION, patient.id, encounter_id, input_params, None, settings.ollama_model, str(exc), created_by)
+        return record_run(db, ClinicalModuleType.ENTITY_EXTRACTION, patient.id, encounter_id, input_params, None, settings.ollama_model, str(exc), created_by)
     if result is None:
-        return _record(db, ClinicalModuleType.ENTITY_EXTRACTION, patient.id, encounter_id, input_params, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
-    return _record(
+        return record_run(db, ClinicalModuleType.ENTITY_EXTRACTION, patient.id, encounter_id, input_params, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
+    return record_run(
         db, ClinicalModuleType.ENTITY_EXTRACTION, patient.id, encounter_id, input_params, result.model_dump(mode="json"), settings.ollama_model, None, created_by
     )
 
@@ -202,9 +202,9 @@ async def run_differential(
     try:
         result = await differential_module.generate_differential(patient_facts, labeled, settings)
     except GenerationError as exc:
-        return _record(db, ClinicalModuleType.DIFFERENTIAL_SUPPORT, patient.id, encounter_id, input_params, None, settings.ollama_model, str(exc), created_by)
+        return record_run(db, ClinicalModuleType.DIFFERENTIAL_SUPPORT, patient.id, encounter_id, input_params, None, settings.ollama_model, str(exc), created_by)
     if result is None:
-        return _record(db, ClinicalModuleType.DIFFERENTIAL_SUPPORT, patient.id, encounter_id, input_params, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
+        return record_run(db, ClinicalModuleType.DIFFERENTIAL_SUPPORT, patient.id, encounter_id, input_params, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
 
     # Never trust the model's own evidence_ids — validate against real offered
     # evidence exactly like chat's citation_validator (spec §52).
@@ -212,7 +212,7 @@ async def run_differential(
     payload = result.model_dump(mode="json")
     for candidate in payload["differential"]:
         candidate["evidence_ids"] = [e for e in candidate["evidence_ids"] if e in valid_labels]
-    return _record(
+    return record_run(
         db, ClinicalModuleType.DIFFERENTIAL_SUPPORT, patient.id, encounter_id, input_params, payload, settings.ollama_model, None, created_by
     )
 
@@ -228,7 +228,7 @@ async def run_guideline_qa(db: DbSession, settings: Settings, question: str, cre
     try:
         result = await guideline_module.answer_guideline_question(question, labeled, settings)
     except GenerationError as exc:
-        return _record(db, ClinicalModuleType.GUIDELINE_QA, None, None, input_params, None, settings.ollama_model, str(exc), created_by)
+        return record_run(db, ClinicalModuleType.GUIDELINE_QA, None, None, input_params, None, settings.ollama_model, str(exc), created_by)
 
     payload = {
         "answer": result.answer_text,
@@ -245,7 +245,7 @@ async def run_guideline_qa(db: DbSession, settings: Settings, question: str, cre
             for item in result.citations
         ],
     }
-    return _record(db, ClinicalModuleType.GUIDELINE_QA, None, None, input_params, payload, settings.ollama_model, None, created_by)
+    return record_run(db, ClinicalModuleType.GUIDELINE_QA, None, None, input_params, payload, settings.ollama_model, None, created_by)
 
 
 # --- Report comparison (text reports) -------------------------------------------------------
@@ -327,9 +327,9 @@ async def run_report_comparison(
     try:
         narrative = await comparison_module.generate_comparison_narrative(previous_text, current_text, numeric_summary, settings)
     except GenerationError as exc:
-        return _record(db, ClinicalModuleType.REPORT_COMPARISON, patient.id, None, input_params, None, settings.ollama_model, str(exc), created_by)
+        return record_run(db, ClinicalModuleType.REPORT_COMPARISON, patient.id, None, input_params, None, settings.ollama_model, str(exc), created_by)
     if narrative is None:
-        return _record(db, ClinicalModuleType.REPORT_COMPARISON, patient.id, None, input_params, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
+        return record_run(db, ClinicalModuleType.REPORT_COMPARISON, patient.id, None, input_params, None, settings.ollama_model, _NOT_PARSED_ERROR, created_by)
 
     evidence: list[dict] = []
     if narrative.narrative_differences:
@@ -358,4 +358,4 @@ async def run_report_comparison(
         "limitations": narrative.limitations,
         "clinical_evidence": evidence,
     }
-    return _record(db, ClinicalModuleType.REPORT_COMPARISON, patient.id, None, input_params, payload, settings.ollama_model, None, created_by)
+    return record_run(db, ClinicalModuleType.REPORT_COMPARISON, patient.id, None, input_params, payload, settings.ollama_model, None, created_by)

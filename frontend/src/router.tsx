@@ -15,6 +15,7 @@ import PatientClinicalAITab from "@/pages/PatientWorkspace/ClinicalAI";
 import PatientClinicalModulesTab from "@/pages/PatientWorkspace/ClinicalModules";
 import ClinicalAIPage from "@/pages/ClinicalAI";
 import WorkflowPage from "@/pages/Workflow";
+import ResearchPage from "@/pages/Research";
 import { NotYetBuilt } from "@/pages/NotYetBuilt";
 
 export const router = createBrowserRouter(
@@ -48,10 +49,10 @@ export const router = createBrowserRouter(
         },
         { path: "clinical-ai", element: <ClinicalAIPage /> },
         { path: "knowledge", element: <NotYetBuilt title="Knowledge" phase="Phase 12" /> },
-        { path: "research", element: <NotYetBuilt title="Research" phase="Phase 11" /> },
+        { path: "research", element: <ResearchPage /> },
         { path: "workflow", element: <WorkflowPage /> },
         { path: "audit", element: <NotYetBuilt title="Audit" phase="Phase 13" /> },
-        { path: "settings", element: <NotYetBuilt title="Settings" phase="Phase 12" /> },
+        { path: "settings", element: <NotYetBuilt title="Settings" /> },
       ],
     },
   ],

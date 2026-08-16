@@ -19,7 +19,7 @@ class _Widget(BaseModel):
 
 @pytest.mark.asyncio
 async def test_parses_valid_json_on_first_attempt(monkeypatch: pytest.MonkeyPatch):
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         assert json_format is True
         return '{"name": "widget", "count": 3}'
 
@@ -33,7 +33,7 @@ async def test_parses_valid_json_on_first_attempt(monkeypatch: pytest.MonkeyPatc
 async def test_retries_once_on_invalid_json_then_succeeds(monkeypatch: pytest.MonkeyPatch):
     calls = []
 
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         calls.append(messages)
         return "not json" if len(calls) == 1 else '{"name": "fixed", "count": 1}'
 
@@ -46,7 +46,7 @@ async def test_retries_once_on_invalid_json_then_succeeds(monkeypatch: pytest.Mo
 
 @pytest.mark.asyncio
 async def test_returns_none_never_fabricates_after_two_failures(monkeypatch: pytest.MonkeyPatch):
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         return "still not json"
 
     monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)
@@ -57,7 +57,7 @@ async def test_returns_none_never_fabricates_after_two_failures(monkeypatch: pyt
 
 @pytest.mark.asyncio
 async def test_returns_none_on_generation_error(monkeypatch: pytest.MonkeyPatch):
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         raise GenerationError("Ollama unreachable")
 
     monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)

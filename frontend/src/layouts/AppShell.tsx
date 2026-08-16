@@ -1,8 +1,9 @@
-import { Lock, Plus } from "lucide-react";
+import { Globe, Lock, Plus } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useSystemHealth } from "@/api/health";
 import { StatusChip, type StatusTone } from "@/components/StatusChip";
 import { UserMenu } from "@/components/UserMenu";
+import { useResearchMode } from "@/contexts/ResearchMode";
 
 // Nav order matches spec §19 exactly. Only "Overview" has a real feature behind it in
 // Phase 01 — the rest route to an explicit NotYetBuilt placeholder (see router.tsx)
@@ -27,6 +28,7 @@ function overallTone(status: "ok" | "degraded" | undefined, isLoading: boolean, 
 
 export function AppShell() {
   const { data, isLoading, isError } = useSystemHealth();
+  const { active: researchModeActive } = useResearchMode();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -61,13 +63,21 @@ export function AppShell() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-3">
-            {/* Honest per spec §128: Research Mode isn't built yet (Phase 11), so this
-               deployment cannot do anything other than local processing right now —
-               this badge reflects that real, current constraint, not a togglable UI. */}
-            <span className="hidden items-center gap-1 text-xs font-medium text-muted-text sm:inline-flex">
-              <Lock className="h-3.5 w-3.5" />
-              Local Mode
-            </span>
+            {/* Spec §128: "Research Mode should not be visually ambiguous." Reflects
+               real state from ResearchModeContext — true only while the clinician is
+               actively using the Research page with an external source enabled
+               (spec §64's Local Mode is the default everywhere else, always). */}
+            {researchModeActive ? (
+              <span className="hidden items-center gap-1 rounded-full bg-cyan/10 px-2.5 py-1 text-xs font-medium text-cyan sm:inline-flex">
+                <Globe className="h-3.5 w-3.5" />
+                Research Mode
+              </span>
+            ) : (
+              <span className="hidden items-center gap-1 text-xs font-medium text-muted-text sm:inline-flex">
+                <Lock className="h-3.5 w-3.5" />
+                Local Mode
+              </span>
+            )}
             <StatusChip
               label={
                 isLoading ? "Checking…" : isError ? "Backend Offline" : data?.status === "ok" ? "Online" : "Degraded"

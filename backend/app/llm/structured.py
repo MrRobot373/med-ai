@@ -31,7 +31,9 @@ async def generate_structured(
     *,
     temperature: float | None = None,
     max_output_tokens: int | None = None,
+    num_ctx: int | None = None,
 ) -> _SchemaT | None:
+    raw = ""
     for attempt in range(2):  # one controlled repair/retry, per spec §123
         try:
             raw = await generate_complete(
@@ -40,10 +42,20 @@ async def generate_structured(
                 json_format=True,
                 temperature=temperature,
                 max_output_tokens=max_output_tokens,
+                num_ctx=num_ctx,
             )
             return schema.model_validate(json.loads(raw))
         except (GenerationError, ValueError, ValidationError):
-            logger.warning("Structured generation attempt %s failed to parse", attempt + 1, exc_info=True)
+            # Logging a preview (not exc_info alone) is what makes this diagnosable —
+            # a bare exception tells you parsing failed, not *what* the model actually
+            # sent back (truncated JSON vs. extra prose vs. empty string each point at
+            # a different fix: num_ctx, max_output_tokens, or the prompt itself).
+            logger.warning(
+                "Structured generation attempt %s failed to parse; raw preview: %r",
+                attempt + 1,
+                raw[:500],
+                exc_info=True,
+            )
             if attempt == 0:
                 messages.append(ChatMessage(role="user", content=_REPAIR_NUDGE))
     return None

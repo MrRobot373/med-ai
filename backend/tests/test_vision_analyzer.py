@@ -29,7 +29,7 @@ TINY_PNG = (
 
 @pytest.mark.asyncio
 async def test_analyze_image_parses_valid_json(monkeypatch: pytest.MonkeyPatch):
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         assert json_format is True
         return VALID_OBSERVATION_JSON
 
@@ -45,7 +45,7 @@ async def test_analyze_image_parses_valid_json(monkeypatch: pytest.MonkeyPatch):
 async def test_analyze_image_retries_once_then_succeeds(monkeypatch: pytest.MonkeyPatch):
     calls = []
 
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         calls.append(messages)
         if len(calls) == 1:
             return "not valid json at all"
@@ -61,7 +61,7 @@ async def test_analyze_image_retries_once_then_succeeds(monkeypatch: pytest.Monk
 
 @pytest.mark.asyncio
 async def test_analyze_image_returns_none_never_fabricates_after_two_failures(monkeypatch: pytest.MonkeyPatch):
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         return "still not json"
 
     monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)
@@ -74,7 +74,7 @@ async def test_analyze_image_returns_none_never_fabricates_after_two_failures(mo
 async def test_compare_images_sends_both_images_in_order(monkeypatch: pytest.MonkeyPatch):
     captured = {}
 
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         captured["images"] = messages[-1].images
         return VALID_COMPARISON_JSON
 
@@ -90,7 +90,7 @@ async def test_compare_images_sends_both_images_in_order(monkeypatch: pytest.Mon
 async def test_analyze_image_returns_none_on_generation_error(monkeypatch: pytest.MonkeyPatch):
     from app.llm.generation import GenerationError
 
-    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None):
+    async def fake_generate_complete(messages, settings, json_format=False, temperature=None, max_output_tokens=None, num_ctx=None):
         raise GenerationError("Ollama unreachable")
 
     monkeypatch.setattr("app.llm.structured.generate_complete", fake_generate_complete)

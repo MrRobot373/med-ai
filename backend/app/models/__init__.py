@@ -21,6 +21,7 @@ from app.models.report import Report
 from app.models.session import Session
 from app.models.user import User
 from app.models.vision_analysis import VisionAnalysis
+from app.models.web_cache import WebCacheEntry
 
 __all__ = [
     "Allergy",
@@ -39,4 +40,5 @@ __all__ = [
     "Session",
     "User",
     "VisionAnalysis",
+    "WebCacheEntry",
 ]

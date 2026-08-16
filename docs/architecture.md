@@ -39,8 +39,8 @@ GMS CLINICAL AI
 | 08 | Clinical chat: conversations, streaming, evidence panel, citation/grounding validation | **Done** |
 | 09 | Vision: image upload, structured extraction, image-to-RAG, comparison | **Done** |
 | 10 | Clinical modules: summary, SOAP, entity extraction, guideline Q&A, differential support, report comparison | **Done** |
-| 11 | Web research: Research Mode, de-identification, PubMed/FDA, optional SearXNG, web cache | Not started |
-| 12 | Knowledge administration: upload, versioning, reindex, admin settings | Not started |
+| 11 | Web research: Research Mode, de-identification, PubMed/FDA, optional SearXNG, web cache | **Done** |
+| 12 | Knowledge administration: upload, metadata, versions, active documents, reindex, archive, ingestion monitoring | Not started |
 | 13 | Audit & feedback: audit log UI, feedback capture, provenance drawer | Not started |
 | 14 | Demo system: synthetic patients (ophthalmology domain — see `data/`), demo scenarios, start/reset scripts, model warm-up | Not started |
 | 15 | RAG evaluation suite: retrieval/citation/groundedness/hallucination/latency metrics | Not started |
@@ -1052,6 +1052,161 @@ unit tests — live-testing them too would re-confirm the same reranker latency 
 without exercising new code, at a real time cost (given each RAG-grounded call took
 6-7 minutes live), so they were verified through the test suite rather than a second
 live round trip.
+
+## Phase 11 — what exists right now
+
+```text
+backend/app/
+  models/web_cache.py                WebCacheEntry (spec §72): checksum-deduped,
+                                      freshness-window cache reuse for external results.
+                                      AuthorityTier (spec §67 A-F) and WebSource live
+                                      here too — reused by Phase 12's KnowledgeDocument
+                                      rather than a second authority-tier concept.
+                                      Deliberately NOT also indexed into a Qdrant
+                                      `web_cache` collection — see "Deliberate scope"
+                                      below
+  models/clinical_module_run.py      +RESEARCH module type — Research Mode queries are
+                                      persisted as the seventh ClinicalModuleRun kind,
+                                      same draft-never-auto-finalized discipline as
+                                      Phase 10's six
+
+  research/deidentify.py             Mandatory de-identification (spec §66) — strips the
+                                      patient's own known identifiers (name/MRN/phone/
+                                      email) plus generic identifier-shaped patterns
+                                      (email/phone/MRN/street-address regexes).
+                                      Deliberately NOT general NER name detection — see
+                                      "Deliberate scope" below. Runs unconditionally
+                                      before any provider sees the query, no bypass
+  research/providers/                pubmed.py (NCBI E-utilities: esearch+esummary+
+                                      efetch, real XML abstract parsing), fda.py
+                                      (openFDA drug labels), clinicaltrials.py (API v2),
+                                      searxng.py (optional, self-hosted). Every
+                                      `search()` is independently best-effort — a
+                                      network failure/timeout/malformed response returns
+                                      `[]`, never raises, so one unreachable source never
+                                      sinks the rest of a query
+  research/providers/base.py         WebResult dataclass + `clean_search_terms()` —
+                                      punctuation/stopword stripping for PubMed/FDA's
+                                      keyword-search syntax (see "Bugs found live"
+                                      below); deliberately NOT applied to ClinicalTrials.
+                                      gov/SearXNG, whose free-text search engines handle
+                                      natural language directly
+  research/ranking.py                Deterministic lexical relevance (word-overlap) +
+                                      modest authority-tier boost (spec §67: "must not
+                                      override obvious relevance") — a fast, non-LLM
+                                      ranking pass instead of routing web results through
+                                      the CPU reranker
+  research/paper_assistant.py        ResearchSynthesis schema + generate_research_
+                                      synthesis() — spec §70's Research Paper Assistant.
+                                      Tolerant field_validators coerce an occasional
+                                      string-instead-of-list model response into the
+                                      expected shape (see "Bugs found live" below)
+  services/research.py               Orchestration: de-identify -> retrieve patient/
+                                      local evidence -> fetch external (cache-first,
+                                      asyncio.gather for uncached) -> filter by date
+                                      range -> rank -> label evidence (P#/L#/W#) ->
+                                      synthesize -> validate citations -> record run
+  api/research.py                    GET /status (honest capability check — enabled
+                                      flag AND live SearXNG reachability, never
+                                      assumed), POST /query, GET /runs
+
+frontend/src/
+  contexts/ResearchMode.tsx          ResearchModeProvider/useResearchMode — active only
+                                      while the Research page has >=1 external source
+                                      checked, reverts on unmount (spec §128/§129: the
+                                      header badge must never show a stale "Research"
+                                      state after navigating away)
+  api/research.ts                    WebSource/DateRange/ResearchPayload types +
+                                      useResearchStatus/useResearchRuns/
+                                      useRunResearchQuery
+  pages/Research/index.tsx           Source checkboxes (PubMed/FDA/ClinicalTrials/
+                                      General Web + always-on disabled "Local
+                                      Knowledge"), date range, evidence preference,
+                                      consent banner on first source toggle, citation
+                                      badges distinguishing PATIENT/LOCAL/PubMed/FDA/
+                                      ClinicalTrials/SearXNG sources
+```
+
+### Live verification — real Ollama, real PubMed/openFDA, not mocked
+
+Research Mode's own end-to-end round trip (patient + local + external evidence combined
+into one synthesis) turned out to be the single most demanding call in the app so far,
+and live testing surfaced four real, previously-invisible bugs — each found, fixed, and
+re-verified against the real running stack before moving on:
+
+1. **Ollama request timeout too low.** The first live query (`sources: [pubmed, fda]`)
+   failed with `httpx.ReadTimeout` after the ~7-minute reranker step completed — the
+   combined evidence prompt is bigger than any prior module's and exceeded the
+   `ollama_request_timeout_seconds` default of 120s inherited from Phase 08. Raised to
+   300s (`app/config/settings.py`) — a ceiling raise costs nothing for faster calls, it
+   just lets the slower ones finish instead of erroring out.
+2. **`num_ctx` never set anywhere in the app.** With the timeout fixed, the model
+   responded within the window but returned unparseable JSON on both `generate_
+   structured` attempts. Investigation found `num_ctx` (Ollama's context window) was
+   never explicitly sent on *any* call in the whole codebase — every request silently
+   ran at Ollama's own server default, completely disconnected from the app's own
+   `rag_default_context_tokens=8192` retrieval budget. Research's prompt was the first
+   one big enough to actually exceed that default, silently truncating the *input* (most
+   likely dropping the system prompt's JSON-shape instructions). Fixed in `app/llm/
+   generation.py` by explicitly sending `num_ctx` on every call — `ollama_num_ctx=8192`
+   as the new shared default (matching the existing RAG budget) and `research_num_ctx=
+   16384` as a Research-specific override, since its combined-evidence prompt runs
+   larger than any other module's. `app/llm/structured.py` also now logs a raw-output
+   preview on any parse failure — previously only the bare exception was logged, with no
+   way to tell truncation from malformed JSON from empty output.
+3. **`ResearchSynthesis`'s list fields too strict.** With `num_ctx` fixed, the model
+   produced complete, well-formed JSON — but intermittently collapsed a `list[str]`
+   field (`conflicting_evidence`/`exclusion_criteria`/`limitations`) into a bare string
+   instead of a single-item list, failing Pydantic validation on both attempts even
+   though the JSON itself parsed fine. Fixed with a `field_validator(mode="before")` on
+   each of the three fields in `app/research/paper_assistant.py` that normalizes a
+   string into `[string]` (or `[]` if blank) rather than gambling the whole call on
+   prompt wording alone fixing a probabilistic model habit.
+4. **PubMed/openFDA sent the raw clinician question verbatim.** Once generation itself
+   was reliable, the response came back with `research_mode_used: false` even though
+   `sources: [pubmed, fda]` was requested — external retrieval was silently finding
+   nothing. The backend log showed why: PubMed's esearch implicitly ANDs every
+   space-separated word, so a filler word like "what" or "for" that never co-occurs with
+   the clinical terms in any article's metadata zeroed out the whole result set; openFDA
+   400'd outright on a literal quoted full-sentence phrase containing `"(SLT)"` and
+   `"?"`. Fixed with `clean_search_terms()` in `app/research/providers/base.py`
+   (punctuation + stopword stripping), applied to PubMed and FDA only — confirmed live
+   against the real APIs both in isolation (0 PubMed hits -> 2; openFDA 400 -> 200) and
+   through the full pipeline afterward.
+
+With all four fixed, the exact same query
+(`"What is the recent evidence for selective laser trabeculoplasty (SLT) as first-line
+treatment for open-angle glaucoma?"`, `sources: [pubmed, fda]`) completed successfully
+end-to-end in 9m34s: `research_mode_used: true`, two real PubMed citations with real
+`pubmed.ncbi.nlm.nih.gov` URLs, a correctly-hedged synthesis noting SLT's role as a
+first-line alternative alongside topical therapy, and `evidence_quality: moderate` —
+honest, not overclaiming, for two abstracts' worth of evidence. `GET /api/research/status`
+was also confirmed to report real, non-assumed state: `enabled: true` (from
+`ENABLE_RESEARCH=true`) with `searxng_reachable: false` and `sources_available:
+[pubmed, fda, clinicaltrials]` while no SearXNG container was running — exactly the
+honest degraded-capability behavior spec §103 requires. All test-run rows and cached web
+results created during live testing were deleted from the dev database afterward (same
+cleanup discipline as every prior phase's live verification).
+
+### Deliberate scope notes
+
+- **De-identification is narrow, not general NER.** `deidentify.py` strips the current
+  patient's own known identifiers plus generic identifier-shaped patterns (email/phone/
+  MRN/street address) — it does not attempt general name detection. A broader NER pass
+  risks false positives on ordinary clinical terminology (verified via a dedicated test:
+  "Marcus Gunn pupil" must survive de-identification untouched), which spec §2's
+  "never invent/never distort" ethos argues against more than a narrower net argues for.
+- **WHO/CDC/NICE were not integrated.** None expose a simple public search API without
+  registration or scraping (unlike PubMed/openFDA/ClinicalTrials.gov's open APIs) — a
+  deliberate scope decision, not an oversight, consistent with this project's "skip
+  honestly rather than fake it" pattern.
+- **`web_cache` is SQLite-only, not also a Qdrant collection.** Spec §14 lists
+  `web_cache` as a named collection, but embedding + reranking every live web result
+  through the already-documented ~6-7 minute CPU reranker path would make Research Mode
+  impractically slow on top of everything else it already does. Ranking uses a fast
+  deterministic lexical+authority-tier score computed at query time instead (`research/
+  ranking.py`); the SQLite cache alone already satisfies spec §72's stated goals
+  (reproducibility, speed, demo reliability, auditability).
 
 ## Domain note
 

@@ -60,7 +60,23 @@ class Settings(BaseSettings):
     # --- Ollama (main LLM/VLM) ---
     ollama_base_url: str = Field(default="http://localhost:11434", alias="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="qwen3.5:9b", alias="OLLAMA_MODEL")
-    ollama_request_timeout_seconds: int = Field(default=120, alias="OLLAMA_REQUEST_TIMEOUT_SECONDS")
+    # 120s covered every call through Phase 10 live testing comfortably. Phase 11's
+    # Research Paper Assistant prompt combines patient + local + external evidence
+    # (several PubMed/FDA excerpts on top of the usual local passages) into a
+    # materially larger input than any prior module — a real live call exceeded 120s
+    # and hit httpx.ReadTimeout. Raising the ceiling costs nothing for faster calls
+    # (a timeout is a max wait, not an imposed delay); it just lets the slower ones
+    # finish instead of erroring out.
+    ollama_request_timeout_seconds: int = Field(default=300, alias="OLLAMA_REQUEST_TIMEOUT_SECONDS")
+    # Ollama's own server-side default context window (historically 2048-4096) is
+    # never wired to this app's own retrieval budget (rag_default_context_tokens=
+    # 8192) — left unset in the request, Ollama silently truncates the *input* to
+    # fit rather than erroring, which can drop a system prompt's JSON-shape
+    # instructions off a large prompt with no visible symptom except a downstream
+    # parse failure (found live in Phase 11 — see app/llm/generation.py). 8192
+    # matches the app's own context budget so the two numbers can't silently drift
+    # apart again; qwen3.5:9b supports up to 262144, so there is ample headroom.
+    ollama_num_ctx: int = Field(default=8192, alias="OLLAMA_NUM_CTX")
 
     # --- Embedding / Reranker ---
     embedding_model: str = Field(default="Qwen/Qwen3-Embedding-0.6B", alias="EMBEDDING_MODEL")
@@ -134,9 +150,29 @@ class Settings(BaseSettings):
     clinical_module_temperature: float = Field(default=0.15, alias="CLINICAL_MODULE_TEMPERATURE")
     clinical_module_max_output_tokens: int = Field(default=1536, alias="CLINICAL_MODULE_MAX_OUTPUT_TOKENS")
 
-    # --- Research Mode (off by default — privacy-first per §64) ---
+    # --- Research Mode (Phase 11, spec §64-72) — off by default, privacy-first ---
     enable_research: bool = Field(default=False, alias="ENABLE_RESEARCH")
     searxng_url: str = Field(default="http://localhost:8080", alias="SEARXNG_URL")
+    # Optional — NCBI E-utilities work unauthenticated at a lower rate limit (3
+    # req/s vs. 10 req/s with a free key registered at ncbi.nlm.nih.gov/account).
+    # Never required; PubMed search degrades to the unauthenticated rate, never fails.
+    pubmed_api_key: str | None = Field(default=None, alias="PUBMED_API_KEY")
+    research_http_timeout_seconds: float = Field(default=15.0, alias="RESEARCH_HTTP_TIMEOUT_SECONDS")
+    research_max_results_per_source: int = Field(default=5, alias="RESEARCH_MAX_RESULTS_PER_SOURCE")
+    # A repeated (de-identified query, source) pair reuses cached results within this
+    # window instead of re-hitting the network — spec §72's "improves reproducibility,
+    # speed, demo reliability" taken literally, not just a data-retention policy.
+    research_cache_freshness_hours: int = Field(default=24, alias="RESEARCH_CACHE_FRESHNESS_HOURS")
+    research_temperature: float = Field(default=0.15, alias="RESEARCH_TEMPERATURE")
+    research_max_output_tokens: int = Field(default=1536, alias="RESEARCH_MAX_OUTPUT_TOKENS")
+    # Research's combined patient+local+external evidence prompt runs larger than any
+    # other module's (patient facts + up to 8 local passages + up to
+    # research_max_results_per_source * len(sources) web excerpts) — the shared
+    # ollama_num_ctx=8192 default was measured live to be too small for it and
+    # silently truncated the prompt, dropping the JSON-shape instructions and
+    # producing an unparseable response. This override only applies to the research
+    # synthesis call.
+    research_num_ctx: int = Field(default=16384, alias="RESEARCH_NUM_CTX")
 
     # --- Voice module (feature-flagged per §91) ---
     enable_voice: bool = Field(default=False, alias="ENABLE_VOICE")

@@ -1,12 +1,14 @@
-"""`clinical_module_runs` table — spec §63 Structured Clinical Modules.
+"""`clinical_module_runs` table — spec §63 Structured Clinical Modules (+ Phase 11's
+Research Paper Assistant, spec §70, added to the same table rather than a parallel one
+— it's the same "real dedicated workflow, own schema, explicit draft" shape).
 
-One table, one row per generation, covering all six modules (`module_type`
-discriminates the shape of `payload`) rather than six near-identical tables — each
+One table, one row per generation, covering all seven modules (`module_type`
+discriminates the shape of `payload`) rather than seven near-identical tables — each
 module still has its own real Pydantic schema/prompt/workflow (spec §63's actual
 requirement: "do not implement every capability as send-prompt-to-chat-endpoint"),
 this is just where the results land. Every row is an explicit, timestamped **draft**
 — spec §63's SOAP note instruction ("generate a clinician-review draft; do not
-automatically save as finalized clinical record") applies to all six: nothing here
+automatically save as finalized clinical record") applies to all of them: nothing here
 ever writes to Condition/Medication/Encounter or any other authoritative table.
 """
 
@@ -30,6 +32,7 @@ class ClinicalModuleType(str, Enum):
     DIFFERENTIAL_SUPPORT = "differential_support"
     GUIDELINE_QA = "guideline_qa"
     REPORT_COMPARISON = "report_comparison"
+    RESEARCH = "research"  # Phase 11 — Research Paper Assistant, spec §70
 
 
 class ClinicalModuleRun(Base):

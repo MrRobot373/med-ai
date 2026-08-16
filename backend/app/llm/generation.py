@@ -69,6 +69,7 @@ async def generate_stream(
     settings: Settings,
     temperature: float | None = None,
     max_output_tokens: int | None = None,
+    num_ctx: int | None = None,
 ) -> AsyncIterator[str]:
     """Yields content deltas as they arrive from Ollama. The caller breaking out of
     iteration early (e.g. spec §120 cancellation on client disconnect) closes the
@@ -93,6 +94,16 @@ async def generate_stream(
             "options": {
                 "temperature": settings.chat_temperature if temperature is None else temperature,
                 "num_predict": settings.chat_max_output_tokens if max_output_tokens is None else max_output_tokens,
+                # Ollama's own server default (historically 2048-4096) is never large
+                # enough to hold this app's own retrieval budget (rag_default_context_
+                # tokens=8192) plus the prompt/instruction overhead around it — left
+                # unset, Ollama silently truncates the *input* to fit, which can drop
+                # the system prompt's JSON-shape instructions entirely on a large
+                # prompt (found live in Phase 11: Research's combined patient+local+
+                # external-evidence prompt is bigger than any prior module's and
+                # failed to parse as JSON on both attempts — not a `num_predict`
+                # shortfall, an input truncation nobody was told about).
+                "num_ctx": settings.ollama_num_ctx if num_ctx is None else num_ctx,
             },
         }
         url = f"{settings.ollama_base_url.rstrip('/')}/api/chat"
@@ -127,10 +138,11 @@ async def generate_complete(
     json_format: bool = False,
     temperature: float | None = None,
     max_output_tokens: int | None = None,
+    num_ctx: int | None = None,
 ) -> str:
-    """Non-streaming — used for the grounding-validation pass and vision structured
-    extraction, both of which need one complete, parseable response rather than a
-    token stream a clinician watches live."""
+    """Non-streaming — used for the grounding-validation pass and vision/module/research
+    structured extraction, all of which need one complete, parseable response rather
+    than a token stream a clinician watches live."""
     semaphore = _get_semaphore(settings)
     async with semaphore:
         payload = {
@@ -141,6 +153,8 @@ async def generate_complete(
             "options": {
                 "temperature": settings.chat_temperature if temperature is None else temperature,
                 "num_predict": settings.chat_max_output_tokens if max_output_tokens is None else max_output_tokens,
+                # See generate_stream's comment — same input-truncation risk applies here.
+                "num_ctx": settings.ollama_num_ctx if num_ctx is None else num_ctx,
             },
         }
         if json_format:
