@@ -51,6 +51,20 @@ class GroundingClaimOut(BaseModel):
     status: str
 
 
+class ProvenanceOut(BaseModel):
+    """Spec §80's "Why This Answer?" technical drawer — real, observed retrieval-stage
+    counts (never a fabricated confidence figure). `generation_model` is copied from
+    the message's own `model` column rather than duplicated storage."""
+
+    patient_context_records: int
+    dense_candidates: int
+    bm25_candidates: int
+    fused_candidates: int
+    reranked: int
+    final_evidence: int
+    generation_model: str | None = None
+
+
 class MessageOut(BaseModel):
     id: str
     conversation_id: str
@@ -65,6 +79,7 @@ class MessageOut(BaseModel):
     # assistant messages predating this field.
     evidence_quality: str | None = None
     grounding: list[GroundingClaimOut] | None = None
+    provenance: ProvenanceOut | None = None
 
 
 class ChatSendRequest(BaseModel):

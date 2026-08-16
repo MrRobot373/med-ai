@@ -27,7 +27,7 @@ from app.models.clinical_module_run import ClinicalModuleRun, ClinicalModuleType
 from app.models.patient import Patient
 from app.models.web_cache import WebCacheEntry, WebSource
 from app.rag.deduplicator import RetrievedPassage
-from app.rag.pipeline import retrieve
+from app.rag.pipeline import RetrievalStats, retrieve
 from app.research.deidentify import deidentify_query
 from app.research.paper_assistant import generate_research_synthesis
 from app.research.providers import clinicaltrials, fda, pubmed, searxng
@@ -162,6 +162,14 @@ def _to_passage(result: WebResult, score: float) -> RetrievedPassage:
     )
 
 
+def _web_source_counts(web_passages: list[RetrievedPassage]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for passage in web_passages:
+        key = passage.section or "UNKNOWN"
+        counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
 def _citation_dict(item: LabeledEvidence) -> dict:
     passage = item.passage
     return {
@@ -189,12 +197,15 @@ async def run_research(
     # anything leaves the machine, regardless of whether Research Mode is even enabled.
     deidentified = deidentify_query(question, patient)
 
+    stats = RetrievalStats()
     patient_passages: list[RetrievedPassage] = []
     patient_facts = None
     if patient:
-        patient_passages = retrieve(db, question, settings, collection=ChunkCollection.PATIENT_DOCUMENTS, patient_id=patient.id)
+        patient_passages = retrieve(
+            db, question, settings, collection=ChunkCollection.PATIENT_DOCUMENTS, patient_id=patient.id, stats=stats
+        )
         patient_facts = build_patient_facts(db, patient)
-    knowledge_passages = retrieve(db, question, settings, collection=ChunkCollection.MEDICAL_KNOWLEDGE)
+    knowledge_passages = retrieve(db, question, settings, collection=ChunkCollection.MEDICAL_KNOWLEDGE, stats=stats)
 
     web_passages: list[RetrievedPassage] = []
     if settings.enable_research and sources:
@@ -260,6 +271,19 @@ async def run_research(
         "deidentification": {
             "removed_count": deidentified.removed_count,
             "removed_categories": deidentified.removed_categories,
+        },
+        "provenance": {
+            "patient_context_records": 1 if patient_facts else 0,
+            "dense_candidates": stats.dense_candidates,
+            "bm25_candidates": stats.bm25_candidates,
+            "fused_candidates": stats.fused_candidates,
+            "reranked": stats.reranked,
+            "final_evidence": stats.deduplicated,
+            "generation_model": settings.ollama_model,
+            # Real per-source counts derived from each web passage's own `.section`
+            # (set to `result.source.value.upper()` in `_to_passage()`) — not a second
+            # provider call, just tallying what was already fetched/ranked above.
+            "web_source_counts": _web_source_counts(web_passages),
         },
     }
     return record_run(db, ClinicalModuleType.RESEARCH, patient_id, None, input_params, payload, settings.ollama_model, None, created_by)

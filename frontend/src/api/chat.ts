@@ -50,6 +50,18 @@ export interface GroundingClaim {
   status: "supported" | "partially_supported" | "unsupported";
 }
 
+// Spec §80's "Why This Answer?" technical drawer — real, observed retrieval-stage
+// counts (never a fabricated confidence figure). Mirrors backend/app/schemas/chat.py.
+export interface ProvenanceOut {
+  patient_context_records: number;
+  dense_candidates: number;
+  bm25_candidates: number;
+  fused_candidates: number;
+  reranked: number;
+  final_evidence: number;
+  generation_model: string | null;
+}
+
 export interface MessageOut {
   id: string;
   conversation_id: string;
@@ -61,6 +73,7 @@ export interface MessageOut {
   citations: CitationOut[];
   evidence_quality: EvidenceQuality | null;
   grounding: GroundingClaim[] | null;
+  provenance: ProvenanceOut | null;
 }
 
 // --- Conversations --------------------------------------------------------------
@@ -254,6 +267,7 @@ export function useChatStream(conversationId: string | undefined) {
           citations: [],
           evidence_quality: null,
           grounding: null,
+          provenance: null,
         },
       ]);
 

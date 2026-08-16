@@ -1,11 +1,15 @@
 #!/usr/bin/env python
-"""Seed synthetic ophthalmology demo patients (spec §88).
+"""Seed synthetic ophthalmology demo patients (spec §88: "at least five clearly
+fictional patients").
 
-Three clearly fictional patients spanning the bundled ophthalmology knowledge base
-domain (data/eye_conditions.json — cataract, glaucoma, diabetic retinopathy), each with
-several months of encounter history so the Timeline/Overview/Conditions/Medications
-tabs have real data to show. Report/lab-derived timeline events join once Phase 05/06
-land; this seed only touches structured data that exists today.
+Five clearly fictional patients spanning the bundled ophthalmology knowledge base
+domain (data/eye_conditions.json) — cataract, glaucoma, diabetic retinopathy, wet
+age-related macular degeneration, and a multi-morbidity patient combining glaucoma +
+cataract + diabetic retinopathy (this deployment's in-domain equivalent of spec §88's
+suggested "Multi-morbidity" category) — each with several months of encounter history
+so the Timeline/Overview/Conditions/Medications tabs have real data to show. Report/
+lab-derived timeline events join once `scripts/seed_demo_reports.py` (Phase 14) has
+run; this seed only touches structured data that exists independent of any upload.
 
 Idempotent by MRN — an existing DEMO-* patient (and its records) is left untouched on
 re-run, so this is safe to call from start-demo.bat every time.
@@ -327,10 +331,227 @@ def _seed_diabetic_retinopathy_patient(db, created_by: str | None) -> None:
     )
 
 
+def _seed_amd_patient(db, created_by: str | None) -> None:
+    patient = Patient(
+        mrn="DEMO-1004",
+        first_name="Priya",
+        last_name="Patel",
+        date_of_birth=date(1948, 6, 2),
+        sex=Sex.FEMALE,
+        phone="555-0104",
+        synthetic=True,
+    )
+    db.add(patient)
+    db.flush()
+
+    e1 = Encounter(
+        patient_id=patient.id,
+        encounter_number=_encounter_number(patient.mrn, 1),
+        encounter_type=EncounterType.OUTPATIENT,
+        start_datetime=_months_ago(6),
+        end_datetime=_months_ago(6) + timedelta(minutes=40),
+        status=EncounterStatus.COMPLETED,
+        chief_complaint="New central vision distortion, right eye, over 2 weeks — straight lines appear wavy",
+        clinician_note="OCT right eye shows subretinal fluid and a type 2 choroidal neovascular membrane "
+        "consistent with neovascular (wet) age-related macular degeneration. Left eye shows only "
+        "early drusen. Discussed intravitreal anti-VEGF therapy; patient consents to start.",
+        created_by=created_by,
+    )
+    e2 = Encounter(
+        patient_id=patient.id,
+        encounter_number=_encounter_number(patient.mrn, 2),
+        encounter_type=EncounterType.OUTPATIENT,
+        start_datetime=_months_ago(3),
+        end_datetime=_months_ago(3) + timedelta(minutes=20),
+        status=EncounterStatus.COMPLETED,
+        chief_complaint="Third anti-VEGF injection, right eye",
+        clinician_note="Subretinal fluid substantially reduced on OCT since baseline. Visual acuity improved "
+        "from 20/80 to 20/50 right eye. Continuing monthly injections per treat-and-extend protocol.",
+        created_by=created_by,
+    )
+    e3 = Encounter(
+        patient_id=patient.id,
+        encounter_number=_encounter_number(patient.mrn, 3),
+        encounter_type=EncounterType.OUTPATIENT,
+        start_datetime=NOW - timedelta(days=10),
+        end_datetime=None,
+        status=EncounterStatus.ACTIVE,
+        chief_complaint="Current visit — routine anti-VEGF injection, right eye",
+        clinician_note="OCT dry, no subretinal or intraretinal fluid. Extending treatment interval to 8 weeks "
+        "per treat-and-extend protocol given sustained response.",
+        created_by=created_by,
+    )
+    db.add_all([e1, e2, e3])
+    db.flush()
+
+    db.add(
+        Condition(
+            patient_id=patient.id,
+            encounter_id=e1.id,
+            display="Neovascular (wet) age-related macular degeneration, right eye",
+            status=ConditionStatus.ACTIVE,
+            onset_date=_months_ago(6).date(),
+            notes="OCT dry as of most recent injection; treatment interval extended to 8 weeks.",
+        )
+    )
+    db.add(
+        Condition(
+            patient_id=patient.id,
+            encounter_id=e1.id,
+            display="Drusen, left eye (early, non-exudative)",
+            status=ConditionStatus.ACTIVE,
+            onset_date=_months_ago(6).date(),
+            notes="Monitoring for progression to exudative disease.",
+        )
+    )
+    db.add(
+        Medication(
+            patient_id=patient.id,
+            encounter_id=e1.id,
+            medication_name="Aflibercept 2mg",
+            route="intravitreal injection",
+            frequency="every 4-8 weeks (treat-and-extend), right eye",
+            start_date=_months_ago(6).date(),
+            active=True,
+            source="clinician entered",
+        )
+    )
+    # No allergy rows — deliberately left undocumented rather than inventing "no known
+    # allergies" as a fact nobody actually confirmed (spec §2).
+
+
+def _seed_multimorbidity_patient(db, created_by: str | None) -> None:
+    patient = Patient(
+        mrn="DEMO-1005",
+        first_name="Thomas",
+        last_name="Ferreira",
+        date_of_birth=date(1949, 2, 17),
+        sex=Sex.MALE,
+        phone="555-0105",
+        synthetic=True,
+    )
+    db.add(patient)
+    db.flush()
+
+    e1 = Encounter(
+        patient_id=patient.id,
+        encounter_number=_encounter_number(patient.mrn, 1),
+        encounter_type=EncounterType.OUTPATIENT,
+        start_datetime=_months_ago(9),
+        end_datetime=_months_ago(9) + timedelta(minutes=50),
+        status=EncounterStatus.COMPLETED,
+        chief_complaint="Comprehensive diabetic eye exam — longstanding type 2 diabetes, never had a dilated exam",
+        clinician_note="IOP 24 mmHg OD, 23 mmHg OS with early glaucomatous disc cupping — starting topical "
+        "therapy. Bilateral nuclear sclerotic cataract, not yet visually significant. Dilated fundus exam "
+        "shows mild nonproliferative diabetic retinopathy, both eyes, no macular edema. Three separate "
+        "ocular diagnoses to manage concurrently; glaucoma treatment prioritized first given IOP.",
+        created_by=created_by,
+    )
+    e2 = Encounter(
+        patient_id=patient.id,
+        encounter_number=_encounter_number(patient.mrn, 2),
+        encounter_type=EncounterType.OUTPATIENT,
+        start_datetime=_months_ago(5),
+        end_datetime=_months_ago(5) + timedelta(minutes=30),
+        status=EncounterStatus.COMPLETED,
+        chief_complaint="5-month follow-up — glaucoma, cataract, and diabetic retinopathy",
+        clinician_note="IOP well controlled at 17 mmHg OD, 16 mmHg OS on latanoprost. Cataract now visually "
+        "significant OD (20/60), affecting reading. Diabetic retinopathy stable, unchanged from baseline. "
+        "Referred for cataract surgery evaluation, right eye first, once glaucoma remains stable.",
+        created_by=created_by,
+    )
+    e3 = Encounter(
+        patient_id=patient.id,
+        encounter_number=_encounter_number(patient.mrn, 3),
+        encounter_type=EncounterType.OUTPATIENT,
+        start_datetime=_months_ago(1),
+        end_datetime=None,
+        status=EncounterStatus.ACTIVE,
+        chief_complaint="Current visit — pre-operative cataract assessment with concurrent glaucoma/DR management",
+        clinician_note="IOP remains at target. Diabetic retinopathy unchanged on this visit's fundus exam. "
+        "Cleared for cataract surgery, right eye, with glaucoma medication continued perioperatively.",
+        created_by=created_by,
+    )
+    db.add_all([e1, e2, e3])
+    db.flush()
+
+    db.add_all(
+        [
+            Condition(
+                patient_id=patient.id,
+                encounter_id=e1.id,
+                display="Primary open-angle glaucoma, bilateral",
+                status=ConditionStatus.ACTIVE,
+                onset_date=_months_ago(9).date(),
+                notes="IOP at target on latanoprost as of most recent follow-up.",
+            ),
+            Condition(
+                patient_id=patient.id,
+                encounter_id=e1.id,
+                display="Cataract, bilateral (nuclear sclerotic)",
+                status=ConditionStatus.ACTIVE,
+                onset_date=_months_ago(9).date(),
+                notes="Visually significant OD; surgery scheduled, glaucoma control maintained perioperatively.",
+            ),
+            Condition(
+                patient_id=patient.id,
+                encounter_id=e1.id,
+                display="Mild nonproliferative diabetic retinopathy, bilateral",
+                status=ConditionStatus.ACTIVE,
+                onset_date=_months_ago(9).date(),
+                notes="Stable across all three documented visits; no macular edema.",
+            ),
+            Condition(
+                patient_id=patient.id,
+                display="Type 2 diabetes mellitus",
+                status=ConditionStatus.ACTIVE,
+                onset_date=date(2005, 6, 1),
+            ),
+        ]
+    )
+    db.add_all(
+        [
+            Medication(
+                patient_id=patient.id,
+                encounter_id=e1.id,
+                medication_name="Latanoprost 0.005%",
+                dose="1 drop",
+                route="ophthalmic",
+                frequency="nightly, both eyes",
+                start_date=_months_ago(9).date(),
+                active=True,
+                source="clinician entered",
+            ),
+            Medication(
+                patient_id=patient.id,
+                medication_name="Metformin",
+                dose="500",
+                dose_unit="mg",
+                route="oral",
+                frequency="twice daily",
+                start_date=date(2005, 7, 1),
+                active=True,
+                source="clinician entered",
+            ),
+        ]
+    )
+    db.add(
+        Allergy(
+            patient_id=patient.id,
+            substance="NSAIDs (e.g. ibuprofen)",
+            reaction="Mild gastrointestinal upset",
+            severity=AllergySeverity.MILD,
+            source="patient reported",
+        )
+    )
+
+
 SEEDERS = {
     "DEMO-1001": ("Margaret Wallace - cataract", _seed_cataract_patient),
     "DEMO-1002": ("Robert Klein - glaucoma", _seed_glaucoma_patient),
     "DEMO-1003": ("Elena Novak - diabetic retinopathy", _seed_diabetic_retinopathy_patient),
+    "DEMO-1004": ("Priya Patel - wet AMD", _seed_amd_patient),
+    "DEMO-1005": ("Thomas Ferreira - multi-morbidity (glaucoma+cataract+DR)", _seed_multimorbidity_patient),
 }
 
 

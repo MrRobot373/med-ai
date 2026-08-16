@@ -30,6 +30,16 @@ dev = [
 # RAG-stage dependencies, used for real starting Phase 07 (declared early, back in
 # Phase 01, per §11, so the embedding/reranker health checks could optionally exercise
 # them if already installed).
+#
+# GPU acceleration (optional): `sentence-transformers`/`transformers` pull in `torch`
+# as a transitive dependency, and this resolves to a CPU-only wheel by default — the
+# correct default (spec §12: keep GPU VRAM free for the main LLM). To run embedding/
+# reranker on a GPU with real spare headroom instead (Phase 14 measured a real ~1,500x
+# embedding throughput improvement — see docs/architecture.md), install a CUDA-enabled
+# torch build separately (matching your driver's CUDA version, e.g. `pip install
+# --index-url https://download.pytorch.org/whl/cu130 torch==2.13.0+cu130`) and set
+# EMBEDDING_DEVICE=cuda / RERANKER_DEVICE=cuda in .env — see README.md's "GPU
+# acceleration" section.
 rag = [
     "qdrant-client>=1.12",
     "sentence-transformers>=3.2",

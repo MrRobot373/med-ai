@@ -39,7 +39,7 @@ export function AppShell() {
               <Plus className="h-4 w-4" strokeWidth={3} />
             </span>
             <div className="leading-tight">
-              <div className="text-base font-bold text-gms-red">GMS</div>
+              <div className="text-base font-bold text-gms-red">MED</div>
               <div className="text-[11px] font-medium text-muted-text">Clinical AI</div>
             </div>
           </div>

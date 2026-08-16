@@ -17,12 +17,17 @@ describe("DashboardSnapshot", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows the real active-patient count once Patient Management data loads", async () => {
+  it("shows real counts from GET /api/dashboard/summary once it loads", async () => {
+    // Regression test — Phase 16's live UI review found this component still showed
+    // a stale "Not available yet — arrives in Phase 05/08-10" placeholder against a
+    // real running app that already had real reports and AI-generated output. It's
+    // now backed by one real summary endpoint instead of re-deriving counts from
+    // Patient Management's list response.
     vi.stubGlobal(
       "fetch",
       vi.fn(
         async () =>
-          new Response(JSON.stringify([{ id: "1" }, { id: "2" }, { id: "3" }]), {
+          new Response(JSON.stringify({ active_patients: 5, total_reports: 23, total_ai_analyses: 10 }), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           }),
@@ -31,21 +36,30 @@ describe("DashboardSnapshot", () => {
 
     renderSnapshot();
 
-    expect(await screen.findByText("3")).toBeInTheDocument();
+    expect(await screen.findByText("5")).toBeInTheDocument();
     expect(screen.getByText("Active Patients")).toBeInTheDocument();
+    expect(screen.getByText("23")).toBeInTheDocument();
+    expect(screen.getByText("Reports Processed")).toBeInTheDocument();
+    expect(screen.getByText("10")).toBeInTheDocument();
+    expect(screen.getByText("AI Analyses")).toBeInTheDocument();
+    expect(screen.queryByText(/not available yet/i)).not.toBeInTheDocument();
   });
 
-  it("states plainly that report/AI-analysis metrics aren't available yet, rather than fabricating numbers", async () => {
+  it("shows real zeros rather than fabricating a number when nothing exists yet", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(JSON.stringify([]), { status: 200, headers: { "Content-Type": "application/json" } })),
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ active_patients: 0, total_reports: 0, total_ai_analyses: 0 }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+      ),
     );
 
     renderSnapshot();
 
-    const notAvailable = await screen.findAllByText("Not available yet");
-    expect(notAvailable).toHaveLength(2); // reports + AI analyses
-    expect(screen.getByText(/Phase 05/)).toBeInTheDocument();
-    expect(screen.getByText(/Phases 08–10/)).toBeInTheDocument();
+    const zeros = await screen.findAllByText("0");
+    expect(zeros).toHaveLength(3);
   });
 });

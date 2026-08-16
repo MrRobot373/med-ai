@@ -78,7 +78,7 @@ def test_general_conversation_skips_retrieval_entirely(monkeypatch: pytest.Monke
 
 
 def test_current_patient_scope_pulls_patient_knowledge_and_vision_evidence(monkeypatch: pytest.MonkeyPatch):
-    def fake_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3):
+    def fake_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3, stats=None):
         if collection == ChunkCollection.PATIENT_DOCUMENTS:
             return [_fake_passage("patient_documents", "report-1", "Patient")]
         if collection == ChunkCollection.PATIENT_VISION:
@@ -110,10 +110,76 @@ def test_current_patient_scope_pulls_patient_knowledge_and_vision_evidence(monke
         db.close()
 
 
+def test_prepare_turn_rolls_up_real_retrieval_stats_across_all_collections_queried(monkeypatch: pytest.MonkeyPatch):
+    """Spec §80's "technical drawer" numbers must be real, observed stage sizes, not
+    fabricated — this asserts `prepared.provenance` is exactly the sum of what each of
+    the three `retrieve()` calls (patient/knowledge/vision) actually reported through
+    its `stats` out-param, plus a real structured-fact record count."""
+    from app.rag.pipeline import RetrievalStats
+
+    per_collection_counts = {
+        ChunkCollection.PATIENT_DOCUMENTS: RetrievalStats(dense_candidates=5, bm25_candidates=4, fused_candidates=3, reranked=2, deduplicated=1),
+        ChunkCollection.MEDICAL_KNOWLEDGE: RetrievalStats(dense_candidates=10, bm25_candidates=8, fused_candidates=6, reranked=4, deduplicated=2),
+        ChunkCollection.PATIENT_VISION: RetrievalStats(dense_candidates=1, bm25_candidates=1, fused_candidates=1, reranked=1, deduplicated=1),
+    }
+
+    def fake_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3, stats=None):
+        counts = per_collection_counts[collection]
+        if stats is not None:
+            stats.dense_candidates += counts.dense_candidates
+            stats.bm25_candidates += counts.bm25_candidates
+            stats.fused_candidates += counts.fused_candidates
+            stats.reranked += counts.reranked
+            stats.deduplicated += counts.deduplicated
+        return []
+
+    monkeypatch.setattr("app.chat.orchestrator.retrieve", fake_retrieve)
+    settings = get_settings()
+    db = SessionLocal()
+    try:
+        patient = _make_patient(db)
+        conversation = Conversation(
+            id=str(uuid.uuid4()), user_id="u1", scope=ConversationScope.CURRENT_PATIENT, patient_id=patient.id
+        )
+        prepared = orchestrator.prepare_turn(db, settings, conversation, "What medications is she on?", [])
+
+        assert prepared.provenance == {
+            "patient_context_records": 0,  # no conditions/allergies/medications seeded for this patient
+            "dense_candidates": 16,
+            "bm25_candidates": 13,
+            "fused_candidates": 10,
+            "reranked": 7,
+            "final_evidence": 4,
+        }
+    finally:
+        db.query(Patient).filter(Patient.id == patient.id).delete()
+        db.commit()
+        db.close()
+
+
+def test_general_conversation_provenance_is_honestly_all_zero(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr("app.chat.orchestrator.retrieve", lambda *a, **k: (_ for _ in ()).throw(AssertionError("must not be called")))
+    settings = get_settings()
+    db = SessionLocal()
+    try:
+        conversation = Conversation(id=str(uuid.uuid4()), user_id="u1", scope=ConversationScope.GENERAL)
+        prepared = orchestrator.prepare_turn(db, settings, conversation, "hi", [])
+        assert prepared.provenance == {
+            "patient_context_records": 0,
+            "dense_candidates": 0,
+            "bm25_candidates": 0,
+            "fused_candidates": 0,
+            "reranked": 0,
+            "final_evidence": 0,
+        }
+    finally:
+        db.close()
+
+
 def test_selected_report_scope_only_searches_patient_documents(monkeypatch: pytest.MonkeyPatch):
     calls = []
 
-    def fake_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3):
+    def fake_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3, stats=None):
         calls.append(collection.value)
         return [_fake_passage("patient_documents", "report-1", "Patient")] if patient_id else []
 

@@ -20,6 +20,7 @@ from app.logging import get_logger
 from app.models.citation import Citation, CitationSourceType
 from app.models.conversation import Conversation, ConversationScope
 from app.models.message import Message, MessageRole
+from app.rag.dense_retriever import RetrievalError
 
 logger = get_logger(__name__)
 
@@ -120,7 +121,25 @@ async def run_turn(
     conversation.updated_at = datetime.now(UTC)
     db.commit()
 
-    prepared = prepare_turn(db, settings, conversation, user_text, history)
+    try:
+        prepared = prepare_turn(db, settings, conversation, user_text, history)
+    except RetrievalError as exc:
+        # Same graceful-degradation shape as a GenerationError below (spec §99: Qdrant
+        # unavailable must fail like this, not crash the SSE stream mid-response) — an
+        # honest "couldn't retrieve" error, never silently reinterpreted as "no
+        # evidence exists" (which would look like a normal abstention).
+        db.add(
+            Message(
+                conversation_id=conversation.id,
+                role=MessageRole.ASSISTANT,
+                content="",
+                generation_error=str(exc),
+                model=settings.ollama_model,
+            )
+        )
+        db.commit()
+        yield {"type": "error", "message": "Retrieval is temporarily unavailable. Please try again shortly."}
+        return
 
     if prepared.abstain:
         assistant_message = Message(
@@ -129,7 +148,11 @@ async def run_turn(
             content=ABSTENTION_TEXT,
             model=settings.ollama_model,
             structured_payload=json.dumps(
-                {"task_classification": prepared.task_classification, "evidence_quality": "insufficient"}
+                {
+                    "task_classification": prepared.task_classification,
+                    "evidence_quality": "insufficient",
+                    "provenance": prepared.provenance,
+                }
             ),
         )
         db.add(assistant_message)
@@ -176,6 +199,7 @@ async def run_turn(
                 "task_classification": prepared.task_classification,
                 "evidence_quality": result.evidence_quality.value,
                 "grounding": [c.model_dump() for c in result.grounding.claims] if result.grounding else None,
+                "provenance": prepared.provenance,
             }
         ),
     )

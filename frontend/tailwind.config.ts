@@ -17,7 +17,7 @@ export default {
         border: "#E3EAF4",
         success: "#14B86E",
         danger: "#E84040",
-        "gms-red": "#ED3237",
+        "gms-red": "#140203",
         "muted-text": "#66758C",
       },
       borderRadius: {

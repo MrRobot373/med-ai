@@ -7,6 +7,9 @@ when a dependency is down), matching spec §84/§85/§103.
 
 from __future__ import annotations
 
+import pytest
+
+from app.db import session as db_session
 from app.db.session import check_database_reachable
 from app.integrations.ollama_client import _model_name_matches
 
@@ -15,6 +18,20 @@ def test_database_is_reachable_after_schema_creation():
     reachable, error = check_database_reachable()
     assert reachable is True
     assert error is None
+
+
+def test_database_unreachable_degrades_gracefully_instead_of_raising(monkeypatch: pytest.MonkeyPatch):
+    # spec §99 "database unavailable" — `check_database_reachable()` must never raise
+    # (the health endpoint calls it unconditionally on every request), just report an
+    # honest `(False, error)` the way the real Qdrant/Ollama checks already do.
+    class _BrokenEngine:
+        def connect(self):
+            raise OSError("simulated: disk I/O error")
+
+    monkeypatch.setattr(db_session, "engine", _BrokenEngine())
+    reachable, error = check_database_reachable()
+    assert reachable is False
+    assert "simulated" in error
 
 
 def test_overall_health_endpoint_shape(client):

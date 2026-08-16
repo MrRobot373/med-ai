@@ -72,6 +72,8 @@ describe("Research page", () => {
         if (url.includes("/api/research/status")) return jsonResponse({ enabled: false, searxng_reachable: false, sources_available: [] });
         if (url.includes("/api/patients")) return jsonResponse([]);
         if (url.includes("/api/research/runs")) return jsonResponse([]);
+        // FeedbackControls (Phase 13) queries this once a research run renders.
+        if (url.startsWith("/api/feedback/mine")) return jsonResponse(null);
         if (url.includes("/api/research/query") && method === "POST") {
           return jsonResponse({
             id: "run1",
@@ -122,6 +124,8 @@ describe("Research page", () => {
         if (url.includes("/api/research/status")) return jsonResponse({ enabled: true, searxng_reachable: false, sources_available: ["pubmed", "fda", "clinicaltrials"] });
         if (url.includes("/api/patients")) return jsonResponse([]);
         if (url.includes("/api/research/runs")) return jsonResponse([]);
+        // FeedbackControls (Phase 13) queries this once a research run renders.
+        if (url.startsWith("/api/feedback/mine")) return jsonResponse(null);
         if (url.includes("/api/research/query") && method === "POST") {
           capturedBody = JSON.parse((init?.body as string) ?? "{}");
           return jsonResponse({

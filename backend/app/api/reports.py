@@ -16,8 +16,10 @@ from fastapi.responses import FileResponse
 
 from app.api.common import get_patient_or_404
 from app.api.deps import DbDep, SettingsDep
+from app.audit.service import record as record_audit
 from app.auth.dependencies import CurrentUser, WriteUser
 from app.ingestion import dicom as dicom_module
+from app.models.audit_log import AuditAction
 from app.models.report import Report
 from app.schemas.reconciliation import ReconciliationResult
 from app.schemas.report import ReportDetail, ReportListItem, ReportPage, ReportStatus
@@ -71,6 +73,10 @@ async def upload_patient_report(
     except report_service.DuplicateReportError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
+    record_audit(
+        db, AuditAction.REPORT_UPLOADED, user=current_user, object_type="report", object_id=report.id,
+        detail={"patient_id": patient_id},
+    )
     background_tasks.add_task(report_service.run_ingestion_task, report.id, settings)
     return ReportListItem.model_validate(report)
 
@@ -141,9 +147,10 @@ def confirm_report_match(report_id: str, db: DbDep, settings: SettingsDep, curre
 
 
 @router.post("/reports/{report_id}/archive", response_model=ReportListItem)
-def archive_report(report_id: str, db: DbDep, settings: SettingsDep, _current_user: WriteUser) -> ReportListItem:
+def archive_report(report_id: str, db: DbDep, settings: SettingsDep, current_user: WriteUser) -> ReportListItem:
     report = _get_report_or_404(db, report_id)
     updated = report_service.archive_report(db, settings, report)
+    record_audit(db, AuditAction.REPORT_ARCHIVED, user=current_user, object_type="report", object_id=report_id)
     return ReportListItem.model_validate(updated)
 
 

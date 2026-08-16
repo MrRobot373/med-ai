@@ -63,20 +63,38 @@ export function ClinicalAIWorkspace({
   useEffect(() => {
     if (!initialPrompt || initialHandledRef.current) return;
     initialHandledRef.current = true;
-    onConsumedInitialPrompt?.();
-    createConversation.mutate(
-      {
-        scope: initialPrompt.scope,
-        patient_id: patientId,
-        selected_report_id: initialPrompt.reportId,
-      },
-      {
-        onSuccess: (conversation) => {
-          setSelectedId(conversation.id);
-          setPendingPrompt(initialPrompt.text);
-        },
-      },
-    );
+    // Deliberately `mutateAsync` + a local `await`, not `.mutate(vars, {onSuccess})`:
+    // under React 18 StrictMode, this effect's setup/cleanup/setup-again dance can
+    // unsubscribe-then-resubscribe the mutation observer *while the request is still
+    // in flight*. `.mutate()`'s per-call `onSuccess`/`onError` are delivered through
+    // that observer, so on the exact StrictMode timing where the unsubscribe happens
+    // before the response arrives, the observer gets detached from its own in-flight
+    // mutation and the callback is silently dropped forever — confirmed live: the
+    // POST succeeded (real 201, real conversation row), but neither callback ever
+    // fired and the hook's own `status` stayed "pending" indefinitely. `mutateAsync`
+    // returns the mutation's raw execution promise, which settles independently of
+    // observer subscription state, so `await`-ing it here is unaffected by that race.
+    // No unmount-cancellation guard here on purpose: React 18 no longer warns (let
+    // alone errors) on setting state after unmount, and the `initialHandledRef` guard
+    // above already prevents this from running more than once per real mount — a
+    // `cancelled` flag flipped in this effect's own cleanup would just reintroduce the
+    // same StrictMode race we're fixing (its simulated unmount would flip it before
+    // the real mount's request ever resolves).
+    void (async () => {
+      try {
+        const conversation = await createConversation.mutateAsync({
+          scope: initialPrompt.scope,
+          patient_id: patientId,
+          selected_report_id: initialPrompt.reportId,
+        });
+        setSelectedId(conversation.id);
+        setPendingPrompt(initialPrompt.text);
+      } catch (err) {
+        setCreateError(err instanceof ApiError ? err.message : "Could not start a new conversation.");
+      } finally {
+        onConsumedInitialPrompt?.();
+      }
+    })();
     // Runs once per mount — the route wrapper keys this component by patient, so a
     // fresh mount is exactly when a new initialPrompt should be handled.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,6 +162,7 @@ export function ClinicalAIWorkspace({
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
+            {createError && <p className="text-sm text-red-600">{createError}</p>}
             <p className="text-sm text-muted-text">
               {canWrite
                 ? "Select a conversation, or start a new one to ask a question."
@@ -167,6 +186,7 @@ export function ClinicalAIWorkspace({
           citations={lastAssistant?.citations}
           evidenceQuality={lastAssistant?.evidence_quality}
           grounding={lastAssistant?.grounding}
+          provenance={lastAssistant?.provenance}
         />
       </div>
 

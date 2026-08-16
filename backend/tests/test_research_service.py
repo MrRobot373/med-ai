@@ -228,6 +228,58 @@ async def test_run_research_skips_web_fetch_when_research_mode_is_disabled(monke
 
 
 @pytest.mark.asyncio
+async def test_run_research_records_real_provenance_including_per_source_web_counts(monkeypatch: pytest.MonkeyPatch):
+    """Spec §80's example drawer shows `PubMed: 3 / FDA: 1` — this asserts those counts
+    are tallied from what the providers/retrieval actually returned, not fabricated."""
+
+    def fake_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3, stats=None):
+        if stats is not None:
+            stats.dense_candidates += 7
+            stats.bm25_candidates += 5
+            stats.fused_candidates += 3
+            stats.reranked += 2
+            stats.deduplicated += 1
+        return []
+
+    monkeypatch.setattr("app.services.research.retrieve", fake_retrieve)
+
+    async def pubmed_provider(query, settings, max_results):
+        return [_result(title="A"), _result(title="B")]
+
+    async def fda_provider(query, settings, max_results):
+        return [_result(title="C", source=WebSource.FDA)]
+
+    monkeypatch.setattr(research_service, "_PROVIDERS", {WebSource.PUBMED: pubmed_provider, WebSource.FDA: fda_provider})
+
+    async def fake_synthesis(*args, **kwargs):
+        return ResearchSynthesis(evidence_summary="Some evidence [W1].", consensus="")
+
+    monkeypatch.setattr("app.services.research.generate_research_synthesis", fake_synthesis)
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "enable_research", True)
+
+    db = SessionLocal()
+    try:
+        run = await research_service.run_research(
+            db, settings, "glaucoma treatment options", None, [WebSource.PUBMED, WebSource.FDA], "any", True, None
+        )
+        import json
+
+        payload = json.loads(run.payload)
+        provenance = payload["provenance"]
+        # Two retrieve() calls (patient_documents is skipped — no patient given —
+        # only medical_knowledge runs), each contributing the same fake stats once.
+        assert provenance["dense_candidates"] == 7
+        assert provenance["bm25_candidates"] == 5
+        assert provenance["web_source_counts"] == {"PUBMED": 2, "FDA": 1}
+        assert provenance["generation_model"] == settings.ollama_model
+    finally:
+        _cleanup(db)
+        db.close()
+
+
+@pytest.mark.asyncio
 async def test_run_research_strips_invalid_citation_labels(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr("app.services.research.retrieve", lambda *a, **k: [])
 

@@ -6,11 +6,15 @@ every other generation-triggering endpoint in this app.
 
 from __future__ import annotations
 
+import json
+
 from fastapi import APIRouter, HTTPException, status
 
 from app.api.common import get_patient_or_404
 from app.api.deps import DbDep, SettingsDep
+from app.audit.service import record as record_audit
 from app.auth.dependencies import CurrentUser, WriteUser
+from app.models.audit_log import AuditAction
 from app.models.clinical_module_run import ClinicalModuleRun, ClinicalModuleType
 from app.schemas.clinical_modules import ClinicalModuleRunOut
 from app.schemas.research import ResearchQueryRequest, ResearchStatusOut
@@ -46,9 +50,40 @@ async def query_research(payload: ResearchQueryRequest, db: DbDep, settings: Set
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Research Mode is not enabled for this deployment — external sources cannot be queried",
         )
+    if payload.sources:
+        # spec §82 "Research Mode enabled" — the request that's actually allowed to
+        # reach beyond local data, logged before the (possibly slow/failing) call so
+        # a genuinely-enabled attempt is always on record regardless of outcome.
+        record_audit(
+            db,
+            AuditAction.RESEARCH_MODE_ENABLED,
+            user=current_user,
+            object_type="patient" if patient else None,
+            object_id=patient.id if patient else None,
+            detail={"sources": [s.value for s in payload.sources]},
+        )
+
     run = await research_service.run_research(
         db, settings, payload.question, patient, payload.sources, payload.date_range, payload.prefer_reviews, current_user.id
     )
+
+    # spec §82 "external search executed" — logged only when external evidence was
+    # actually used in the synthesis (`research_mode_used`, computed in
+    # services/research.py from real fetched/ranked web passages), not merely
+    # requested — a request with sources checked that returned nothing usable never
+    # actually left the machine with anything coming back.
+    if run.payload:
+        run_payload = json.loads(run.payload) if isinstance(run.payload, str) else run.payload
+        if run_payload.get("research_mode_used"):
+            record_audit(
+                db,
+                AuditAction.EXTERNAL_SEARCH_EXECUTED,
+                user=current_user,
+                object_type="clinical_module_run",
+                object_id=run.id,
+                detail={"web_source_counts": run_payload.get("provenance", {}).get("web_source_counts", {})},
+            )
+
     return _to_out(run)
 
 

@@ -5,11 +5,21 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from qdrant_client.http import models as qmodels
+from qdrant_client.http.exceptions import ApiException
 
 from app.config.settings import Settings
 from app.models.chunk import PATIENT_SCOPED_COLLECTIONS, ChunkCollection
 from app.rag.embeddings import embed_query
 from app.rag.qdrant_setup import get_qdrant_client
+
+
+class RetrievalError(Exception):
+    """Raised when Qdrant itself is unreachable or returns an unexpected error —
+    distinct from an honest "no results" (spec §99: a real, live-verified gap found by
+    taking Qdrant down while a chat turn was in flight — `client.query_points()`'s
+    connection failure was previously uncaught and crashed the SSE stream outright
+    instead of degrading gracefully like an Ollama failure already does via
+    `GenerationError`, see `app/services/chat.py`)."""
 
 
 @dataclass
@@ -39,12 +49,15 @@ def dense_search(
             must=[qmodels.FieldCondition(key="patient_id", match=qmodels.MatchValue(value=patient_id))]
         )
 
-    results = client.query_points(
-        collection_name=collection.value,
-        query=query_vector,
-        query_filter=query_filter,
-        limit=top_k or settings.rag_dense_top_k,
-        with_payload=False,
-    ).points
+    try:
+        results = client.query_points(
+            collection_name=collection.value,
+            query=query_vector,
+            query_filter=query_filter,
+            limit=top_k or settings.rag_dense_top_k,
+            with_payload=False,
+        ).points
+    except ApiException as exc:
+        raise RetrievalError(f"Qdrant is unreachable or returned an error: {exc}") from exc
 
     return [DenseHit(chunk_id=str(point.id), score=point.score) for point in results]

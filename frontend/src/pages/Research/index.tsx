@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Globe, Lock, Search } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Globe, Info, Lock, Search } from "lucide-react";
 import { Card } from "@/components/Card";
 import { ApiError } from "@/api/client";
 import {
@@ -14,6 +15,8 @@ import {
 import { usePatients } from "@/api/patients";
 import { useCanWrite } from "@/api/auth";
 import { useResearchMode } from "@/contexts/ResearchMode";
+import { FeedbackControls } from "@/components/FeedbackControls";
+import { ProvenanceDrawer } from "@/components/ProvenanceDrawer";
 import { Bulleted, GenerationError, RunHistoryList, Section } from "@/pages/PatientWorkspace/ClinicalModules/shared";
 
 const SOURCE_LABELS: { value: WebSource; label: string }[] = [
@@ -29,11 +32,20 @@ function citationBadge(c: ResearchCitation): { label: string; className: string 
   return { label: c.section ?? "WEB", className: "bg-cyan/10 text-cyan" };
 }
 
+/** Deep-link state (Demo Scenarios, spec §89) — prefills the question/patient, same
+ * "open the correct patient/context automatically" contract as chat's AskAINavState. */
+export interface ResearchNavState {
+  prefillQuestion: string;
+  patientId?: string;
+}
+
 export default function ResearchPage() {
   const { data: status, isLoading: statusLoading } = useResearchStatus();
   const { data: patients } = usePatients("", false);
   const { setActive } = useResearchMode();
   const canWrite = useCanWrite();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [question, setQuestion] = useState("");
   const [patientId, setPatientId] = useState("");
@@ -46,6 +58,7 @@ export default function ResearchPage() {
   const run = useRunResearchQuery();
   const { data: history } = useResearchRuns();
   const payload = run.data?.payload as ResearchPayload | null | undefined;
+  const [showProvenance, setShowProvenance] = useState(false);
 
   // Spec §128: header badge reflects real state — only while sources are actually
   // enabled on this page. Reverts on unmount so it never shows a stale "Research"
@@ -54,6 +67,18 @@ export default function ResearchPage() {
     setActive(sources.size > 0);
     return () => setActive(false);
   }, [sources.size, setActive]);
+
+  useEffect(() => {
+    const navState = location.state as ResearchNavState | null;
+    if (navState?.prefillQuestion) {
+      setQuestion(navState.prefillQuestion);
+      if (navState.patientId) setPatientId(navState.patientId);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+    // location.key (not just mount) so a second Demo Scenario click while already on
+    // this page still gets consumed, not silently ignored by an already-mounted page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
 
   function toggleSource(source: WebSource) {
     setSources((prev) => {
@@ -201,8 +226,28 @@ export default function ResearchPage() {
         {error && <GenerationError message={error} />}
       </Card>
 
-      {payload && (
+      {payload && run.data && (
         <Card className="space-y-4 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <FeedbackControls targetType="clinical_module_run" targetId={run.data.id} />
+            {payload.provenance && (
+              <button
+                type="button"
+                onClick={() => setShowProvenance(true)}
+                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-primary-blue hover:bg-light-blue"
+              >
+                <Info className="h-3.5 w-3.5" />
+                Why This Answer?
+              </button>
+            )}
+          </div>
+          {showProvenance && payload.provenance && (
+            <ProvenanceDrawer
+              provenance={payload.provenance}
+              webSourceCounts={payload.provenance.web_source_counts}
+              onClose={() => setShowProvenance(false)}
+            />
+          )}
           <Section title="Evidence Summary">
             <p className="whitespace-pre-wrap text-sm text-navy">{payload.evidence_summary}</p>
           </Section>

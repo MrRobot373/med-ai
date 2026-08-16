@@ -22,6 +22,8 @@ pytest-asyncio>=0.24
 ruff>=0.7
 
 # rag (Phase 07)
+# GPU acceleration (optional, Phase 14) — see pyproject.toml's [rag] extra comment and
+# README.md's "GPU acceleration" section: torch resolves CPU-only by default here.
 qdrant-client>=1.12
 sentence-transformers>=3.2
 transformers>=4.46

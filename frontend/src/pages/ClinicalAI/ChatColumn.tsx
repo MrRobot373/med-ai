@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Loader2, Send, Square, TriangleAlert } from "lucide-react";
 import type { MessageOut } from "@/api/chat";
+import { FeedbackControls } from "@/components/FeedbackControls";
 
 const CITATION_PATTERN = /\[([PLW]\d+)\]/g;
 
@@ -42,7 +43,7 @@ function MessageBubble({ message }: { message: MessageOut }) {
     );
   }
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
       <div
         className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm whitespace-pre-wrap ${
           isUser ? "bg-primary-blue text-white" : "border border-border bg-surface text-navy"
@@ -50,6 +51,7 @@ function MessageBubble({ message }: { message: MessageOut }) {
       >
         {isUser ? message.content : renderWithCitations(message.content)}
       </div>
+      {!isUser && <FeedbackControls targetType="message" targetId={message.id} />}
     </div>
   );
 }

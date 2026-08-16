@@ -14,8 +14,10 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.api.common import get_patient_or_404 as _get_patient_or_404
 from app.api.deps import DbDep
+from app.audit.service import record as record_audit
 from app.auth.dependencies import CurrentUser, WriteUser
 from app.models.allergy import Allergy
+from app.models.audit_log import AuditAction
 from app.models.condition import Condition
 from app.models.encounter import Encounter
 from app.models.medication import Medication
@@ -79,8 +81,9 @@ def list_patients(
 
 
 @router.post("/patients", response_model=PatientOut, status_code=status.HTTP_201_CREATED)
-def create_patient(payload: PatientCreate, db: DbDep, _current_user: WriteUser) -> PatientOut:
+def create_patient(payload: PatientCreate, db: DbDep, current_user: WriteUser) -> PatientOut:
     patient = patient_service.create_patient(db, payload)
+    record_audit(db, AuditAction.PATIENT_CREATED, user=current_user, object_type="patient", object_id=patient.id)
     return PatientOut.model_validate(patient)
 
 
@@ -90,21 +93,27 @@ def get_patient(patient_id: str, db: DbDep, _current_user: CurrentUser) -> Patie
 
 
 @router.patch("/patients/{patient_id}", response_model=PatientOut)
-def update_patient(patient_id: str, payload: PatientUpdate, db: DbDep, _current_user: WriteUser) -> PatientOut:
+def update_patient(patient_id: str, payload: PatientUpdate, db: DbDep, current_user: WriteUser) -> PatientOut:
     patient = _get_patient_or_404(db, patient_id)
-    return PatientOut.model_validate(patient_service.update_patient(db, patient, payload))
+    updated = patient_service.update_patient(db, patient, payload)
+    record_audit(db, AuditAction.PATIENT_MODIFIED, user=current_user, object_type="patient", object_id=patient_id, detail={"action": "updated"})
+    return PatientOut.model_validate(updated)
 
 
 @router.post("/patients/{patient_id}/archive", response_model=PatientOut)
-def archive_patient(patient_id: str, db: DbDep, _current_user: WriteUser) -> PatientOut:
+def archive_patient(patient_id: str, db: DbDep, current_user: WriteUser) -> PatientOut:
     patient = _get_patient_or_404(db, patient_id)
-    return PatientOut.model_validate(patient_service.archive_patient(db, patient))
+    updated = patient_service.archive_patient(db, patient)
+    record_audit(db, AuditAction.PATIENT_MODIFIED, user=current_user, object_type="patient", object_id=patient_id, detail={"action": "archived"})
+    return PatientOut.model_validate(updated)
 
 
 @router.post("/patients/{patient_id}/unarchive", response_model=PatientOut)
-def unarchive_patient(patient_id: str, db: DbDep, _current_user: WriteUser) -> PatientOut:
+def unarchive_patient(patient_id: str, db: DbDep, current_user: WriteUser) -> PatientOut:
     patient = _get_patient_or_404(db, patient_id)
-    return PatientOut.model_validate(patient_service.unarchive_patient(db, patient))
+    updated = patient_service.unarchive_patient(db, patient)
+    record_audit(db, AuditAction.PATIENT_MODIFIED, user=current_user, object_type="patient", object_id=patient_id, detail={"action": "unarchived"})
+    return PatientOut.model_validate(updated)
 
 
 # --- Timeline ----------------------------------------------------------------------
@@ -131,6 +140,7 @@ def create_patient_encounter(
 ) -> EncounterOut:
     patient = _get_patient_or_404(db, patient_id)
     encounter = encounter_service.create_encounter(db, patient, payload, created_by=current_user.id)
+    record_audit(db, AuditAction.ENCOUNTER_CREATED, user=current_user, object_type="encounter", object_id=encounter.id, detail={"patient_id": patient_id})
     return EncounterOut.model_validate(encounter)
 
 

@@ -25,11 +25,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_ROOT = REPO_ROOT / "backend"
 sys.path.insert(0, str(BACKEND_ROOT))
 
+from sqlalchemy import select  # noqa: E402
+
 from app.config.settings import get_settings  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
 from app.ingestion import pdf as pdf_module  # noqa: E402
 from app.ingestion.storage import sha256_hex  # noqa: E402
-from app.models.chunk import ChunkCollection  # noqa: E402
+from app.models.chunk import Chunk, ChunkCollection  # noqa: E402
 from app.rag.indexing import index_document  # noqa: E402
 
 DATA_DIR = REPO_ROOT / "data"
@@ -53,14 +55,30 @@ def _title_from_filename(filename: str) -> str:
     return Path(filename).stem.replace("_", " ").replace("--", "").strip()
 
 
-def ingest_file(path: Path) -> int:
+def _already_indexed(db, file_hash: str) -> bool:
+    stmt = select(Chunk.id).where(Chunk.collection == ChunkCollection.MEDICAL_KNOWLEDGE, Chunk.file_hash == file_hash).limit(1)
+    return db.scalar(stmt) is not None
+
+
+def ingest_file(path: Path, force: bool = False) -> int | None:
+    """Returns the chunk count indexed, or `None` if skipped because this exact file
+    content is already indexed. Real, measured problem this guards against: without
+    it, `start-demo.bat` re-running this script on every launch re-embeds the same
+    ~111 chunks from scratch every time (Phase 07's own measurement: ~11s/chunk on
+    CPU once warm) purely because it has no way to tell "already indexed" from
+    "changed since last run" — several real minutes wasted on every demo start for
+    content that never changed. `--force` (or a genuinely different file_hash, e.g.
+    an updated PDF) still re-indexes for real."""
     settings = get_settings()
     content = path.read_bytes()
-    result = pdf_module.extract_pdf_text(content)
-    pages = [{"page": page.page, "text": page.text} for page in result.pages]
+    file_hash = sha256_hex(content)
 
     db = SessionLocal()
     try:
+        if not force and _already_indexed(db, file_hash):
+            return None
+        result = pdf_module.extract_pdf_text(content)
+        pages = [{"page": page.page, "text": page.text} for page in result.pages]
         rows = index_document(
             db,
             settings,
@@ -68,7 +86,7 @@ def ingest_file(path: Path) -> int:
             collection=ChunkCollection.MEDICAL_KNOWLEDGE,
             source_title=_title_from_filename(path.name),
             source_filename=path.name,
-            file_hash=sha256_hex(content),
+            file_hash=file_hash,
         )
         return len(rows)
     finally:
@@ -79,6 +97,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--all", action="store_true", help="Ingest every PDF in data/, including large textbooks")
     parser.add_argument("--file", help="Ingest a single specific file by name")
+    parser.add_argument(
+        "--force", action="store_true", help="Re-index even if this exact file content is already indexed"
+    )
     args = parser.parse_args()
 
     if args.file:
@@ -95,7 +116,10 @@ def main() -> int:
             continue
         started = time.time()
         print(f"Ingesting {path.name} ...", flush=True)
-        count = ingest_file(path)
+        count = ingest_file(path, force=args.force)
+        if count is None:
+            print("  -> already indexed (unchanged) - skipped. Use --force to re-index anyway.")
+            continue
         total_chunks += count
         print(f"  -> {count} chunks in {time.time() - started:.1f}s")
 

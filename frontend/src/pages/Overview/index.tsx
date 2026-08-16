@@ -5,6 +5,7 @@ import {
   FileText,
   HeartHandshake,
   MessageSquare,
+  PlayCircle,
   ScanSearch,
   ServerCog,
   ShieldCheck,
@@ -13,6 +14,7 @@ import {
   Tags,
   Upload,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/Card";
 import { CapabilityCard } from "@/components/CapabilityCard";
 import { DashboardSnapshot } from "@/components/DashboardSnapshot";
@@ -99,12 +101,24 @@ export default function OverviewPage() {
             AI-powered tools to extract insights, summarize notes, and support better
             clinical outcomes — running entirely on local, open-source infrastructure.
           </p>
-          <a
-            href="#capabilities"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary-blue px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-blue/90"
-          >
-            Explore Capabilities
-          </a>
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            <a
+              href="#capabilities"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary-blue px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-blue/90"
+            >
+              Explore Capabilities
+            </a>
+            {/* Spec §89 "Demo Scenarios" entry point — a distinct page (not a nav
+               item, since spec §19's nav list is fixed) reachable from the landing
+               page a presenter starts a demo from. */}
+            <Link
+              to="/demo"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-blue hover:underline"
+            >
+              <PlayCircle className="h-4 w-4" />
+              Demo Scenarios
+            </Link>
+          </div>
         </div>
         <div className="mx-auto w-full max-w-sm">
           <HeroIllustration />

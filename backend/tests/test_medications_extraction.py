@@ -37,6 +37,32 @@ def test_free_text_medication_lines_under_a_section_heading():
         assert med.source_excerpt
 
 
+def test_medication_lines_separated_by_blank_lines_are_all_captured():
+    # Regression test — spec §97 golden-path E2E live testing against a real .docx
+    # upload found this: python-docx paragraph extraction joins every paragraph with
+    # a blank line, including the gap *between* two consecutive medication lines (not
+    # just between the section and unrelated content). The section finder used to
+    # treat any blank line as "end of section", so only the first medication line
+    # ("Latanoprost...") was ever extracted — "Timolol" and "Brimonidine" silently
+    # vanished before reaching `_extract_from_lines` at all.
+    text = (
+        "GMS Eye Clinic - Ophthalmology Consultation Note\n\n"
+        "Patient Name: Robert Klein\n\n"
+        "Current Medications:\n\n"
+        "Latanoprost 0.005% 1 drop nightly, both eyes\n\n"
+        "Timolol 0.5% 1 drop twice daily, both eyes\n\n"
+        "Brimonidine 0.15% 1 drop twice daily, both eyes\n\n"
+        "Intraocular pressure at this visit:\n\n"
+        "[Table]\nEye | IOP (mmHg) | Target\nOD | 16 | <18\nOS | 17 | <18"
+    )
+    meds = extract_medications(_pages(text))
+    by_name = {m.medication_name: m for m in meds}
+
+    assert set(by_name) == {"Latanoprost", "Timolol", "Brimonidine"}
+    assert by_name["Brimonidine"].dose == "0.15%"
+    assert by_name["Brimonidine"].frequency == "twice daily"
+
+
 def test_tabular_medication_section():
     text = "Discharge Medications:\nMedication | Dose | Frequency\nMetformin | 500mg | twice daily\nLisinopril | 10mg | once daily"
     meds = extract_medications(_pages(text))

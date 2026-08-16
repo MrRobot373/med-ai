@@ -73,12 +73,29 @@ def _find_medication_section(text: str) -> str | None:
     if start is None:
         return None
 
+    # A single blank line does *not* end the section: DOCX extraction represents every
+    # paragraph break — including the gap between two consecutive medication lines —
+    # as exactly one blank line (verified live: "Latanoprost...\n\nTimolol...\n\n
+    # Brimonidine..." for a genuine three-line list), so treating any blank line as
+    # the section's end silently dropped every medication after the first. Instead,
+    # end the section at a line that itself looks like the start of a new heading
+    # (ends with ":" and isn't itself a dose line, e.g. "Intraocular pressure at this
+    # visit:"), or after two consecutive blank lines (a true paragraph gap in
+    # single-newline-separated text), or at end of text.
     section_lines: list[str] = []
+    blank_run = 0
     for line in lines[start:]:
-        if not line.strip():
-            if section_lines:
-                break  # a blank line after content ends the section
-            continue  # a blank line right after the heading is just spacing
+        stripped = line.strip()
+        if not stripped:
+            blank_run += 1
+            if not section_lines:
+                continue  # blank line(s) right after the heading are just spacing
+            if blank_run >= 2:
+                break
+            continue
+        blank_run = 0
+        if section_lines and stripped.endswith(":") and not _DOSE_PATTERN.search(stripped):
+            break  # looks like the start of an unrelated new section
         section_lines.append(line)
     return "\n".join(section_lines) if section_lines else None
 

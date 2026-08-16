@@ -15,7 +15,9 @@ from fastapi.responses import StreamingResponse
 
 from app.api.common import get_patient_or_404
 from app.api.deps import DbDep, SettingsDep
+from app.audit.service import record as record_audit
 from app.auth.dependencies import CurrentUser, WriteUser
+from app.models.audit_log import AuditAction, AuditOutcome
 from app.models.conversation import Conversation
 from app.models.message import MessageRole
 from app.schemas.chat import (
@@ -25,22 +27,27 @@ from app.schemas.chat import (
     ConversationOut,
     GroundingClaimOut,
     MessageOut,
+    ProvenanceOut,
 )
 from app.services import chat as chat_service
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
 
-def _structured_fields(raw_payload: str | None) -> tuple[str | None, list[GroundingClaimOut] | None]:
-    """Pulls evidence_quality/grounding back out of Message.structured_payload for the
-    API response — see the field docstrings in schemas/chat.py."""
+def _structured_fields(
+    raw_payload: str | None, model: str | None
+) -> tuple[str | None, list[GroundingClaimOut] | None, ProvenanceOut | None]:
+    """Pulls evidence_quality/grounding/provenance back out of Message.structured_payload
+    for the API response — see the field docstrings in schemas/chat.py."""
     if not raw_payload:
-        return None, None
+        return None, None, None
     payload = json.loads(raw_payload)
     evidence_quality = payload.get("evidence_quality")
     grounding_raw = payload.get("grounding")
     grounding = [GroundingClaimOut.model_validate(c) for c in grounding_raw] if grounding_raw else None
-    return evidence_quality, grounding
+    provenance_raw = payload.get("provenance")
+    provenance = ProvenanceOut.model_validate({**provenance_raw, "generation_model": model}) if provenance_raw else None
+    return evidence_quality, grounding, provenance
 
 
 def _get_own_conversation_or_404(db: DbDep, conversation_id: str, user_id: str) -> Conversation:
@@ -89,7 +96,7 @@ def list_messages(conversation_id: str, db: DbDep, current_user: CurrentUser) ->
     result = []
     for message in messages:
         citations = chat_service.list_citations(db, message.id) if message.role == MessageRole.ASSISTANT else []
-        evidence_quality, grounding = _structured_fields(message.structured_payload)
+        evidence_quality, grounding, provenance = _structured_fields(message.structured_payload, message.model)
         result.append(
             MessageOut(
                 id=message.id,
@@ -102,6 +109,7 @@ def list_messages(conversation_id: str, db: DbDep, current_user: CurrentUser) ->
                 citations=[CitationOut.model_validate(c) for c in citations],
                 evidence_quality=evidence_quality,
                 grounding=grounding,
+                provenance=provenance,
             )
         )
     return result
@@ -119,9 +127,29 @@ async def send_message(
     conversation = _get_own_conversation_or_404(db, conversation_id, current_user.id)
 
     async def event_stream():
-        async for event in chat_service.run_turn(db, settings, conversation, payload.text):
-            if await request.is_disconnected():
-                break  # spec §120 cancellation — stop once the client is gone
-            yield f"data: {json.dumps(event)}\n\n"
+        # spec §82 "Clinical AI query" audit event. Outcome starts pessimistic
+        # (FAILURE) and only flips to SUCCESS once a real "final" event is actually
+        # seen — a disconnect mid-stream (spec §120 cancellation) never produces one,
+        # so it's honestly recorded as not having completed, same as a generation
+        # error. The question text itself is never logged (spec §82: avoid
+        # unnecessary PHI in logs) — only the conversation/scope it belongs to.
+        outcome = AuditOutcome.FAILURE
+        try:
+            async for event in chat_service.run_turn(db, settings, conversation, payload.text):
+                if event.get("type") == "final":
+                    outcome = AuditOutcome.SUCCESS
+                if await request.is_disconnected():
+                    break  # spec §120 cancellation — stop once the client is gone
+                yield f"data: {json.dumps(event)}\n\n"
+        finally:
+            record_audit(
+                db,
+                AuditAction.CLINICAL_AI_QUERY,
+                user=current_user,
+                object_type="conversation",
+                object_id=conversation.id,
+                outcome=outcome,
+                detail={"scope": conversation.scope.value},
+            )
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

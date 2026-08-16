@@ -5,12 +5,14 @@ autogenerate or `Base.metadata.create_all()` runs.
 """
 
 from app.models.allergy import Allergy
+from app.models.audit_log import AuditLog
 from app.models.chunk import Chunk
 from app.models.citation import Citation
 from app.models.clinical_module_run import ClinicalModuleRun
 from app.models.condition import Condition
 from app.models.conversation import Conversation
 from app.models.encounter import Encounter
+from app.models.feedback import Feedback
 from app.models.ingestion_job import IngestionJob
 from app.models.knowledge_document import KnowledgeDocument, KnowledgeDocumentVersion
 from app.models.medication import Medication
@@ -25,12 +27,14 @@ from app.models.web_cache import WebCacheEntry
 
 __all__ = [
     "Allergy",
+    "AuditLog",
     "Chunk",
     "Citation",
     "ClinicalModuleRun",
     "Condition",
     "Conversation",
     "Encounter",
+    "Feedback",
     "IngestionJob",
     "KnowledgeDocument",
     "KnowledgeDocumentVersion",

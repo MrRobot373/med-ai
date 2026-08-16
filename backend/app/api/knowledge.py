@@ -19,7 +19,9 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.api.deps import DbDep, SettingsDep
+from app.audit.service import record as record_audit
 from app.auth.dependencies import AdminUser
+from app.models.audit_log import AuditAction
 from app.models.knowledge_document import KnowledgeDocument, KnowledgeDocumentVersion
 from app.models.report import IngestionStatus
 from app.schemas.knowledge import (
@@ -144,6 +146,11 @@ async def upload_version(
     except knowledge_service.DuplicateVersionError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
+    record_audit(
+        db, AuditAction.KNOWLEDGE_DOCUMENT_UPLOADED, user=admin, object_type="knowledge_document_version",
+        object_id=version.id, detail={"document_id": document_id},
+    )
+
     # Upload -> activate is the default flow (spec: "upload, ... active documents") —
     # a freshly uploaded version becomes the retrievable one once ingestion succeeds,
     # without a separate manual activation step for the common case. Rolling back to
@@ -172,13 +179,17 @@ def reindex_document(document_id: str, background_tasks: BackgroundTasks, db: Db
 
 @router.post("/documents/{document_id}/activate-version", response_model=KnowledgeVersionOut)
 def activate_version(
-    document_id: str, payload: ActivateVersionRequest, background_tasks: BackgroundTasks, db: DbDep, settings: SettingsDep, _admin: AdminUser
+    document_id: str, payload: ActivateVersionRequest, background_tasks: BackgroundTasks, db: DbDep, settings: SettingsDep, admin: AdminUser
 ) -> KnowledgeVersionOut:
     document = _get_document_or_404(db, document_id)
     version = _get_version_or_404(db, document.id, payload.version_id)
 
     version.ingestion_status = IngestionStatus.QUEUED
     db.commit()
+    record_audit(
+        db, AuditAction.KNOWLEDGE_VERSION_CHANGED, user=admin, object_type="knowledge_document_version",
+        object_id=version.id, detail={"document_id": document_id, "version_number": version.version_number},
+    )
     background_tasks.add_task(knowledge_service.run_activation_task, version.id, settings)
     return KnowledgeVersionOut.model_validate(version)
 

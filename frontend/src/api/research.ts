@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/api/client";
 import type { ClinicalModuleRunOut } from "@/api/clinicalModules";
+import type { ProvenanceOut } from "@/api/chat";
 
 // Mirrors backend/app/models/web_cache.py
 export type WebSource = "pubmed" | "fda" | "clinicaltrials" | "searxng";
@@ -22,6 +23,13 @@ export interface ResearchCitation {
   excerpt: string;
 }
 
+// Extends the shared chat ProvenanceOut shape with per-source web result counts
+// (spec §80's example: "PubMed: 3 / FDA: 1") — real tallies of what each provider
+// actually returned, computed in services/research.py, not a second network call.
+export interface ResearchProvenanceOut extends ProvenanceOut {
+  web_source_counts: Record<string, number>;
+}
+
 export interface ResearchPayload {
   evidence_summary: string;
   consensus: string;
@@ -33,6 +41,7 @@ export interface ResearchPayload {
   citations: ResearchCitation[];
   research_mode_used: boolean;
   deidentification: { removed_count: number; removed_categories: string[] };
+  provenance: ResearchProvenanceOut;
 }
 
 export function useResearchStatus() {

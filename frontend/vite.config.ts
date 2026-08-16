@@ -24,5 +24,10 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
+    // Real, fast unit/component tests live in tests/ only — `e2e/` (added in Phase
+    // 16, spec §97) holds Playwright specs meant for `npx playwright test`, not this
+    // runner; without this exclude, vitest's default glob also matches `*.spec.ts`
+    // there and tries (and fails) to run them as jsdom component tests.
+    include: ["tests/**/*.{test,spec}.{ts,tsx}"],
   },
 });

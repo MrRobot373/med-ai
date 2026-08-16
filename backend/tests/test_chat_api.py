@@ -125,6 +125,61 @@ def test_send_message_streams_and_persists(client: TestClient):
     assert messages[1]["content"] == "This is a test answer."
 
 
+def test_send_message_exposes_provenance_and_logs_clinical_ai_query_audit_event(client: TestClient):
+    user = _login_as(client, "doctor.chat5b@example.com", UserRole.DOCTOR)
+    conversation = client.post("/api/conversations", json={"scope": "general"}).json()
+    resp = client.post(f"/api/conversations/{conversation['id']}/messages", json={"text": "hi"})
+    assert resp.status_code == 200
+
+    messages = client.get(f"/api/conversations/{conversation['id']}/messages").json()
+    assistant = messages[1]
+    assert assistant["provenance"] == {
+        "patient_context_records": 0,
+        "dense_candidates": 0,
+        "bm25_candidates": 0,
+        "fused_candidates": 0,
+        "reranked": 0,
+        "final_evidence": 0,
+        "generation_model": assistant["model"],
+    }
+
+    _login_as(client, "admin.chat5b@example.com", UserRole.ADMIN)
+    rows = client.get(
+        "/api/audit", params={"action": "clinical_ai_query", "object_id": conversation["id"], "user_id": user.id}
+    ).json()
+    assert len(rows) == 1
+    assert rows[0]["outcome"] == "success"
+    assert rows[0]["detail"]["scope"] == "general"
+
+
+def test_qdrant_unavailable_degrades_gracefully_instead_of_crashing_the_stream(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+):
+    # Regression test — spec §99 "Qdrant unavailable" simulated live (real
+    # `docker stop` on the Qdrant container while a real chat turn was in flight)
+    # found this: `dense_search()`'s connection failure was uncaught and crashed the
+    # SSE stream mid-response instead of degrading gracefully the way a GenerationError
+    # already does. Same shape here, just via `RetrievalError`.
+    from app.rag.dense_retriever import RetrievalError
+
+    def raise_retrieval_error(*args, **kwargs):
+        raise RetrievalError("Qdrant is unreachable or returned an error: simulated connection refused")
+
+    monkeypatch.setattr("app.chat.orchestrator.retrieve", raise_retrieval_error)
+
+    _login_as(client, "doctor.chat-qdrant-down@example.com", UserRole.DOCTOR)
+    conversation = client.post("/api/conversations", json={"scope": "general"}).json()
+
+    resp = client.post(f"/api/conversations/{conversation['id']}/messages", json={"text": "What treats glaucoma?"})
+    assert resp.status_code == 200  # the SSE response itself still completes cleanly
+    events = _parse_sse_events(resp.text)
+    assert events == [{"type": "error", "message": "Retrieval is temporarily unavailable. Please try again shortly."}]
+
+    messages = client.get(f"/api/conversations/{conversation['id']}/messages").json()
+    assert [m["role"] for m in messages] == ["user", "assistant"]
+    assert messages[1]["content"] == ""  # no fabricated answer text
+
+
 def test_abstention_when_scope_has_nothing_to_answer_from(client: TestClient):
     _login_as(client, "doctor.chat6@example.com", UserRole.DOCTOR)
     conversation = client.post("/api/conversations", json={"scope": "local_knowledge_only"}).json()
@@ -149,7 +204,7 @@ def test_patient_scoped_conversation_never_leaks_another_patients_evidence(clien
 
     seen_patient_ids = []
 
-    def spy_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3):
+    def spy_retrieve(db, query, settings, collection=None, patient_id=None, max_per_source=3, stats=None):
         if collection == ChunkCollection.PATIENT_DOCUMENTS:
             seen_patient_ids.append(patient_id)
         return []

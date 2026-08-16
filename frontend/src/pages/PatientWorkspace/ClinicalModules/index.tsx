@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { usePatientContext } from "@/layouts/PatientWorkspace";
 import { usePatientEncounters } from "@/api/encounters";
 import { usePatientReports } from "@/api/reports";
@@ -8,7 +9,15 @@ import { EntitiesView } from "./EntitiesView";
 import { DifferentialView } from "./DifferentialView";
 import { ReportComparisonView } from "./ReportComparisonView";
 
-type Module = "summary" | "soap" | "entities" | "differential" | "compare";
+export type Module = "summary" | "soap" | "entities" | "differential" | "compare";
+
+/** Deep-link state (Demo Scenarios, spec §89) — preselects which module sub-tab
+ * opens, so "open the correct patient/context automatically" covers the workflow,
+ * not just the patient. Consumed once then cleared, same pattern as chat's
+ * AskAINavState (see pages/PatientWorkspace/ClinicalAI.tsx). */
+export interface ClinicalModulesNavState {
+  module?: Module;
+}
 
 const MODULES: { key: Module; label: string }[] = [
   { key: "summary", label: "Summary" },
@@ -27,7 +36,22 @@ export default function ClinicalModulesTab() {
   const patient = usePatientContext();
   const { data: encounters } = usePatientEncounters(patient.id);
   const { data: reports } = usePatientReports(patient.id);
-  const [active, setActive] = useState<Module>("summary");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const navState = location.state as ClinicalModulesNavState | null;
+  const [active, setActive] = useState<Module>(navState?.module ?? "summary");
+
+  useEffect(() => {
+    if (navState?.module) {
+      // Depends on patient.id (not just "once per mount") — unlike the Clinical AI
+      // tab, this component isn't keyed/remounted per patient by its route wrapper,
+      // so a Demo Scenario link landing on the same route with a new :patientId still
+      // needs its module preselection consumed correctly.
+      setActive(navState.module);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patient.id]);
 
   const encounterList = encounters ?? [];
   const reportList = (reports ?? []).filter((r) => r.ingestion_status === "completed" && r.patient_match_status !== "mismatch");

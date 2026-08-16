@@ -17,6 +17,8 @@ import ClinicalAIPage from "@/pages/ClinicalAI";
 import WorkflowPage from "@/pages/Workflow";
 import ResearchPage from "@/pages/Research";
 import KnowledgePage from "@/pages/Knowledge";
+import AuditPage from "@/pages/Audit";
+import DemoScenariosPage from "@/pages/Demo";
 import { NotYetBuilt } from "@/pages/NotYetBuilt";
 
 export const router = createBrowserRouter(
@@ -52,7 +54,8 @@ export const router = createBrowserRouter(
         { path: "knowledge", element: <KnowledgePage /> },
         { path: "research", element: <ResearchPage /> },
         { path: "workflow", element: <WorkflowPage /> },
-        { path: "audit", element: <NotYetBuilt title="Audit" phase="Phase 13" /> },
+        { path: "demo", element: <DemoScenariosPage /> },
+        { path: "audit", element: <AuditPage /> },
         { path: "settings", element: <NotYetBuilt title="Settings" /> },
       ],
     },

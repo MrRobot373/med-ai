@@ -111,6 +111,43 @@ def test_runs_history_lists_completed_queries(client: TestClient, monkeypatch: p
     assert any(r["id"] == created["id"] for r in history)
 
 
+def test_query_with_external_sources_logs_research_mode_and_external_search_audit_events(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+):
+    from app.config.settings import get_settings
+    from app.models.web_cache import AuthorityTier, WebSource
+    from app.research.providers.base import WebResult
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "enable_research", True)
+
+    async def pubmed_provider(query, settings, max_results):
+        return [WebResult(title="A", url="https://pubmed.ncbi.nlm.nih.gov/1/", text="glaucoma evidence", source=WebSource.PUBMED, authority_tier=AuthorityTier.C)]
+
+    monkeypatch.setattr("app.services.research._PROVIDERS", {WebSource.PUBMED: pubmed_provider})
+
+    async def fake_synthesis(question, patient_block, local_block, external_block, settings):
+        return ResearchSynthesis(evidence_summary="Evidence from PubMed [W1].", consensus="")
+
+    monkeypatch.setattr("app.services.research.generate_research_synthesis", fake_synthesis)
+
+    user = _login_as(client, "doctor.research9@example.com", UserRole.DOCTOR)
+    resp = client.post(
+        "/api/research/query", json={"question": "What is the treatment for glaucoma?", "sources": ["pubmed"]}
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["payload"]["research_mode_used"] is True
+
+    _login_as(client, "admin.research9@example.com", UserRole.ADMIN)
+    enabled_rows = client.get("/api/audit", params={"action": "research_mode_enabled", "user_id": user.id}).json()
+    assert len(enabled_rows) == 1
+    assert enabled_rows[0]["detail"]["sources"] == ["pubmed"]
+
+    executed_rows = client.get("/api/audit", params={"action": "external_search_executed", "user_id": user.id}).json()
+    assert len(executed_rows) == 1
+    assert executed_rows[0]["detail"]["web_source_counts"] == {"PUBMED": 1}
+
+
 def test_viewer_can_read_status_and_history(client: TestClient, monkeypatch: pytest.MonkeyPatch):
     async def fake_synthesis(*args, **kwargs):
         return ResearchSynthesis(evidence_summary="An answer.")

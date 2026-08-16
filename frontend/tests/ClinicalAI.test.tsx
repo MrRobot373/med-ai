@@ -95,6 +95,7 @@ describe("Clinical AI — patient-scoped tab", () => {
     const user = userEvent.setup();
     let conversations: ConversationOut[] = [];
     let messages: MessageOut[] = [];
+    let submittedFeedback: Record<string, unknown> | null = null;
 
     vi.stubGlobal(
       "fetch",
@@ -103,6 +104,17 @@ describe("Clinical AI — patient-scoped tab", () => {
         if (url.includes("/api/auth/me")) return jsonResponse(DOCTOR_ME);
         if (url.includes("/api/patients/p1/reports")) return jsonResponse([]);
         if (url.includes("/api/patients/p1/encounters")) return jsonResponse([]);
+        // FeedbackControls (Phase 13) queries this for every rendered assistant
+        // message — no feedback has been submitted in this test, so an honest null.
+        if (url.startsWith("/api/feedback/mine")) return jsonResponse(null);
+        if (url === "/api/feedback" && method === "POST") {
+          const body = JSON.parse((init?.body as string) ?? "{}");
+          submittedFeedback = body;
+          return jsonResponse(
+            { id: "fb1", target_type: body.target_type, target_id: body.target_id, user_id: "u1", rating: body.rating, comment: body.comment ?? null, created_at: NOW, updated_at: NOW },
+            201,
+          );
+        }
         if (url.startsWith("/api/conversations?") && method === "GET") return jsonResponse(conversations);
         if (url === "/api/conversations" && method === "POST") {
           const created: ConversationOut = {
@@ -133,6 +145,7 @@ describe("Clinical AI — patient-scoped tab", () => {
               citations: [],
               evidence_quality: null,
               grounding: null,
+              provenance: null,
             },
             {
               id: "m-assistant",
@@ -158,6 +171,15 @@ describe("Clinical AI — patient-scoped tab", () => {
               ],
               evidence_quality: "moderate",
               grounding: [{ claim: "Latanoprost is prescribed for glaucoma", cited_labels: ["P1"], status: "supported" }],
+              provenance: {
+                patient_context_records: 3,
+                dense_candidates: 8,
+                bm25_candidates: 6,
+                fused_candidates: 5,
+                reranked: 3,
+                final_evidence: 1,
+                generation_model: "qwen3.5:9b",
+              },
             },
           ];
           return sseResponse([
@@ -199,6 +221,17 @@ describe("Clinical AI — patient-scoped tab", () => {
 
     // The [P1] marker renders as a clickable citation badge, not raw bracket text.
     expect(screen.getByRole("button", { name: "P1" })).toBeInTheDocument();
+
+    // Phase 13: real retrieval provenance is available and feedback can be submitted.
+    await user.click(screen.getByRole("button", { name: "Why This Answer?" }));
+    expect(await screen.findByText("Dense candidates")).toBeInTheDocument();
+    expect(screen.getByText("8")).toBeInTheDocument();
+    expect(screen.getByText("qwen3.5:9b")).toBeInTheDocument();
+    await user.click(screen.getByLabelText("Close"));
+
+    await user.click(screen.getByRole("button", { name: "Mark as helpful" }));
+    await screen.findByText("Helpful");
+    expect(submittedFeedback).toEqual({ target_type: "message", target_id: "m-assistant", rating: "helpful" });
   });
 
   it("hides write controls and shows a read-only notice for a viewer", async () => {
