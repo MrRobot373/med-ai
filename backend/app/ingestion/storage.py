@@ -26,6 +26,14 @@ def reports_dir(settings: Settings, patient_id: str) -> Path:
     return directory
 
 
+def knowledge_dir(settings: Settings) -> Path:
+    """Not patient-scoped — one shared directory for every admin-uploaded knowledge
+    document version, mirroring `reports_dir`'s layout convention."""
+    directory = Path(settings.upload_dir) / "knowledge"
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory
+
+
 def file_path_for(settings: Settings, report: Report) -> Path:
     """Lives here (not `services/reports.py`) so both `services/reports.py` and
     `services/vision.py` can import it without either depending on the other —

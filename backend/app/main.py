@@ -15,6 +15,7 @@ from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.clinical_modules import router as clinical_modules_router
 from app.api.health import router as health_router
+from app.api.knowledge import router as knowledge_router
 from app.api.patients import router as patients_router
 from app.api.reports import router as reports_router
 from app.api.research import router as research_router
@@ -57,6 +58,7 @@ app.include_router(chat_router)
 app.include_router(vision_router)
 app.include_router(clinical_modules_router)
 app.include_router(research_router)
+app.include_router(knowledge_router)
 
 
 @app.get("/", include_in_schema=False)

@@ -54,6 +54,14 @@ export function useCanWrite(): boolean {
   return user?.role === "admin" || user?.role === "doctor";
 }
 
+/** Knowledge Administration (Phase 12, spec §18) is Admin-only — Doctor's role list
+ * doesn't include "Manage knowledge base." Same presentation-only rationale as
+ * useCanWrite: the backend's AdminUser dependency is what actually enforces this. */
+export function useIsAdmin(): boolean {
+  const { data: user } = useMe();
+  return user?.role === "admin";
+}
+
 export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({

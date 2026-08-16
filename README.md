@@ -5,22 +5,21 @@ Master Build Prompt in this repo's root (`MASTER BUILD PROMPT — GMS Local Mult
 Clinical RAG & Decision-Support Platform.md`) as a 16-phase program — see
 [docs/architecture.md](docs/architecture.md) for the phase roadmap and current status.
 
-> **Current status: Phase 11 — Web Research.** Foundation (01), the dashboard (02),
-> authentication (03), patient management (04), report ingestion (05), structured
-> clinical data (06), the local retrieval pipeline (07), clinical chat (08), vision (09),
-> six structured clinical workflows (10), and now Web Research Mode (11): PubMed/
-> openFDA/ClinicalTrials.gov (plus optional self-hosted SearXNG), mandatory
-> de-identification before any external query, authority-tier-aware ranking, and a
-> Research Paper Assistant synthesizing patient + local + external evidence into one
-> cited answer. Off by default (`ENABLE_RESEARCH=false`) — spec's own privacy-first
-> rule. Live-verified against real Ollama/PubMed/openFDA — see docs/architecture.md's
-> Phase 11 section for the full findings, including four real bugs found and fixed
-> during live testing (an Ollama request timeout too low for the combined-evidence
-> prompt, `num_ctx` never being set anywhere in the app and silently truncating large
-> prompts, an overly-strict Research output schema, and PubMed/openFDA rejecting a raw
-> natural-language question outright). Capabilities beyond Phase 11 (knowledge
-> administration, audit/feedback, demo system, evaluation suite) aren't implemented yet
-> — the nav tells you exactly which phase each remaining section lands in.
+> **Current status: Phase 12 — Knowledge Administration.** Foundation (01), the
+> dashboard (02), authentication (03), patient management (04), report ingestion (05),
+> structured clinical data (06), the local retrieval pipeline (07), clinical chat (08),
+> vision (09), six structured clinical workflows (10), Web Research Mode (11), and now
+> admin-facing Knowledge Administration (12): upload/version/activate/reindex/archive
+> for the documents that populate the shared `medical_knowledge` collection every
+> patient's Clinical AI draws from. Every generated clinical-module result remains an
+> explicit, timestamped draft — spec §63's "never automatically saved as finalized
+> clinical record." Live-verified against real Ollama/Qdrant/PubMed/openFDA — see
+> docs/architecture.md's Phase 11/12 sections for the full findings, including four real
+> bugs found and fixed during Phase 11 live testing (Ollama timeout, an unset `num_ctx`
+> silently truncating large prompts, an overly-strict Research schema, and PubMed/
+> openFDA rejecting a raw natural-language question). Capabilities beyond Phase 12
+> (audit/feedback, demo system, evaluation suite) aren't implemented yet — the nav tells
+> you exactly which phase each remaining section lands in.
 >
 > **Known latency issue, not yet fixed:** reranking a patient-scoped question against
 > the knowledge base measured ~6-7 minutes in live testing (Phase 08's Clinical Chat,
@@ -153,6 +152,7 @@ npm run build
 | A Research Mode query with external sources takes 9+ minutes | Expected — it combines the reranker latency above with a materially larger combined patient+local+external evidence prompt than any other module. Not a new problem; `research_num_ctx=16384` and `ollama_request_timeout_seconds=300` are already sized for this. |
 | `POST /api/research/query` returns `generation_error: "Model did not return valid structured output after retry"` | Should not reproduce after this session's fixes — see docs/architecture.md's Phase 11 section for the two real causes found live (an unset `num_ctx` silently truncating the prompt, and the model occasionally returning a plain string instead of a JSON array for a list field, now tolerated by a Pydantic validator). If it does reproduce, `app/llm/structured.py` now logs a raw-output preview on parse failure — check the backend log for what the model actually returned before assuming it's the same bug. |
 | `sources: [pubmed, fda]` was requested but the response shows `research_mode_used: false` | Check the backend log for the actual PubMed/openFDA HTTP calls — as of this session, both are sent a punctuation/stopword-cleaned query (`app/research/providers/base.py`'s `clean_search_terms()`), not the raw question, specifically because a raw natural-language question returned zero PubMed hits and a 400 from openFDA in live testing. If cleaned queries still return nothing, the topic genuinely may not have indexed literature/drug labels — that's an honest zero, not a bug. |
+| A knowledge document upload stays `queued`/`processing` for a while | Normal — extraction/chunking/embedding runs in a `BackgroundTask` after the upload response returns, same pattern as report ingestion. Poll `GET /api/knowledge/documents/{id}` (the frontend does this every 2s automatically) rather than assuming it's stuck; check `ingestion_error` on the version once it settles to `failed`. |
 
 ## Repository layout
 

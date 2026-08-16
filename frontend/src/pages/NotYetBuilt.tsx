@@ -6,7 +6,7 @@ import { Construction } from "lucide-react";
  * Configured" / "not yet built" screen is preferable to a fake working screen or a
  * broken link — this is never meant to ship as-is once the relevant phase lands.
  */
-export function NotYetBuilt({ title, phase }: { title: string; phase: string }) {
+export function NotYetBuilt({ title, phase = "a later phase" }: { title: string; phase?: string }) {
   return (
     <div className="flex h-full min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
       <div className="rounded-full bg-light-blue p-3">

@@ -40,7 +40,7 @@ GMS CLINICAL AI
 | 09 | Vision: image upload, structured extraction, image-to-RAG, comparison | **Done** |
 | 10 | Clinical modules: summary, SOAP, entity extraction, guideline Q&A, differential support, report comparison | **Done** |
 | 11 | Web research: Research Mode, de-identification, PubMed/FDA, optional SearXNG, web cache | **Done** |
-| 12 | Knowledge administration: upload, metadata, versions, active documents, reindex, archive, ingestion monitoring | Not started |
+| 12 | Knowledge administration: upload, metadata, versions, active documents, reindex, archive, ingestion monitoring | **Done** |
 | 13 | Audit & feedback: audit log UI, feedback capture, provenance drawer | Not started |
 | 14 | Demo system: synthetic patients (ophthalmology domain — see `data/`), demo scenarios, start/reset scripts, model warm-up | Not started |
 | 15 | RAG evaluation suite: retrieval/citation/groundedness/hallucination/latency metrics | Not started |
@@ -1207,6 +1207,86 @@ cleanup discipline as every prior phase's live verification).
   deterministic lexical+authority-tier score computed at query time instead (`research/
   ranking.py`); the SQLite cache alone already satisfies spec §72's stated goals
   (reproducibility, speed, demo reliability, auditability).
+
+## Phase 12 — what exists right now
+
+```text
+backend/app/
+  models/knowledge_document.py      KnowledgeDocument (title/source/specialty/
+                                     authority_tier/tags/archived) + KnowledgeDocument
+                                     Version (one row per upload: file_hash/effective_
+                                     date/review_date/is_active/ingestion_status/
+                                     chunk_count). Reuses AuthorityTier (Phase 11) and
+                                     IngestionStatus (Phase 05's Report) rather than
+                                     duplicating either enum. "Active" is a per-version
+                                     flag, not a document-level FK to its active version
+                                     — activating/rolling-back is a single-row flip, and
+                                     it sidesteps a circular FK between the two tables
+  services/knowledge.py             `activate_version()` is the one place that changes
+                                     what's retrievable: (re)indexes the target version
+                                     — idempotent, since `index_document` deletes any
+                                     existing chunks for that file_hash first — then
+                                     deindexes+deactivates whichever version was
+                                     previously active. Upload, explicit rollback
+                                     (activate-version), and FAILED-version recovery
+                                     (reindex) all share this one code path. Indexing
+                                     itself is keyed off file_hash, reusing exactly
+                                     `rag/indexing.py`'s existing mechanism (the same one
+                                     `scripts/ingest_knowledge.py` already relied on) —
+                                     no change to `Chunk` or the indexing pipeline needed
+                                     for versioning to work
+  api/knowledge.py                  Every route is AdminUser-gated (spec §18: "Manage
+                                     knowledge base" is listed only under Admin's
+                                     permissions, unlike patient-facing routes where
+                                     Doctor also has write access). Upload/reindex/
+                                     activate-version all return immediately (ingestion_
+                                     status: queued) and run extraction/chunking/
+                                     embedding/indexing in a BackgroundTask — same
+                                     poll-for-real-status pattern as report ingestion
+                                     (spec §122)
+
+frontend/src/
+  api/auth.ts                       +useIsAdmin() — same presentation-only rationale as
+                                     useCanWrite; the backend's AdminUser dependency is
+                                     what actually enforces the gate
+  api/knowledge.ts                  Document/version CRUD hooks; useKnowledgeDocument
+                                     polls every 2s while any version is queued/
+                                     processing, matching the report-status-polling
+                                     convention
+  pages/Knowledge/index.tsx         List + create form + a selected document's detail
+                                     panel (versions with status badges, Upload New
+                                     Version, per-version Activate for rollback,
+                                     document-level Reindex/Archive)
+```
+
+### Live verification — real uploads, real embeddings, real Qdrant, not mocked
+
+The full document lifecycle was exercised against the real running backend with a real
+admin account and real synthetic PDFs (not mocked, matching every other phase): create
+document -> upload version 1 (effective_date set) -> BackgroundTask completed with
+`is_active: true`, `ingestion_status: completed`, `chunk_count: 1` -> upload version 2 ->
+confirmed version 1 auto-deactivated with `chunk_count` reset to 0 (its chunks actually
+deindexed from Qdrant, not just flagged) -> `activate-version` rollback to version 1 ->
+confirmed version 1 re-indexed (`chunk_count: 1` again) and version 2 correctly
+deindexed -> `reindex` confirmed the `queued` -> `processing` -> `completed` transition
+against the currently-active version -> `archive` confirmed the document disappears from
+the default `GET /documents` list (still visible with `include_archived=true`) and its
+active version's chunks are deindexed. All test rows, uploaded files, and the live-test
+admin account were deleted from the dev database afterward.
+
+### Deliberate scope notes
+
+- **No hard delete.** Mirrors `Report.archived`'s soft-delete-only convention — spec's
+  own data model bullet list says "archive," never "delete," as the terminal admin
+  action; version history stays in SQLite for audit purposes even after archiving.
+- **No separate `ingestion_jobs` row per version.** Phase 05's `IngestionJob` table is
+  strictly `report_id`-scoped (`NOT NULL` FK). Rather than relaxing that constraint or
+  adding a second per-stage job-log table for a simpler pipeline (no OCR-stage/identity-
+  check/lab-extraction branching a knowledge document needs), `ingestion_status`/
+  `ingestion_error`/`chunk_count` live directly on `KnowledgeDocumentVersion` — the same
+  place `Report.ingestion_status`/`extraction_error` already live on `Report` itself.
+  Satisfies spec's "ingestion status"/"ingestion monitoring" bullets without a second,
+  thinner job-tracking mechanism alongside the first.
 
 ## Domain note
 

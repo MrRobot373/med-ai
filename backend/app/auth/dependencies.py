@@ -49,3 +49,9 @@ def require_role(*allowed_roles: UserRole):
 # ...) — spec §18: only admin/doctor can modify clinical data, viewer is read-only. A
 # single definition here means every write route enforces the exact same role set.
 WriteUser = Annotated[User, Depends(require_role(UserRole.ADMIN, UserRole.DOCTOR))]
+
+# Knowledge Administration (Phase 12, spec §18): "Manage knowledge base" is listed only
+# under Admin's permissions — Doctor's list is patient/clinical-care actions, not
+# curating the shared medical_knowledge base every patient's retrieval draws from.
+# Gates the entire /api/knowledge router, both reads and writes.
+AdminUser = Annotated[User, Depends(require_role(UserRole.ADMIN))]

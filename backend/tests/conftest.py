@@ -73,6 +73,11 @@ def _mock_rag_indexing(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("app.ingestion.pipeline.index_document", lambda *args, **kwargs: [])
     monkeypatch.setattr("app.services.reports.index_document", lambda *args, **kwargs: [])
     monkeypatch.setattr("app.services.vision.index_document", lambda *args, **kwargs: [])
+    # Phase 12: services/knowledge.py also imports index_document/delete_indexed_source
+    # directly (same reason as services/reports.py above — activate_version() needs to
+    # deindex a sibling version too, not just index the new one).
+    monkeypatch.setattr("app.services.knowledge.index_document", lambda *args, **kwargs: [])
+    monkeypatch.setattr("app.services.knowledge.delete_indexed_source", lambda *args, **kwargs: None)
 
 
 @pytest.fixture(autouse=True)
