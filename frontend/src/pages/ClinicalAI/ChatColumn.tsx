@@ -1,36 +1,8 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Loader2, Send, Square, TriangleAlert } from "lucide-react";
 import type { MessageOut } from "@/api/chat";
 import { FeedbackControls } from "@/components/FeedbackControls";
-
-const CITATION_PATTERN = /\[([PLW]\d+)\]/g;
-
-/** Renders `[P1]`-style markers as small clickable badges that jump to the matching
- * item in the Evidence panel, rather than leaving them as plain bracketed text. */
-function renderWithCitations(text: string): ReactNode[] {
-  const parts: ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  CITATION_PATTERN.lastIndex = 0;
-  let key = 0;
-  while ((match = CITATION_PATTERN.exec(text)) !== null) {
-    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
-    const label = match[1];
-    parts.push(
-      <button
-        key={key++}
-        type="button"
-        onClick={() => document.getElementById(`evidence-${label}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
-        className="mx-0.5 inline-flex rounded bg-light-blue px-1 text-[11px] font-semibold text-primary-blue hover:bg-primary-blue hover:text-white"
-      >
-        {label}
-      </button>,
-    );
-    lastIndex = CITATION_PATTERN.lastIndex;
-  }
-  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
-  return parts;
-}
+import { ClinicalMarkdown } from "@/components/ClinicalMarkdown";
 
 function MessageBubble({ message }: { message: MessageOut }) {
   const isUser = message.role === "user";
@@ -45,11 +17,11 @@ function MessageBubble({ message }: { message: MessageOut }) {
   return (
     <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
       <div
-        className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm whitespace-pre-wrap ${
+        className={`max-w-[85%] rounded-xl px-3.5 py-2.5 ${
           isUser ? "bg-primary-blue text-white" : "border border-border bg-surface text-navy"
         }`}
       >
-        {isUser ? message.content : renderWithCitations(message.content)}
+        {isUser ? <p className="whitespace-pre-wrap text-sm">{message.content}</p> : <ClinicalMarkdown text={message.content} />}
       </div>
       {!isUser && <FeedbackControls targetType="message" targetId={message.id} />}
     </div>
@@ -112,11 +84,11 @@ export function ChatColumn({
 
         {isStreaming && (
           <div className="flex justify-start">
-            <div className="max-w-[85%] rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm whitespace-pre-wrap text-navy">
+            <div className="max-w-[85%] rounded-xl border border-border bg-surface px-3.5 py-2.5 text-navy">
               {streamingText.length > 0 ? (
-                renderWithCitations(streamingText)
+                <ClinicalMarkdown text={streamingText} />
               ) : (
-                <span className="inline-flex items-center gap-1.5 text-muted-text">
+                <span className="inline-flex items-center gap-1.5 text-sm text-muted-text">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   Thinking…
                 </span>

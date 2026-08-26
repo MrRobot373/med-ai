@@ -18,6 +18,7 @@ import { useResearchMode } from "@/contexts/ResearchMode";
 import { FeedbackControls } from "@/components/FeedbackControls";
 import { ProvenanceDrawer } from "@/components/ProvenanceDrawer";
 import { Bulleted, GenerationError, RunHistoryList, Section } from "@/pages/PatientWorkspace/ClinicalModules/shared";
+import { ClinicalMarkdown } from "@/components/ClinicalMarkdown";
 
 const SOURCE_LABELS: { value: WebSource; label: string }[] = [
   { value: "pubmed", label: "PubMed" },
@@ -249,10 +250,10 @@ export default function ResearchPage() {
             />
           )}
           <Section title="Evidence Summary">
-            <p className="whitespace-pre-wrap text-sm text-navy">{payload.evidence_summary}</p>
+            <ClinicalMarkdown text={payload.evidence_summary} className="text-navy" />
           </Section>
           <Section title="Consensus">
-            <p className="text-sm text-navy">{payload.consensus}</p>
+            <ClinicalMarkdown text={payload.consensus} className="text-navy" />
           </Section>
           <Section title="Conflicting Evidence">
             <Bulleted items={payload.conflicting_evidence} />

@@ -5,6 +5,7 @@ import { useCreateSummary, usePatientRuns, type SummaryPayload, type SummaryType
 import { useCanWrite } from "@/api/auth";
 import type { EncounterOut } from "@/api/encounters";
 import { Bulleted, GenerationError, RunHistoryList, Section } from "./shared";
+import { ClinicalMarkdown } from "@/components/ClinicalMarkdown";
 
 const SUMMARY_TYPES: { value: SummaryType; label: string }[] = [
   { value: "concise", label: "Concise patient summary" },
@@ -90,7 +91,7 @@ export function SummaryView({ patientId, encounters }: { patientId: string; enco
       {payload && (
         <Card className="space-y-3 p-4">
           <Section title="Summary">
-            <p className="whitespace-pre-wrap text-sm text-navy">{payload.summary}</p>
+            <ClinicalMarkdown text={payload.summary} className="text-navy" />
           </Section>
           <Section title="Key points">
             <Bulleted items={payload.key_points} />

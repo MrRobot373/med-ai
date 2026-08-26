@@ -1,27 +1,19 @@
+import { Link } from "react-router-dom";
 import {
   BookOpen,
   Cpu,
   Database,
   FileText,
   HeartHandshake,
-  MessageSquare,
-  PlayCircle,
-  ScanSearch,
   ServerCog,
   ShieldCheck,
-  Sparkles,
   Stethoscope,
   Tags,
-  Upload,
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Card } from "@/components/Card";
 import { CapabilityCard } from "@/components/CapabilityCard";
-import { DashboardSnapshot } from "@/components/DashboardSnapshot";
-import { HeroIllustration } from "@/components/HeroIllustration";
-import { HowItWorksStep } from "@/components/HowItWorksStep";
 import { IconBadge } from "@/components/IconBadge";
-import { SystemStatusPanel } from "@/components/SystemStatusPanel";
+import doctorAiImage from "@/assets/doctor-ai.png";
+import gmsLogo from "@/assets/GMS-LOGO.webp";
 
 const CAPABILITIES = [
   {
@@ -50,7 +42,7 @@ const CAPABILITIES = [
     tone: "amber" as const,
     title: "Guideline Q&A",
     description: "Ask clinical questions and get evidence-backed, cited answers.",
-    to: "/knowledge",
+    to: "/settings?tab=knowledge",
   },
   {
     icon: Database,
@@ -93,13 +85,14 @@ export default function OverviewPage() {
       <section className="grid items-center gap-8 lg:grid-cols-2">
         <div>
           <h1 className="text-3xl font-bold leading-tight text-navy sm:text-4xl">
-            Smarter Clinical Decisions
+            Clinical AI That Works
             <br />
-            with Trusted AI
+            As Hard As You Do
           </h1>
-          <p className="mt-4 max-w-md text-muted-text">
-            AI-powered tools to extract insights, summarize notes, and support better
-            clinical outcomes — running entirely on local, open-source infrastructure.
+          <p className="mt-4 max-w-lg text-muted-text">
+            A privacy-first, on-premise AI platform that helps clinicians move faster and reason deeper —
+            automated report analysis, longitudinal patient tracking, evidence-backed Q&amp;A, and intelligent
+            note generation, all without a single byte leaving your facility.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <a
@@ -108,64 +101,25 @@ export default function OverviewPage() {
             >
               Explore Capabilities
             </a>
-            {/* Spec §89 "Demo Scenarios" entry point — a distinct page (not a nav
-               item, since spec §19's nav list is fixed) reachable from the landing
-               page a presenter starts a demo from. */}
-            <Link
-              to="/demo"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-blue hover:underline"
-            >
-              <PlayCircle className="h-4 w-4" />
-              Demo Scenarios
-            </Link>
           </div>
         </div>
-        <div className="mx-auto w-full max-w-sm">
-          <HeroIllustration />
+        <div className="mx-auto flex w-full max-w-md items-center justify-center">
+          <img
+            src={doctorAiImage}
+            alt="Doctor AI Assistant"
+            className="w-full max-h-[380px] object-contain rounded-2xl drop-shadow-xl"
+          />
         </div>
       </section>
 
-      {/* Capabilities + How It Works */}
-      <section id="capabilities" className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <h2 className="mb-4 text-lg font-semibold text-navy">AI Capabilities</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {CAPABILITIES.map((c) => (
-              <CapabilityCard key={c.title} {...c} />
-            ))}
-          </div>
+      {/* Capabilities (3 columns x 2 rows) */}
+      <section id="capabilities">
+        <h2 className="mb-4 text-lg font-semibold text-navy">AI Capabilities</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {CAPABILITIES.map((c) => (
+            <CapabilityCard key={c.title} {...c} />
+          ))}
         </div>
-
-        <div>
-          <h2 className="mb-4 text-lg font-semibold text-navy">How It Works</h2>
-          <Card className="p-5">
-            <HowItWorksStep index={1} icon={Upload} label="Input" description="Paste clinical text or ask a question." />
-            <HowItWorksStep index={2} icon={ScanSearch} label="Extract" description="AI extracts key clinical entities." />
-            <HowItWorksStep
-              index={3}
-              icon={Sparkles}
-              label="Summarize"
-              description="AI generates a concise, structured summary."
-            />
-            <HowItWorksStep
-              index={4}
-              icon={MessageSquare}
-              label="Assist"
-              description="Get cited answers and guidance."
-              isLast
-            />
-          </Card>
-        </div>
-      </section>
-
-      {/* Clinical activity snapshot (real data only — see component docstring) */}
-      <section>
-        <DashboardSnapshot />
-      </section>
-
-      {/* System status (real, live-checked) */}
-      <section>
-        <SystemStatusPanel />
       </section>
 
       {/* Trust trio */}
@@ -179,10 +133,66 @@ export default function OverviewPage() {
         ))}
       </section>
 
-      <div className="gms-card p-4 text-xs text-muted-text">
-        Clinical Decision Support — evidence and generated content must be reviewed by
-        the treating clinician.
-      </div>
+      {/* GMS Footer */}
+      <footer className="border-t border-border pt-10 pb-6">
+        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-sm space-y-3">
+            <div className="flex items-center gap-3">
+              <img src={gmsLogo} alt="GMS Logo" className="h-9 w-9 rounded object-contain" />
+              <div>
+                {/* <span className="text-base font-bold text-gms-red">GMS</span>{" "} */}
+                <span className="text-base font-bold text-navy">MED AI</span>
+                <p className="text-xs text-muted-text">Ophthalmology</p>
+              </div>
+            </div>
+            {/* <p className="text-xs leading-relaxed text-muted-text">
+              Specialized clinical intelligence platform designed for privacy-first diagnostic support, longitudinal records, and on-premise AI acceleration.
+            </p>
+            <div className="flex items-center gap-2 text-[11px] text-muted-text">
+              <span className="inline-block h-2 w-2 rounded-full bg-success"></span>
+              <span>100% On-Premise Local Stack</span>
+            </div> */}
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 text-xs sm:grid-cols-3">
+            <div className="space-y-2.5">
+              <div className="font-semibold uppercase tracking-wider text-navy">Platform</div>
+              <ul className="space-y-2 text-muted-text">
+                <li><Link to="/dashboard" className="transition-colors hover:text-primary-blue">Dashboard</Link></li>
+                <li><Link to="/patients" className="transition-colors hover:text-primary-blue">Patients</Link></li>
+                <li><Link to="/clinical-ai" className="transition-colors hover:text-primary-blue">Clinical AI</Link></li>
+              </ul>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="font-semibold uppercase tracking-wider text-navy">Governance</div>
+              <ul className="space-y-2 text-muted-text">
+                <li><Link to="/settings?tab=privacy" className="transition-colors hover:text-primary-blue">Privacy Policy</Link></li>
+                <li><Link to="/settings?tab=knowledge" className="transition-colors hover:text-primary-blue">Guidelines</Link></li>
+                <li><Link to="/settings?tab=audit" className="transition-colors hover:text-primary-blue">Audit Trail</Link></li>
+              </ul>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="font-semibold uppercase tracking-wider text-navy">Support</div>
+              <ul className="space-y-2 text-muted-text">
+                <li><Link to="/settings?tab=report" className="transition-colors hover:text-primary-blue">Report Issue</Link></li>
+                <li><Link to="/settings?tab=system" className="transition-colors hover:text-primary-blue">System Health</Link></li>
+                <li><Link to="/settings?tab=account" className="transition-colors hover:text-primary-blue">Account</Link></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 text-[11px] text-muted-text sm:flex-row">
+          <div>
+            &copy; {new Date().getFullYear()} GMS. All rights reserved.
+          </div>
+          {/* <div>
+            Clinical Decision Support System &mdash; verification by licensed clinician required.
+          </div> */}
+        </div>
+      </footer>
     </div>
   );
 }

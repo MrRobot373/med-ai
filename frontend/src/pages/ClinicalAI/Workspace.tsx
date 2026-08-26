@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { BotMessageSquare } from "lucide-react";
 import {
   useChatStream,
   useConversations,
@@ -23,12 +24,13 @@ export interface InitialPrompt {
 }
 
 /**
- * The shared three-column Clinical AI surface (spec §39: Conversations | Clinical
- * Assistant | Evidence). Used both by the global `/clinical-ai` route (no `patient`,
- * general/local-knowledge scopes only) and the per-patient workspace tab (patient
- * fixed, patient-tied scopes). The route wrappers are responsible for keying this
- * component on `patient.id` so a patient switch fully remounts it — spec §40: never
- * silently continue a patient-specific conversation under a different patient.
+ * The shared three-column Clinical AI surface (Conversations | Clinical Assistant | Evidence).
+ * Used by the global /clinical-ai route (no patient) and the per-patient workspace tab.
+ * Route wrappers key this on patient.id so a patient switch fully remounts it.
+ *
+ * heightClass lets callers tune the panel height for their layout context:
+ *  - Global /clinical-ai route: "h-[calc(100vh-8rem)]"   (only the top navbar above)
+ *  - Patient workspace tab:     "h-[calc(100vh-17rem)]"  (navbar + patient card + tab row)
  */
 export function ClinicalAIWorkspace({
   patient,
@@ -38,6 +40,7 @@ export function ClinicalAIWorkspace({
   suggestedQuestionsFor,
   initialPrompt,
   onConsumedInitialPrompt,
+  heightClass = "h-[calc(100vh-8rem)]",
 }: {
   patient?: PatientOut;
   implementedScopes: ConversationScope[];
@@ -46,6 +49,7 @@ export function ClinicalAIWorkspace({
   suggestedQuestionsFor: (scope: ConversationScope) => string[];
   initialPrompt?: InitialPrompt;
   onConsumedInitialPrompt?: () => void;
+  heightClass?: string;
 }) {
   const canWrite = useCanWrite();
   const patientId = patient?.id;
@@ -63,23 +67,9 @@ export function ClinicalAIWorkspace({
   useEffect(() => {
     if (!initialPrompt || initialHandledRef.current) return;
     initialHandledRef.current = true;
-    // Deliberately `mutateAsync` + a local `await`, not `.mutate(vars, {onSuccess})`:
-    // under React 18 StrictMode, this effect's setup/cleanup/setup-again dance can
-    // unsubscribe-then-resubscribe the mutation observer *while the request is still
-    // in flight*. `.mutate()`'s per-call `onSuccess`/`onError` are delivered through
-    // that observer, so on the exact StrictMode timing where the unsubscribe happens
-    // before the response arrives, the observer gets detached from its own in-flight
-    // mutation and the callback is silently dropped forever — confirmed live: the
-    // POST succeeded (real 201, real conversation row), but neither callback ever
-    // fired and the hook's own `status` stayed "pending" indefinitely. `mutateAsync`
-    // returns the mutation's raw execution promise, which settles independently of
-    // observer subscription state, so `await`-ing it here is unaffected by that race.
-    // No unmount-cancellation guard here on purpose: React 18 no longer warns (let
-    // alone errors) on setting state after unmount, and the `initialHandledRef` guard
-    // above already prevents this from running more than once per real mount — a
-    // `cancelled` flag flipped in this effect's own cleanup would just reintroduce the
-    // same StrictMode race we're fixing (its simulated unmount would flip it before
-    // the real mount's request ever resolves).
+    // mutateAsync avoids the React 18 StrictMode observer-detachment race that
+    // silently drops .mutate()'s onSuccess/onError when the effect unmounts+remounts
+    // mid-flight. The initialHandledRef guard above prevents running more than once.
     void (async () => {
       try {
         const conversation = await createConversation.mutateAsync({
@@ -95,8 +85,8 @@ export function ClinicalAIWorkspace({
         onConsumedInitialPrompt?.();
       }
     })();
-    // Runs once per mount — the route wrapper keys this component by patient, so a
-    // fresh mount is exactly when a new initialPrompt should be handled.
+    // Runs once per mount — route wrapper keys by patient so a fresh mount is the
+    // only time a new initialPrompt should be handled.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -122,7 +112,8 @@ export function ClinicalAIWorkspace({
           setSelectedId(conversation.id);
           setShowNewChat(false);
         },
-        onError: (err) => setCreateError(err instanceof ApiError ? err.message : "Could not start a new conversation."),
+        onError: (err) =>
+          setCreateError(err instanceof ApiError ? err.message : "Could not start a new conversation."),
       },
     );
   }
@@ -132,7 +123,8 @@ export function ClinicalAIWorkspace({
   const activeScope = selectedConversation?.scope ?? implementedScopes[0];
 
   return (
-    <div className="grid h-[calc(100vh-13rem)] min-h-[500px] grid-cols-1 gap-4 lg:grid-cols-[260px_1fr_300px]">
+    <div className={`grid ${heightClass} grid-cols-1 gap-4 lg:grid-cols-[260px_1fr_320px] 2xl:grid-cols-[300px_1fr_380px]`}>
+      {/* Column 1 — Conversation list */}
       <div className="gms-card overflow-hidden">
         <ConversationList
           conversations={conversations}
@@ -147,6 +139,7 @@ export function ClinicalAIWorkspace({
         />
       </div>
 
+      {/* Column 2 — Chat area */}
       <div className="gms-card overflow-hidden">
         {selectedId ? (
           <ChatColumn
@@ -161,18 +154,24 @@ export function ClinicalAIWorkspace({
             onStop={chat.stop}
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-            {createError && <p className="text-sm text-red-600">{createError}</p>}
-            <p className="text-sm text-muted-text">
-              {canWrite
-                ? "Select a conversation, or start a new one to ask a question."
-                : "Select a conversation to view it. Starting a new chat requires a doctor or admin account."}
-            </p>
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-light-blue text-primary-blue">
+              <BotMessageSquare className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-navy">No conversation selected</p>
+              <p className="mt-1 text-xs text-muted-text">
+                {canWrite
+                  ? "Pick a conversation from the left, or start a new one."
+                  : "Select a conversation to view it. A doctor or admin account is required to send messages."}
+              </p>
+            </div>
+            {createError && <p className="text-xs text-danger">{createError}</p>}
             {canWrite && (
               <button
                 type="button"
                 onClick={() => setShowNewChat(true)}
-                className="text-sm font-medium text-primary-blue hover:underline"
+                className="rounded-lg bg-primary-blue px-4 py-2 text-sm font-semibold text-white hover:bg-primary-blue/90"
               >
                 Start New Chat
               </button>
@@ -181,6 +180,7 @@ export function ClinicalAIWorkspace({
         )}
       </div>
 
+      {/* Column 3 — Evidence panel */}
       <div className="gms-card overflow-hidden">
         <EvidencePanel
           citations={lastAssistant?.citations}
