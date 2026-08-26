@@ -20,14 +20,17 @@ export default function ClinicalAITab() {
 
   return (
     <ClinicalAIWorkspace
-      // Keyed by patient so switching patients fully remounts the workspace — spec
-      // §40: never silently continue a patient-specific conversation for someone else.
+      // Keyed by patient so switching patients fully remounts the workspace.
+      // spec §40: never silently continue a patient-specific conversation for someone else.
       key={patient.id}
       patient={patient}
+      heightClass="h-[calc(100vh-21rem)]"
       implementedScopes={["current_patient", "current_encounter", "selected_report"]}
       reports={reports}
       encounters={encounters}
-      suggestedQuestionsFor={(scope) => (scope === "selected_report" ? REPORT_SUGGESTED_QUESTIONS : PATIENT_SUGGESTED_QUESTIONS)}
+      suggestedQuestionsFor={(scope) =>
+        scope === "selected_report" ? REPORT_SUGGESTED_QUESTIONS : PATIENT_SUGGESTED_QUESTIONS
+      }
       initialPrompt={initialPrompt}
       onConsumedInitialPrompt={() => navigate(location.pathname, { replace: true, state: null })}
     />

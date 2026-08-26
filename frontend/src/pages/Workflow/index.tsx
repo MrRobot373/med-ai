@@ -5,6 +5,7 @@ import { ApiError } from "@/api/client";
 import { useCreateGuidelineQA, useGlobalRuns, type GuidelineQAPayload } from "@/api/clinicalModules";
 import { useCanWrite } from "@/api/auth";
 import { GenerationError, RunHistoryList } from "@/pages/PatientWorkspace/ClinicalModules/shared";
+import { ClinicalMarkdown } from "@/components/ClinicalMarkdown";
 
 const SUGGESTED_QUESTIONS = [
   "What are the diagnostic criteria for primary open-angle glaucoma?",
@@ -92,7 +93,7 @@ export default function WorkflowPage() {
 
       {payload && (
         <Card className="space-y-3 p-4">
-          <p className="whitespace-pre-wrap text-sm text-navy">{payload.answer}</p>
+          <ClinicalMarkdown text={payload.answer} className="text-navy" />
           {payload.citations.length > 0 && (
             <div className="space-y-2 border-t border-border pt-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-text">Sources</p>

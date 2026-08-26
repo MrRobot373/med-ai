@@ -8,9 +8,12 @@ import { GENERAL_SUGGESTED_QUESTIONS } from "./scope";
  * sense to offer. */
 export default function ClinicalAIPage() {
   return (
-    <ClinicalAIWorkspace
-      implementedScopes={["general", "local_knowledge_only"]}
-      suggestedQuestionsFor={() => GENERAL_SUGGESTED_QUESTIONS}
-    />
+    <div className="w-full">
+      <ClinicalAIWorkspace
+        implementedScopes={["general", "local_knowledge_only"]}
+        suggestedQuestionsFor={() => GENERAL_SUGGESTED_QUESTIONS}
+        heightClass="h-[calc(100vh-6.5rem)]"
+      />
+    </div>
   );
 }

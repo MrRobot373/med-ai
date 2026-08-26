@@ -4,6 +4,7 @@ import { PatientWorkspace } from "@/layouts/PatientWorkspace";
 import { RequireAuth } from "@/components/RequireAuth";
 import LoginPage from "@/pages/Login";
 import OverviewPage from "@/pages/Overview";
+import DashboardPage from "@/pages/Dashboard";
 import PatientsPage from "@/pages/Patients";
 import PatientOverviewTab from "@/pages/PatientWorkspace/Overview";
 import PatientTimelineTab from "@/pages/PatientWorkspace/Timeline";
@@ -12,14 +13,9 @@ import PatientLabsTab from "@/pages/PatientWorkspace/Labs";
 import PatientConditionsTab from "@/pages/PatientWorkspace/Conditions";
 import PatientMedicationsTab from "@/pages/PatientWorkspace/Medications";
 import PatientClinicalAITab from "@/pages/PatientWorkspace/ClinicalAI";
-import PatientClinicalModulesTab from "@/pages/PatientWorkspace/ClinicalModules";
 import ClinicalAIPage from "@/pages/ClinicalAI";
-import WorkflowPage from "@/pages/Workflow";
-import ResearchPage from "@/pages/Research";
-import KnowledgePage from "@/pages/Knowledge";
-import AuditPage from "@/pages/Audit";
+import SettingsPage from "@/pages/Settings";
 import DemoScenariosPage from "@/pages/Demo";
-import { NotYetBuilt } from "@/pages/NotYetBuilt";
 
 export const router = createBrowserRouter(
   [
@@ -34,6 +30,7 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <Navigate to="/overview" replace /> },
         { path: "overview", element: <OverviewPage /> },
+        { path: "dashboard", element: <DashboardPage /> },
         { path: "patients", element: <PatientsPage /> },
         {
           path: "patients/:patientId",
@@ -47,16 +44,13 @@ export const router = createBrowserRouter(
             { path: "medications", element: <PatientMedicationsTab /> },
             { path: "conditions", element: <PatientConditionsTab /> },
             { path: "clinical-ai", element: <PatientClinicalAITab /> },
-            { path: "clinical-modules", element: <PatientClinicalModulesTab /> },
           ],
         },
         { path: "clinical-ai", element: <ClinicalAIPage /> },
-        { path: "knowledge", element: <KnowledgePage /> },
-        { path: "research", element: <ResearchPage /> },
-        { path: "workflow", element: <WorkflowPage /> },
+        { path: "knowledge", element: <SettingsPage initialTab="knowledge" /> },
         { path: "demo", element: <DemoScenariosPage /> },
-        { path: "audit", element: <AuditPage /> },
-        { path: "settings", element: <NotYetBuilt title="Settings" /> },
+        { path: "audit", element: <SettingsPage initialTab="audit" /> },
+        { path: "settings", element: <SettingsPage /> },
       ],
     },
   ],

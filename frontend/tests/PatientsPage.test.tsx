@@ -40,7 +40,7 @@ describe("PatientsPage", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders real patient cards from the API, including the synthetic-data badge", async () => {
+  it("renders real patient cards from the API", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => jsonResponse([SAMPLE_PATIENT])),
@@ -51,7 +51,6 @@ describe("PatientsPage", () => {
     expect(await screen.findByText("Margaret Wallace")).toBeInTheDocument();
     expect(screen.getByText("DEMO-1001")).toBeInTheDocument();
     expect(screen.getByText("Cataract, bilateral")).toBeInTheDocument();
-    expect(screen.getByText("SYNTHETIC")).toBeInTheDocument();
   });
 
   it("shows an honest empty state rather than a broken/blank screen when there are no matches", async () => {

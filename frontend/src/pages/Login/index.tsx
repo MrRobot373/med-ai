@@ -1,8 +1,9 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate, useLocation, Navigate } from "react-router-dom";
-import { CheckCircle2, Plus } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useLogin, useMe } from "@/api/auth";
 import { ApiError } from "@/api/client";
+import gmsLogo from "@/assets/GMS-LOGO.webp";
 
 /** Turns a thrown login error into the specific, non-enumerating message spec §21
  * calls for. The backend deliberately returns one identical message for "wrong
@@ -49,11 +50,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-gms-red text-white">
-            <Plus className="h-6 w-6" strokeWidth={3} />
-          </span>
-          <h1 className="mt-3 text-xl font-bold text-gms-red">GMS</h1>
-          <p className="text-sm text-muted-text">Clinical Decision Support</p>
+          <img src={gmsLogo} alt="GMS Logo" className="h-14 w-14 object-contain rounded" />
+          <h1 className="mt-3 text-xl font-bold text-gms-red">MED AI</h1>
+          <p className="text-sm text-muted-text">Ophthalmology Decision Support</p>
         </div>
 
         <form onSubmit={handleSubmit} className="gms-card space-y-4 p-6">

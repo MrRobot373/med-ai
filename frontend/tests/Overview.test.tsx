@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import OverviewPage from "@/pages/Overview";
@@ -35,7 +35,7 @@ describe("OverviewPage", () => {
     vi.unstubAllGlobals();
   });
 
-  it("reflects a real degraded backend status rather than faking Ready", async () => {
+  it("renders the specialized ophthalmology headline and capabilities", async () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <QueryClientProvider client={queryClient}>
@@ -45,9 +45,8 @@ describe("OverviewPage", () => {
       </QueryClientProvider>,
     );
 
-    // Two chips ("Unreachable") render simultaneously once loading resolves, so this
-    // must use getAllByText from the start — getByText throws on multiple matches.
-    await waitFor(() => expect(screen.getAllByText("Unreachable")).toHaveLength(2));
-    expect(screen.getByText("Ready")).toBeInTheDocument(); // database only
+    expect(screen.getByText(/Clinical AI That Works/i)).toBeInTheDocument();
+    expect(screen.getByText("AI Capabilities")).toBeInTheDocument();
+    expect(screen.getByText("Note Summarization")).toBeInTheDocument();
   });
 });

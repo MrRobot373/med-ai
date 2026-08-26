@@ -28,11 +28,11 @@ export function PatientCard({ patient }: { patient: PatientListItem }) {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-navy">{displayName}</h3>
-              {patient.synthetic && (
+              {/* {patient.synthetic && (
                 <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                   SYNTHETIC
                 </span>
-              )}
+              )} */}
             </div>
             <p className="mt-0.5 text-xs text-muted-text">
               {patient.age} {SEX_LABEL[patient.sex]}
