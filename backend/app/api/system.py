@@ -373,6 +373,56 @@ def inbox(db: DB, _: ClinicalUser):
                 "at": r.created_at,
             }
         )
+    from app.models import Order, Prescription
+
+    for o in db.scalars(select(Order).where(Order.status == "result_received").order_by(Order.result_at.desc())):
+        n, m = pname(o.patient_id)
+        items.append(
+            {
+                "id": f"result-{o.id}",
+                "type": "result",
+                "priority": "high" if o.urgency == "urgent" else "medium",
+                "title": f"Result back: {o.test_name}",
+                "detail": f"Ordered for: {o.reason}" if o.reason else None,
+                "patient_id": o.patient_id,
+                "patient_name": n,
+                "mrn": m,
+                "ref_id": o.id,
+                "at": o.result_at or o.updated_at,
+            }
+        )
+    today = datetime.now(UTC).date()
+    for rx in db.scalars(
+        select(Prescription).where(
+            Prescription.status == "final",
+            Prescription.follow_up_date.is_not(None),
+            Prescription.follow_up_date <= today,
+        )
+    ):
+        later = db.scalar(
+            select(func.count())
+            .select_from(Encounter)
+            .where(Encounter.patient_id == rx.patient_id, Encounter.started_at > rx.finalized_at)
+        )
+        if later:
+            continue
+        n, m = pname(rx.patient_id)
+        overdue = (today - rx.follow_up_date).days
+        items.append(
+            {
+                "id": f"fu-{rx.id}",
+                "type": "follow_up",
+                "priority": "medium" if overdue > 7 else "low",
+                "title": "Follow-up overdue" if overdue > 0 else "Follow-up due today",
+                "detail": f"Due {rx.follow_up_date.isoformat()} after treatment for {rx.diagnosis or 'last visit'}"
+                + (f" — {overdue} days overdue" if overdue > 0 else ""),
+                "patient_id": rx.patient_id,
+                "patient_name": n,
+                "mrn": m,
+                "ref_id": rx.id,
+                "at": datetime.combine(rx.follow_up_date, datetime.min.time(), tzinfo=UTC),
+            }
+        )
     order = {"high": 0, "medium": 1, "low": 2}
 
     def ts(v):

@@ -270,6 +270,12 @@ async def _process(db: Session, doc: Document) -> None:
                 )
             )
         extraction["observations"] = len(found)
+        if not quarantined:
+            from app.services import orders
+
+            matched = orders.auto_match(db, doc, full_text)
+            if matched is not None:
+                extraction["matched_order"] = {"id": matched.id, "test_name": matched.test_name}
 
     # Re-processing replaces previous chunks.
     old = list(db.scalars(select(Chunk).where(Chunk.document_id == doc.id)))

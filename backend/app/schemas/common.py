@@ -169,6 +169,8 @@ class MedicationOut(ORM, MedicationIn):
     patient_id: str
     source: str
     source_document_id: str | None
+    prescription_id: str | None = None
+    generic: str | None = None
     created_at: datetime
 
 
@@ -194,6 +196,11 @@ class EncounterOut(ORM):
     vitals: dict
     clinician_id: str | None
     created_at: datetime
+    history: str | None = None
+    examination: str | None = None
+    assessment: str | None = None
+    diagnoses: list = []
+    plan: str | None = None
 
 
 class ObservationIn(BaseModel):

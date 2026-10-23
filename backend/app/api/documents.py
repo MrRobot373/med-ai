@@ -8,9 +8,9 @@ from fastapi.responses import FileResponse, Response
 from sqlalchemy import func, select
 
 from app.api.deps import DB, ClinicalUser, CurrentUser, StaffUser, WriteUser
-from app.models import Chunk, Document, Patient, User
+from app.models import Chunk, Document, Order, Patient, User
 from app.schemas.common import ChunkOut, DocumentOut, DocumentUpdate
-from app.services import audit, documents
+from app.services import audit, documents, orders
 
 router = APIRouter(prefix="/api", tags=["documents"])
 
@@ -53,6 +53,7 @@ async def upload_patient_document(
     kind: str | None = Form(None),
     document_date: date | None = Form(None),
     encounter_id: str | None = Form(None),
+    order_id: str | None = Form(None),
 ):
     patient = db.get(Patient, patient_id)
     if patient is None:
@@ -71,8 +72,14 @@ async def upload_patient_document(
         document_date=document_date,
         encounter_id=encounter_id,
     )
+    if order_id:
+        order = db.get(Order, order_id)
+        if order is None or order.patient_id != patient.id:
+            raise HTTPException(400, "That order does not belong to this patient")
+        orders.attach(db, order, doc)
+        db.commit()
     background.add_task(documents.process, doc.id)
-    return doc_out(doc)
+    return doc_out(doc, user)
 
 
 @router.get("/documents/{doc_id}")

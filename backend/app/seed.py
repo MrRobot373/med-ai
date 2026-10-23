@@ -2,6 +2,7 @@
 
     python -m app.seed demo          # demo users, synthetic patients, reports, knowledge packs
     python -m app.seed knowledge     # (re)load knowledge packs only
+    python -m app.seed today         # put the demo patients on today's list again
     python -m app.seed reprocess     # retry documents that failed (e.g. AI was offline)
     python -m app.seed use-mock-ai http://127.0.0.1:9100/v1   # point all AI roles at the mock server
 
@@ -24,7 +25,19 @@ from app.core.errors import AppError
 from app.core.logging import configure_logging, get_logger
 from app.core.security import hash_password
 from app.db import SessionLocal
-from app.models import Allergy, Condition, Document, Encounter, Medication, Patient, User
+from app.models import (
+    Allergy,
+    Appointment,
+    Condition,
+    Document,
+    Encounter,
+    Medication,
+    Order,
+    Patient,
+    Prescription,
+    PrescriptionItem,
+    User,
+)
 from app.services import documents
 
 logger = get_logger("seed")
@@ -39,6 +52,7 @@ def ago(days: int) -> datetime:
 DEMO_USERS = [
     ("doctor@gms.local", "Dr. Ananya Rao", "Dr.", "Internal Medicine", "clinician", "Doctor@12345"),
     ("viewer@gms.local", "Sam Lee", None, "Clinical audit", "viewer", "Viewer@12345"),
+    ("frontdesk@gms.local", "Meera Iyer", None, "Front desk", "front_desk", "Desk@12345"),
 ]
 
 # Each patient: demographics, problems, meds, allergies, encounters, and lab reports.
@@ -344,6 +358,110 @@ PATIENTS = [
             ),
         ],
     },
+    {
+        # A regular patient for the consultation walkthrough: elderly, diabetic and
+        # hypertensive with BPH and a sulfa allergy; seen 5 weeks ago with fever and
+        # weight gain; thyroid and diabetes tests came back since.
+        "mrn": "DEMO-1006",
+        "first_name": "Rohit",
+        "last_name": "Verma",
+        "dob": date(1957, 5, 10),
+        "sex": "male",
+        "phone": "+91 98450 12345",
+        "tags": ["diabetes", "hypertension", "regular"],
+        "blood_group": "B+",
+        "conditions": [
+            ("Type 2 diabetes mellitus", "E11.9", "active", 4400),
+            ("Essential hypertension", "I10", "active", 3600),
+            ("Benign prostatic hyperplasia", "N40.0", "active", 1500),
+            ("Dyslipidaemia", "E78.5", "active", 2200),
+        ],
+        "meds": [],  # added from his previous prescriptions below
+        "allergies": [("Sulfa drugs", "Itchy rash", "moderate")],
+        "encounters": [],
+        "reports": [
+            (
+                31,
+                "Diabetes, kidney and thyroid panel",
+                [
+                    ("HbA1c", "8.1", "%", "4.0-5.6", "H"),
+                    ("Fasting glucose", "162", "mg/dL", "70-99", "H"),
+                    ("Creatinine", "1.36", "mg/dL", "0.70-1.30", "H"),
+                    ("Potassium", "4.9", "mmol/L", "3.5-5.1", ""),
+                    ("Sodium", "138", "mmol/L", "135-145", ""),
+                    ("TSH", "7.2", "mIU/L", "0.4-4.0", "H"),
+                    ("ALT", "34", "U/L", "7-56", ""),
+                    ("Hemoglobin", "12.9", "g/dL", "13.5-17.5", "L"),
+                ],
+                "Impression: suboptimal glycaemic control; creatinine mildly raised; TSH raised (possible subclinical hypothyroidism) — correlate with weight gain.",
+            ),
+        ],
+    },
+]
+
+# Rohit's visit history as structured consultations with their prescriptions.
+ROHIT_VISITS = [
+    {
+        "days": 128,
+        "reason": "Diabetes and BP review",
+        "history": "Regular follow-up. No hypoglycaemia. Mild nocturia, stable for years.",
+        "examination": "Comfortable. Pedal pulses felt. No oedema.",
+        "vitals": {"bp": "138/84", "hr": 76, "weight_kg": 75},
+        "diagnoses": ["Type 2 diabetes mellitus", "Essential hypertension"],
+        "assessment": "Diabetes slightly above target; BP acceptable.",
+        "plan": "Continue current medicines for 3 months. HbA1c and kidney function before next visit.",
+        "rx": [
+            ("Glycomet-GP 1", "1 tab", "BD", 90, "Before breakfast and dinner"),
+            ("Telma 40", "1 tab", "OD", 90, "Morning"),
+            ("Atorva 10", "1 tab", "HS", 90, None),
+            ("Ecosprin 75", "1 tab", "OD", 90, "After lunch"),
+        ],
+        "follow_up": 90,
+        "chronic": True,
+    },
+    {
+        "days": 36,
+        "reason": "Fever and body ache for 3 days",
+        "history": "Fever up to 101°F for 3 days with body ache and mild sore throat. No cough, no urinary symptoms. "
+        "Also reports weight gain of about 3 kg over 3 months and feeling tired.",
+        "examination": "Temp 100.4°F. Throat mildly congested. Chest clear. No rash.",
+        "vitals": {"bp": "134/82", "hr": 92, "weight_kg": 78, "temp_f": 100.4},
+        "diagnoses": ["Acute viral fever", "Weight gain — under evaluation"],
+        "assessment": "Likely viral fever. Weight gain with fatigue: check thyroid; review diabetes control.",
+        "plan": "Paracetamol for fever, fluids. HbA1c, kidney function and TSH. Review in 4 weeks with reports.",
+        "rx": [
+            ("Dolo 650", "1 tab", "TDS", 5, "After food; for fever"),
+            ("Pan 40", "1 tab", "OD", 5, "Before breakfast"),
+        ],
+        "follow_up": 28,
+        "orders": [
+            (
+                "HbA1c, KFT and TSH",
+                "lab",
+                "Diabetes control, kidney function; weight gain and fatigue — rule out hypothyroidism",
+            )
+        ],
+    },
+]
+
+# Investigations whose reports are already in the demo data (auto-matched on processing).
+DEMO_ORDERS = {
+    "DEMO-1001": [
+        (
+            14,
+            "USG KUB (renal ultrasound)",
+            "radiology",
+            "Declining eGFR with albuminuria — renal size, exclude obstruction",
+        )
+    ],
+}
+
+# Today's list — kept deliberately simple.
+TODAY = [
+    ("DEMO-1001", "09:30", "Kidney function review", "arrived"),
+    ("DEMO-1006", "10:15", "Stomach pain since 2 days", "expected"),
+    ("DEMO-1002", "11:00", "Thyroid follow-up", "expected"),
+    ("DEMO-1005", "12:30", "Asthma review", "expected"),
 ]
 
 
@@ -702,6 +820,129 @@ def seed_patients(db, clinician: User) -> list[str]:
     return created_docs
 
 
+def seed_care(db, clinician: User) -> None:
+    """Consultations, prescriptions, orders and today's list (idempotent)."""
+    from app.formulary.catalog import load
+
+    fm = load("IN")
+    by_mrn = {p.mrn: p for p in db.scalars(select(Patient).where(Patient.mrn.like("DEMO-%")))}
+    rohit = by_mrn.get("DEMO-1006")
+    if rohit and not db.scalar(select(Prescription).where(Prescription.patient_id == rohit.id)):
+        for v in ROHIT_VISITS:
+            when = ago(v["days"])
+            enc = Encounter(
+                patient_id=rohit.id,
+                type="outpatient",
+                status="completed",
+                started_at=when,
+                ended_at=when + timedelta(minutes=15),
+                reason=v["reason"],
+                history=v["history"],
+                examination=v["examination"],
+                vitals=v["vitals"],
+                assessment=v["assessment"],
+                plan=v["plan"],
+                diagnoses=[{"name": d, "code": None} for d in v["diagnoses"]],
+                clinician_id=clinician.id,
+            )
+            db.add(enc)
+            db.flush()
+            rx = Prescription(
+                patient_id=rohit.id,
+                encounter_id=enc.id,
+                clinician_id=clinician.id,
+                status="final",
+                diagnosis="; ".join(v["diagnoses"]),
+                advice="Low-salt, low-sugar diet. Walk 30 minutes daily.",
+                follow_up_date=(when + timedelta(days=v["follow_up"])).date(),
+                finalized_at=when + timedelta(minutes=14),
+            )
+            db.add(rx)
+            db.flush()
+            for pos, (drug, dose, freq, days, instr) in enumerate(v["rx"]):
+                generic = "+".join(fm.resolve(drug).generic_ids) or None
+                rx.items.append(
+                    PrescriptionItem(
+                        position=pos,
+                        drug=drug,
+                        generic=generic,
+                        dose=dose,
+                        frequency=freq,
+                        duration_days=days,
+                        instructions=instr,
+                        checks=[],
+                    )
+                )
+                end = (when + timedelta(days=days)).date()
+                db.add(
+                    Medication(
+                        patient_id=rohit.id,
+                        encounter_id=enc.id,
+                        name=drug,
+                        generic=generic,
+                        dose=dose,
+                        route="oral",
+                        frequency=freq,
+                        indication=rx.diagnosis,
+                        start_date=when.date(),
+                        end_date=None if v.get("chronic") else end,
+                        status="active" if v.get("chronic") else "stopped",
+                        notes=instr,
+                        source="prescription",
+                        prescription_id=rx.id,
+                    )
+                )
+            for test, cat, reason in v.get("orders", []):
+                db.add(
+                    Order(
+                        patient_id=rohit.id,
+                        encounter_id=enc.id,
+                        clinician_id=clinician.id,
+                        test_name=test,
+                        category=cat,
+                        reason=reason,
+                        ordered_at=when,
+                    )
+                )
+        db.commit()
+    for mrn, specs in DEMO_ORDERS.items():
+        p = by_mrn.get(mrn)
+        if p is None:
+            continue
+        for days, test, cat, reason in specs:
+            if not db.scalar(select(Order).where(Order.patient_id == p.id, Order.test_name == test)):
+                enc = db.scalar(
+                    select(Encounter).where(Encounter.patient_id == p.id).order_by(Encounter.started_at.desc())
+                )
+                db.add(
+                    Order(
+                        patient_id=p.id,
+                        encounter_id=enc.id if enc else None,
+                        clinician_id=clinician.id,
+                        test_name=test,
+                        category=cat,
+                        reason=reason,
+                        ordered_at=ago(days),
+                    )
+                )
+    today = date.today()
+    for mrn, time, reason, status in TODAY:
+        p = by_mrn.get(mrn)
+        if p and not db.scalar(select(Appointment).where(Appointment.patient_id == p.id, Appointment.day == today)):
+            db.add(
+                Appointment(
+                    patient_id=p.id,
+                    day=today,
+                    time=time,
+                    reason=reason,
+                    status=status,
+                    clinician_id=clinician.id,
+                    created_by=clinician.id,
+                )
+            )
+    db.commit()
+
+
 def seed_knowledge(db, admin: User) -> list[str]:
     created: list[str] = []
     if not PACKS.exists():
@@ -759,6 +1000,11 @@ def main(argv: list[str]) -> int:
             clinician = seed_users(db)
             ids += seed_knowledge(db, admin)
             ids += seed_patients(db, clinician)
+            seed_care(db, clinician)
+        elif cmd == "today":
+            # Refresh today's demo list (for a long-running demo database)
+            seed_care(db, seed_users(db))
+            return 0
         elif cmd == "knowledge":
             ids += seed_knowledge(db, admin)
         elif cmd == "use-mock-ai":

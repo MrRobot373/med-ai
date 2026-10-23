@@ -107,6 +107,7 @@ def _env(monkeypatch, ai):
     rate_limit.login_limiter._hits.clear()
     monkeypatch.setattr(registry, "llm", lambda cfg: FakeLLM(ai))
     monkeypatch.setattr(registry, "vision_llm", lambda cfg: FakeLLM(ai))
+    monkeypatch.setattr(registry, "clinical_llm", lambda cfg: FakeLLM(ai))
     monkeypatch.setattr(registry, "embedder", lambda cfg: FakeEmbedder())
     monkeypatch.setattr(registry, "reranker", lambda cfg: FakeReranker())
     yield

@@ -82,7 +82,9 @@ class Order(TimestampMixin, Base):
     test_name: Mapped[str] = mapped_column(String(200))
     reason: Mapped[str | None] = mapped_column(String(500))
     urgency: Mapped[str] = mapped_column(String(10), default="routine")
-    status: Mapped[str] = mapped_column(String(20), default="ordered", index=True)  # ordered | result_received | reviewed | cancelled
+    status: Mapped[str] = mapped_column(
+        String(20), default="ordered", index=True
+    )  # ordered | result_received | reviewed | cancelled
     ordered_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     result_document_id: Mapped[str | None] = mapped_column(ForeignKey("documents.id", ondelete="SET NULL"))
     result_at: Mapped[datetime | None] = mapped_column(UTCDateTime())

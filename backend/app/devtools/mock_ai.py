@@ -121,7 +121,110 @@ def _answer(messages: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def _field(prompt: str, label: str) -> str:
+    m = re.search(rf"^{re.escape(label)}:? (.+)$", prompt, re.M)
+    return m.group(1).strip() if m else ""
+
+
+def _copilot(prompt: str) -> dict | None:
+    """Plausible, input-aware answers for the consultation tools (interface testing only)."""
+    problems = _field(prompt, "Active problems")
+    if '"ask_about"' in prompt:
+        abnormal = re.findall(r"^Abnormal: (.+)$", prompt, re.M)
+        orders = re.findall(r"^Order (.+?) \(", prompt, re.M)
+        last = _field(prompt, "Last visit")
+        return {
+            "headline": f"Known {problems[:90] or 'patient'} — review changes since the last visit [mock].",
+            "since_last_visit": ([f"Last visit {last[:120]}"] if last else [])
+            + [f"New abnormal result: {a}" for a in abnormal[:3]],
+            "ask_about": [
+                {
+                    "question": "Have the symptoms from the last visit settled completely?",
+                    "why": f"Previous visit: {last[:80] or 'see record'}",
+                },
+                {
+                    "question": "Any change in weight, appetite or energy?",
+                    "why": "Weight trend is relevant to the chronic conditions on file.",
+                },
+                {
+                    "question": "Are all current medicines being taken as prescribed? Any side effects?",
+                    "why": "Adherence before changing doses.",
+                },
+            ],
+            "watch_outs": ["Check kidney function before dosing renally cleared drugs."]
+            + ([f"Pending: {o}" for o in orders[:2]]),
+            "consider_today": [f"Review {o}" for o in orders[:2]] or ["Routine chronic-care review"],
+        }
+    if '"history_links"' in prompt:
+        complaint = _field(prompt, "Chief complaint")
+        dx = _field(prompt, "Working diagnosis")
+        return {
+            "verdict": "partly_consistent",
+            "summary": f"“{dx}” fits “{complaint[:80]}”, but given the history keep a serious alternative in mind [mock].",
+            "supporting": [f"Presenting complaint: {complaint[:100]}"],
+            "against": ["No examination findings recorded yet"],
+            "consider": [
+                {
+                    "diagnosis": "A more serious alternative relevant to age and comorbidities",
+                    "why": f"Documented problems: {problems[:100]}",
+                    "how_to_check": "Targeted examination and a basic test",
+                },
+            ],
+            "red_flags": ["Persistent vomiting, GI bleeding, severe or worsening pain, fever"],
+            "suggested_tests": [{"test": "Ultrasound abdomen", "why": "Characterise the cause if pain persists"}],
+            "history_links": [f"Existing conditions: {problems[:120]}"],
+        }
+    if '"dose_assessment"' in prompt:
+        items = []
+        for m in re.finditer(r"^\[(\d+)\] (.+?) \| resolved: (.+?) \| (.+?) \| rules: (.+)$", prompt, re.M):
+            idx, line, _resolved, _per_day, rules = m.groups()
+            flagged = "critical" in rules
+            warned = "warning" in rules
+            items.append(
+                {
+                    "index": int(idx),
+                    "drug": line.split(" ")[0],
+                    "verdict": "avoid" if flagged else ("adjust" if warned else "appropriate"),
+                    "dose_assessment": "high" if "too high" in rules else ("adequate" if not flagged else "unclear"),
+                    "comment": ("Agree with the rule check: " + rules.split(" — ")[0])
+                    if (flagged or warned)
+                    else "Dose and choice look reasonable for this patient [mock].",
+                    "suggestion": "Consider a safer alternative or adjusted dose." if flagged else None,
+                }
+            )
+        overall = (
+            "unsafe"
+            if any(i["verdict"] == "avoid" for i in items)
+            else ("review" if any(i["verdict"] == "adjust" for i in items) else "appropriate")
+        )
+        return {
+            "overall": overall,
+            "summary": f"{len(items)} medicine(s) reviewed against age, kidney function and current medicines [mock].",
+            "items": items,
+            "diagnosis_fit": "Choices are consistent with the working diagnosis.",
+            "missing": [],
+            "monitoring": ["Recheck creatinine and potassium if renally cleared drugs were adjusted"],
+            "counselling": ["Take after food", "Return if symptoms worsen"],
+        }
+    if '"answers_question"' in prompt:
+        order = _field(prompt, "ORDER")
+        reason = _field(prompt, "Reason for the test")
+        return {
+            "answers_question": f"The report addresses the question “{reason[:100]}” for {order[:60]} [mock].",
+            "key_findings": ["Findings as described in the report impression"],
+            "abnormal": [],
+            "change_from_previous": None,
+            "next_steps": ["Discuss the result with the patient", "Correlate clinically"],
+            "urgency": "routine",
+            "patient_explanation": "Your scan has been reviewed. The doctor will explain what it means for your treatment.",
+        }
+    return None
+
+
 def _structured(prompt: str) -> dict:
+    copilot = _copilot(prompt)
+    if copilot is not None:
+        return copilot
     if '"subjective"' in prompt:
         return {
             "subjective": "Patient-reported history as documented in the encounter note [mock].",

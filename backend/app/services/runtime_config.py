@@ -189,7 +189,19 @@ class RuntimeConfig(BaseModel):
     index_dimension: int | None = None
 
 
-SECTIONS = ("llm", "vision", "clinical", "formulary", "embeddings", "reranker", "retrieval", "vector_store", "research", "branding", "security")
+SECTIONS = (
+    "llm",
+    "vision",
+    "clinical",
+    "formulary",
+    "embeddings",
+    "reranker",
+    "retrieval",
+    "vector_store",
+    "research",
+    "branding",
+    "security",
+)
 # (section, field) pairs holding secrets.
 SECRET_FIELDS: tuple[tuple[str, str], ...] = (
     ("llm", "api_key"),

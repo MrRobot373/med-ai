@@ -27,9 +27,14 @@ def clinical_llm(cfg: RuntimeConfig) -> LLMClient:
     return LLMClient(
         cfg.llm.model_copy(
             update={
-                "provider": c.provider, "base_url": c.base_url, "api_key": c.api_key, "model": c.model,
-                "temperature": c.temperature, "max_output_tokens": c.max_output_tokens,
-                "context_window": c.context_window, "timeout_seconds": c.timeout_seconds,
+                "provider": c.provider,
+                "base_url": c.base_url,
+                "api_key": c.api_key,
+                "model": c.model,
+                "temperature": c.temperature,
+                "max_output_tokens": c.max_output_tokens,
+                "context_window": c.context_window,
+                "timeout_seconds": c.timeout_seconds,
             }
         )
     )

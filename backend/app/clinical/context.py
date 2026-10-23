@@ -9,7 +9,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Allergy, Condition, Encounter, Medication, Observation, Patient
+from app.models import Allergy, Condition, Encounter, Medication, Observation, Order, Patient, Prescription
 
 
 def age(dob: date | None) -> int | None:
@@ -93,9 +93,48 @@ def patient_record_text(db: Session, patient: Patient, *, max_encounters: int = 
         for e in encounters:
             note = (e.notes or "").replace("\n", " ")
             vitals = ", ".join(f"{k} {v}" for k, v in (e.vitals or {}).items() if v not in (None, ""))
+            dx = "; ".join(d.get("name", "") for d in e.diagnoses or [])
             lines.append(
                 f"- {e.started_at.date().isoformat()} {e.type} ({e.status}): {e.reason or 'no reason recorded'}"
                 + (f" | vitals: {vitals}" if vitals else "")
+                + (f" | history: {e.history[:400]}" if e.history else "")
+                + (f" | exam: {e.examination[:300]}" if e.examination else "")
+                + (f" | diagnosis: {dx}" if dx else "")
+                + (f" | assessment: {e.assessment[:300]}" if e.assessment else "")
+                + (f" | plan: {e.plan[:300]}" if e.plan else "")
                 + (f" | note: {note[:600]}" if note else "")
             )
+    rxs = db.scalars(
+        select(Prescription)
+        .where(Prescription.patient_id == patient.id, Prescription.status == "final")
+        .order_by(Prescription.finalized_at.desc())
+        .limit(4)
+    ).all()
+    if rxs:
+        lines.append("Previous prescriptions:")
+        for rx in rxs:
+            items = "; ".join(
+                " ".join(
+                    filter(None, [i.drug, i.dose, i.frequency, f"x{i.duration_days}d" if i.duration_days else None])
+                )
+                for i in rx.items
+            )
+            lines.append(f"- {rx.finalized_at.date().isoformat()} for {rx.diagnosis or 'unspecified'}: {items}")
+    ords = db.scalars(
+        select(Order)
+        .where(Order.patient_id == patient.id, Order.status != "cancelled")
+        .order_by(Order.ordered_at.desc())
+        .limit(8)
+    ).all()
+    if ords:
+        lines.append(
+            "Investigations ordered: "
+            + "; ".join(
+                f"{o.test_name} ({o.ordered_at.date().isoformat()}, {o.status.replace('_', ' ')}"
+                + (f", reason: {o.reason}" if o.reason else "")
+                + (f", doctor's note: {o.review_note}" if o.review_note else "")
+                + ")"
+                for o in ords
+            )
+        )
     return "\n".join(lines)

@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 
-from app.api import ai, audit, auth, documents, knowledge, patients, settings, system
+from app.api import ai, audit, auth, care, documents, knowledge, patients, settings, system
 from app.core.config import PROJECT_ROOT, get_settings
 from app.core.errors import AppError
 from app.core.logging import configure_logging, get_logger
@@ -96,7 +96,7 @@ def create_app(*, skip_migrations: bool = False) -> FastAPI:
             msgs.append(f"{loc}: {e['msg']}" if loc else e["msg"])
         return JSONResponse({"detail": "; ".join(msgs), "code": "validation_error"}, status_code=422)
 
-    for r in (auth, patients, documents, knowledge, ai, settings, system, audit):
+    for r in (auth, patients, documents, care, knowledge, ai, settings, system, audit):
         app.include_router(r.router)
 
     @app.get("/api/health", tags=["system"])
