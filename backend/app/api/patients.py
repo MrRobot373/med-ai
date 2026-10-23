@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import func, or_, select
 
-from app.api.deps import DB, AdminUser, CurrentUser, WriteUser
+from app.api.deps import DB, AdminUser, ClinicalUser, CurrentUser, StaffUser, WriteUser
 from app.clinical.context import age, latest_observations
 from app.models import AIRun, Allergy, Condition, Document, Encounter, Medication, Observation, Patient
 from app.schemas.common import (
@@ -44,7 +44,7 @@ def patient_out(p: Patient) -> dict:
 @router.get("", response_model=list[PatientListItem])
 def list_patients(
     db: DB,
-    _: CurrentUser,
+    user: CurrentUser,
     q: str | None = None,
     status: str = "active",
     tag: str | None = None,
@@ -127,6 +127,10 @@ def list_patients(
     out = []
     for p in patients:
         item = patient_out(p)
+        if user.role == "front_desk":  # demographics and paperwork only
+            item.update(notes=None, document_count=doc_counts.get(p.id, 0), last_encounter_at=last_enc.get(p.id))
+            out.append(item)
+            continue
         item.update(
             active_conditions=conds.get(p.id, []),
             last_encounter_at=last_enc.get(p.id),
@@ -152,7 +156,7 @@ def list_patients(
 
 
 @router.post("", response_model=PatientOut, status_code=201)
-def create_patient(body: PatientIn, db: DB, user: WriteUser):
+def create_patient(body: PatientIn, db: DB, user: StaffUser):
     if db.scalars(select(Patient).where(func.lower(Patient.mrn) == body.mrn.strip().lower())).first():
         raise HTTPException(409, f"A patient with MRN {body.mrn} already exists.")
     p = Patient(**body.model_dump(), created_by=user.id)
@@ -192,11 +196,14 @@ def read_patient(patient_id: str, db: DB, user: CurrentUser):
         entity_id=p.id,
         patient_id=p.id,
     )
-    return patient_out(p)
+    data = patient_out(p)
+    if user.role == "front_desk":
+        data["notes"] = None
+    return data
 
 
 @router.patch("/{patient_id}", response_model=PatientOut)
-def update_patient(patient_id: str, body: PatientUpdate, db: DB, user: WriteUser):
+def update_patient(patient_id: str, body: PatientUpdate, db: DB, user: StaffUser):
     p = get_patient(db, patient_id)
     changes = body.model_dump(exclude_unset=True)
     if (
@@ -237,14 +244,14 @@ async def delete_patient(patient_id: str, db: DB, admin: AdminUser):
 
 
 @router.get("/{patient_id}/scores")
-def clinical_scores(patient_id: str, db: DB, _: CurrentUser):
+def clinical_scores(patient_id: str, db: DB, _: ClinicalUser):
     from app.clinical import scores
 
     return scores.compute(db, get_patient(db, patient_id))
 
 
 @router.get("/{patient_id}/overview")
-def overview(patient_id: str, db: DB, _: CurrentUser):
+def overview(patient_id: str, db: DB, _: ClinicalUser):
     p = get_patient(db, patient_id)
     conditions = db.scalars(
         select(Condition).where(Condition.patient_id == p.id).order_by(Condition.status, Condition.name)
@@ -341,7 +348,7 @@ def _crud(name: str, model, schema_in, schema_out, label_attr: str):
     path = f"/{{patient_id}}/{name}"
 
     @router.get(path, response_model=list[schema_out], name=f"list_{name}")
-    def list_items(patient_id: str, db: DB, _: CurrentUser):
+    def list_items(patient_id: str, db: DB, _: ClinicalUser):
         get_patient(db, patient_id)
         order = getattr(model, "started_at", None) or model.created_at
         return db.scalars(select(model).where(model.patient_id == patient_id).order_by(order.desc())).all()
@@ -417,7 +424,7 @@ _crud("encounters", Encounter, EncounterIn, EncounterOut, "reason")
 
 # ---- Observations -----------------------------------------------------------
 @router.get("/{patient_id}/observations", response_model=list[ObservationOut])
-def list_observations(patient_id: str, db: DB, _: CurrentUser, code: str | None = None):
+def list_observations(patient_id: str, db: DB, _: ClinicalUser, code: str | None = None):
     get_patient(db, patient_id)
     stmt = select(Observation).where(Observation.patient_id == patient_id)
     if code:
@@ -426,7 +433,7 @@ def list_observations(patient_id: str, db: DB, _: CurrentUser, code: str | None 
 
 
 @router.get("/{patient_id}/trends")
-def trends(patient_id: str, db: DB, _: CurrentUser):
+def trends(patient_id: str, db: DB, _: ClinicalUser):
     get_patient(db, patient_id)
     rows = db.scalars(
         select(Observation).where(Observation.patient_id == patient_id).order_by(Observation.observed_at)
@@ -538,7 +545,7 @@ def delete_observation(patient_id: str, obs_id: str, db: DB, user: WriteUser):
 
 # ---- Timeline & export ------------------------------------------------------
 @router.get("/{patient_id}/timeline")
-def timeline(patient_id: str, db: DB, _: CurrentUser):
+def timeline(patient_id: str, db: DB, _: ClinicalUser):
     p = get_patient(db, patient_id)
     events = []
 
@@ -623,7 +630,7 @@ def timeline(patient_id: str, db: DB, _: CurrentUser):
 
 
 @router.get("/{patient_id}/export", response_class=PlainTextResponse)
-def export_summary(patient_id: str, db: DB, user: CurrentUser):
+def export_summary(patient_id: str, db: DB, user: ClinicalUser):
     from app.clinical.context import patient_record_text
 
     p = get_patient(db, patient_id)

@@ -5,7 +5,7 @@ from datetime import date
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
 from sqlalchemy import func, or_, select
 
-from app.api.deps import DB, AdminUser, AIUser, CurrentUser
+from app.api.deps import DB, AdminUser, AIUser, ClinicalUser
 from app.api.documents import doc_out
 from app.models import Document
 from app.rag.retrieve import retrieve
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/knowledge", tags=["knowledge"])
 
 
 @router.get("")
-def list_knowledge(db: DB, _: CurrentUser, q: str | None = None, domain: str | None = None, status: str | None = None):
+def list_knowledge(db: DB, _: ClinicalUser, q: str | None = None, domain: str | None = None, status: str | None = None):
     stmt = select(Document).where(Document.scope == "knowledge")
     if q:
         like = f"%{q}%"
@@ -36,7 +36,7 @@ def list_knowledge(db: DB, _: CurrentUser, q: str | None = None, domain: str | N
 
 
 @router.get("/domains")
-def domains(db: DB, _: CurrentUser):
+def domains(db: DB, _: ClinicalUser):
     counts = dict(
         db.execute(
             select(Document.domain, func.count()).where(Document.scope == "knowledge").group_by(Document.domain)
@@ -51,7 +51,7 @@ def domains(db: DB, _: CurrentUser):
 
 
 @router.get("/stats")
-def stats(db: DB, _: CurrentUser):
+def stats(db: DB, _: ClinicalUser):
     rows = db.execute(
         select(Document.status, func.count(), func.sum(Document.chunk_count))
         .where(Document.scope == "knowledge")

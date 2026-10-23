@@ -9,7 +9,7 @@ from sqlalchemy import func, select, text
 
 from app.ai import registry
 from app.ai.llm import list_models
-from app.api.deps import DB, CurrentUser
+from app.api.deps import DB, ClinicalUser, CurrentUser
 from app.core.config import get_settings
 from app.core.errors import AppError, ServiceUnavailable
 from app.models import AIRun, AuditLog, Conversation, Document, Encounter, Message, Observation, Patient, User
@@ -68,6 +68,17 @@ async def health(db: DB, _: CurrentUser, refresh: bool = False):
             }
         return {"detail": f"{cfg.llm.model} via {cfg.llm.provider}", "model": cfg.llm.model}
 
+    async def clinical():
+        if cfg.clinical.use_main_llm:
+            return {"detail": f"Uses the language model ({cfg.llm.model})", "model": cfg.llm.model}
+        c = cfg.clinical
+        models = await list_models(c.provider, c.base_url, c.api_key)
+        found = c.model in models or (c.provider == "ollama" and f"{c.model}:latest" in models)
+        if not found and models:
+            hint = f" — run: ollama pull {c.model}" if c.provider == "ollama" else ""
+            return {"status": "degraded", "detail": f"Model '{c.model}' not available{hint}", "model": c.model}
+        return {"detail": f"{c.model} via {c.provider}", "model": c.model}
+
     async def embeddings():
         dim = await registry.embedder(cfg).dimension()
         st = runtime_config.index_status(cfg)
@@ -103,6 +114,7 @@ async def health(db: DB, _: CurrentUser, refresh: bool = False):
     components = await asyncio.gather(
         _check("database", database),
         _check("llm", llm),
+        _check("clinical", clinical),
         _check("embeddings", embeddings),
         _check("reranker", reranker),
         _check("vector_store", vectors),
@@ -146,7 +158,7 @@ def info(db: DB, _: CurrentUser):
 
 
 @router.get("/dashboard")
-def dashboard(db: DB, user: CurrentUser):
+def dashboard(db: DB, user: ClinicalUser):
     now = datetime.now(UTC)
     week = now - timedelta(days=7)
 
@@ -252,7 +264,7 @@ def dashboard(db: DB, user: CurrentUser):
 
 
 @router.get("/inbox")
-def inbox(db: DB, _: CurrentUser):
+def inbox(db: DB, _: ClinicalUser):
     """Clinical work queue: everything that needs a human decision."""
     items = []
 
@@ -371,7 +383,7 @@ def inbox(db: DB, _: CurrentUser):
 
 
 @router.get("/dashboard/review-queue")
-def review_queue(db: DB, _: CurrentUser, limit: int = 12):
+def review_queue(db: DB, _: ClinicalUser, limit: int = 12):
     """Patient documents awaiting clinician review (newest first), for the home viewer.
     Quarantined documents come first so a suspected wrong-patient file is never missed."""
     from app.api.documents import doc_out
@@ -393,7 +405,7 @@ def review_queue(db: DB, _: CurrentUser, limit: int = 12):
 
 
 @router.get("/dashboard/attention")
-def attention(db: DB, _: CurrentUser, limit: int = 6):
+def attention(db: DB, _: ClinicalUser, limit: int = 6):
     """Active patients ranked by what needs a clinician: unacknowledged abnormal results,
     identity mismatches, pending documents and the most concerning applicable score."""
     from app.clinical import scores as scores_mod

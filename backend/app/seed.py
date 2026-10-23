@@ -770,6 +770,7 @@ def main(argv: list[str]) -> int:
                 cfg, "llm", {"provider": "openai", "base_url": url, "model": "mock-clinical-llm"}
             )
             cfg = runtime_config.apply_section_update(cfg, "vision", {"use_main_llm": True})
+            cfg = runtime_config.apply_section_update(cfg, "clinical", {"use_main_llm": True})
             cfg = runtime_config.apply_section_update(
                 cfg, "embeddings", {"provider": "openai", "base_url": url, "model": "mock-embed"}
             )

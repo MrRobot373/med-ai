@@ -7,16 +7,20 @@ from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, Query
 from fastapi.responses import FileResponse, Response
 from sqlalchemy import func, select
 
-from app.api.deps import DB, CurrentUser, WriteUser
-from app.models import Chunk, Document, Patient
+from app.api.deps import DB, ClinicalUser, CurrentUser, StaffUser, WriteUser
+from app.models import Chunk, Document, Patient, User
 from app.schemas.common import ChunkOut, DocumentOut, DocumentUpdate
 from app.services import audit, documents
 
 router = APIRouter(prefix="/api", tags=["documents"])
 
 
-def doc_out(d: Document) -> dict:
-    return DocumentOut.model_validate(d).model_dump()
+def doc_out(d: Document, user: User | None = None) -> dict:
+    data = DocumentOut.model_validate(d).model_dump()
+    if user is not None and user.role == "front_desk":
+        # Paperwork view: what was filed and whether it processed, not what it says
+        data["extraction"] = {}
+    return data
 
 
 def _get(db, doc_id: str) -> Document:
@@ -27,9 +31,9 @@ def _get(db, doc_id: str) -> Document:
 
 
 @router.get("/patients/{patient_id}/documents")
-def list_patient_documents(patient_id: str, db: DB, _: CurrentUser):
+def list_patient_documents(patient_id: str, db: DB, user: CurrentUser):
     return [
-        doc_out(d)
+        doc_out(d, user)
         for d in db.scalars(
             select(Document)
             .where(Document.patient_id == patient_id)
@@ -42,7 +46,7 @@ def list_patient_documents(patient_id: str, db: DB, _: CurrentUser):
 async def upload_patient_document(
     patient_id: str,
     db: DB,
-    user: WriteUser,
+    user: StaffUser,
     background: BackgroundTasks,
     file: UploadFile = File(...),
     title: str | None = Form(None),
@@ -72,12 +76,12 @@ async def upload_patient_document(
 
 
 @router.get("/documents/{doc_id}")
-def read_document(doc_id: str, db: DB, _: CurrentUser):
-    return doc_out(_get(db, doc_id))
+def read_document(doc_id: str, db: DB, user: CurrentUser):
+    return doc_out(_get(db, doc_id), user)
 
 
 @router.get("/documents/{doc_id}/file")
-def document_file(doc_id: str, db: DB, user: CurrentUser, download: bool = False):
+def document_file(doc_id: str, db: DB, user: ClinicalUser, download: bool = False):
     d = _get(db, doc_id)
     path = Path(d.storage_path)
     if not path.exists():
@@ -129,7 +133,7 @@ def _render_preview(d: Document, page: int, width: int) -> tuple[bytes, int]:
 
 
 @router.get("/documents/{doc_id}/preview")
-def document_preview(doc_id: str, db: DB, user: CurrentUser, page: int = 1, width: int = Query(1200, ge=64, le=2400)):
+def document_preview(doc_id: str, db: DB, user: ClinicalUser, page: int = 1, width: int = Query(1200, ge=64, le=2400)):
     """PNG rendering of a page (PDF), image or DICOM frame — used by the report viewer."""
     d = _get(db, doc_id)
     if not Path(d.storage_path).exists():
@@ -162,7 +166,7 @@ def document_preview(doc_id: str, db: DB, user: CurrentUser, page: int = 1, widt
 
 
 @router.get("/documents/{doc_id}/chunks", response_model=list[ChunkOut])
-def document_chunks(doc_id: str, db: DB, _: CurrentUser):
+def document_chunks(doc_id: str, db: DB, _: ClinicalUser):
     _get(db, doc_id)
     return db.scalars(select(Chunk).where(Chunk.document_id == doc_id).order_by(Chunk.ordinal)).all()
 

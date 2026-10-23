@@ -1,0 +1,7245 @@
+{
+ "_meta": {
+  "region": "IN",
+  "name": "India outpatient formulary",
+  "version": "2026.10",
+  "source_note": "Adult dose limits, renal/hepatic adjustments and cautions compiled from standard prescribing references (National Formulary of India, BNF, AGS Beers Criteria 2023 and product labelling). Decision support only: verify against current local prescribing information.",
+  "elderly_age": 65,
+  "paediatric_age": 12
+ },
+ "allergy_groups": {
+  "penicillin": [
+   "penicillin",
+   "amoxicillin",
+   "amoxycillin",
+   "ampicillin",
+   "cloxacillin",
+   "augmentin",
+   "clavam",
+   "mox",
+   "novamox"
+  ],
+  "cephalosporin": [
+   "cephalosporin",
+   "cefixime",
+   "cefuroxime",
+   "cefpodoxime",
+   "cephalexin",
+   "cefalexin",
+   "ceftriaxone",
+   "cefadroxil"
+  ],
+  "sulfonamide": [
+   "sulfa",
+   "sulpha",
+   "sulfonamide",
+   "sulphonamide",
+   "cotrimoxazole",
+   "co-trimoxazole",
+   "septran",
+   "bactrim",
+   "sulfamethoxazole"
+  ],
+  "nsaid": [
+   "nsaid",
+   "nsaids",
+   "ibuprofen",
+   "diclofenac",
+   "aceclofenac",
+   "naproxen",
+   "nimesulide",
+   "mefenamic",
+   "aspirin",
+   "ketorolac",
+   "etoricoxib"
+  ],
+  "fluoroquinolone": [
+   "fluoroquinolone",
+   "quinolone",
+   "ciprofloxacin",
+   "ofloxacin",
+   "levofloxacin",
+   "norfloxacin",
+   "moxifloxacin"
+  ],
+  "macrolide": [
+   "macrolide",
+   "azithromycin",
+   "clarithromycin",
+   "erythromycin"
+  ],
+  "tetracycline": [
+   "tetracycline",
+   "doxycycline",
+   "minocycline"
+  ],
+  "opioid": [
+   "opioid",
+   "tramadol",
+   "morphine",
+   "codeine",
+   "tapentadol"
+  ],
+  "statin": [
+   "statin",
+   "atorvastatin",
+   "rosuvastatin",
+   "simvastatin"
+  ],
+  "acei": [
+   "ace inhibitor",
+   "ramipril",
+   "enalapril",
+   "lisinopril"
+  ],
+  "sulfonylurea": [
+   "sulfonylurea",
+   "sulphonylurea",
+   "glimepiride",
+   "gliclazide",
+   "glibenclamide"
+  ],
+  "nitroimidazole": [
+   "metronidazole",
+   "ornidazole",
+   "tinidazole",
+   "nitroimidazole"
+  ],
+  "azole": [
+   "azole",
+   "fluconazole",
+   "itraconazole",
+   "ketoconazole"
+  ]
+ },
+ "cross_reactivity": [
+  {
+   "allergy": "penicillin",
+   "drug_group": "cephalosporin",
+   "severity": "warning",
+   "note": "Penicillin allergy: low (≈1–2%) cross-reactivity with cephalosporins — avoid if the reaction was anaphylaxis."
+  },
+  {
+   "allergy": "nsaid",
+   "drug_group": "nsaid",
+   "severity": "critical",
+   "note": "NSAID hypersensitivity is usually a class effect (COX-1) — avoid other NSAIDs."
+  }
+ ],
+ "duplicate_classes": [
+  "nsaid",
+  "ppi",
+  "h2ra",
+  "statin",
+  "sulfonylurea",
+  "ssri",
+  "benzodiazepine",
+  "acei",
+  "arb",
+  "beta_blocker",
+  "dpp4",
+  "sglt2",
+  "antihistamine",
+  "fluoroquinolone",
+  "macrolide",
+  "opioid",
+  "anticoagulant",
+  "loop_diuretic",
+  "thiazide",
+  "corticosteroid",
+  "nitroimidazole",
+  "azole",
+  "antiemetic_d2",
+  "gabapentinoid"
+ ],
+ "generics": [
+  {
+   "id": "paracetamol",
+   "name": "Paracetamol",
+   "class": "Analgesic / antipyretic",
+   "tags": [
+    "analgesic"
+   ],
+   "usual": [
+    1500,
+    3000
+   ],
+   "max_single": 1000,
+   "max_daily": 4000,
+   "elderly": {
+    "severity": "info",
+    "max_daily": 3000,
+    "note": "Frail or low body weight (<50 kg) elderly: keep to ≤3 g/day."
+   },
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 2000,
+    "note": "Hepatic impairment or regular alcohol use: limit to 2 g/day."
+   },
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Analgesic of choice in pregnancy."
+   },
+   "paeds": {
+    "mg_kg_dose_max": 15,
+    "mg_kg_day_max": 60
+   },
+   "allergy": [],
+   "image": "Paracetamol tablets"
+  },
+  {
+   "id": "ibuprofen",
+   "name": "Ibuprofen",
+   "class": "NSAID",
+   "tags": [
+    "nsaid",
+    "analgesic"
+   ],
+   "usual": [
+    600,
+    1800
+   ],
+   "max_single": 800,
+   "max_daily": 2400,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid chronic NSAID use in older adults (GI bleeding, AKI, heart failure) unless alternatives fail; add a PPI if used."
+   },
+   "renal": [
+    {
+     "below": 60,
+     "severity": "warning",
+     "note": "Reduced eGFR: NSAIDs can precipitate AKI — shortest course, monitor creatinine."
+    },
+    {
+     "below": 30,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <30: avoid NSAIDs."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "note": "Severe hepatic impairment: avoid."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid, especially from 20 weeks (fetal renal impairment, ductus closure)."
+   },
+   "paeds": {
+    "min_age": 0.25,
+    "mg_kg_dose_max": 10,
+    "mg_kg_day_max": 40
+   },
+   "conditions": [
+    {
+     "match": [
+      "peptic ulcer",
+      "gastric ulcer",
+      "duodenal ulcer",
+      "gi bleed",
+      "gastrointestinal bleed",
+      "upper gi bleed"
+     ],
+     "severity": "critical",
+     "note": "History of peptic ulcer / GI bleeding: NSAIDs contraindicated."
+    },
+    {
+     "match": [
+      "heart failure",
+      "cardiac failure"
+     ],
+     "severity": "warning",
+     "note": "NSAIDs cause fluid retention and worsen heart failure."
+    },
+    {
+     "match": [
+      "hypertension"
+     ],
+     "severity": "info",
+     "note": "NSAIDs raise blood pressure and blunt antihypertensives."
+    },
+    {
+     "match": [
+      "asthma"
+     ],
+     "severity": "info",
+     "note": "Check for NSAID-exacerbated asthma."
+    }
+   ],
+   "allergy": [
+    "nsaid"
+   ],
+   "image": "Ibuprofen tablets"
+  },
+  {
+   "id": "diclofenac",
+   "name": "Diclofenac",
+   "class": "NSAID",
+   "tags": [
+    "nsaid",
+    "analgesic"
+   ],
+   "usual": [
+    75,
+    150
+   ],
+   "max_single": 75,
+   "max_daily": 150,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid chronic NSAID use in older adults; diclofenac carries the higher cardiovascular risk."
+   },
+   "renal": [
+    {
+     "below": 60,
+     "severity": "warning",
+     "note": "Reduced eGFR: risk of AKI — shortest course, monitor creatinine."
+    },
+    {
+     "below": 30,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <30: avoid NSAIDs."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "note": "Can raise transaminases; avoid in severe impairment."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid, especially from 20 weeks."
+   },
+   "paeds": {
+    "min_age": 1,
+    "mg_kg_day_max": 3
+   },
+   "conditions": [
+    {
+     "match": [
+      "peptic ulcer",
+      "gastric ulcer",
+      "duodenal ulcer",
+      "gi bleed",
+      "gastrointestinal bleed"
+     ],
+     "severity": "critical",
+     "note": "History of peptic ulcer / GI bleeding: NSAIDs contraindicated."
+    },
+    {
+     "match": [
+      "ischaemic heart disease",
+      "ischemic heart disease",
+      "coronary artery disease",
+      "myocardial infarction",
+      "stroke",
+      "heart failure"
+     ],
+     "severity": "critical",
+     "note": "Diclofenac is contraindicated in established IHD, cerebrovascular disease and heart failure."
+    },
+    {
+     "match": [
+      "hypertension"
+     ],
+     "severity": "info",
+     "note": "NSAIDs raise blood pressure."
+    }
+   ],
+   "allergy": [
+    "nsaid"
+   ],
+   "image": "Diclofenac sodium tablets"
+  },
+  {
+   "id": "aceclofenac",
+   "name": "Aceclofenac",
+   "class": "NSAID",
+   "tags": [
+    "nsaid",
+    "analgesic"
+   ],
+   "usual": [
+    200,
+    200
+   ],
+   "max_single": 100,
+   "max_daily": 200,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid chronic NSAID use in older adults."
+   },
+   "renal": [
+    {
+     "below": 60,
+     "severity": "warning",
+     "note": "Reduced eGFR: risk of AKI — shortest course, monitor creatinine."
+    },
+    {
+     "below": 30,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <30: avoid NSAIDs."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 100,
+    "note": "Hepatic impairment: start 100 mg/day."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid, especially from 20 weeks."
+   },
+   "paeds": {
+    "min_age": 18,
+    "note": "Not established in children."
+   },
+   "conditions": [
+    {
+     "match": [
+      "peptic ulcer",
+      "gastric ulcer",
+      "duodenal ulcer",
+      "gi bleed",
+      "gastrointestinal bleed"
+     ],
+     "severity": "critical",
+     "note": "History of peptic ulcer / GI bleeding: NSAIDs contraindicated."
+    },
+    {
+     "match": [
+      "ischaemic heart disease",
+      "ischemic heart disease",
+      "coronary artery disease",
+      "heart failure"
+     ],
+     "severity": "warning",
+     "note": "Cardiovascular risk similar to diclofenac."
+    }
+   ],
+   "allergy": [
+    "nsaid"
+   ],
+   "image": "Aceclofenac"
+  },
+  {
+   "id": "nimesulide",
+   "name": "Nimesulide",
+   "class": "NSAID",
+   "tags": [
+    "nsaid",
+    "analgesic"
+   ],
+   "usual": [
+    200,
+    200
+   ],
+   "max_single": 100,
+   "max_daily": 200,
+   "elderly": {
+    "severity": "warning",
+    "note": "Avoid chronic NSAID use in older adults."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <30: contraindicated."
+    }
+   ],
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Hepatotoxic — contraindicated in hepatic impairment."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Contraindicated in pregnancy."
+   },
+   "paeds": {
+    "min_age": 12,
+    "note": "Banned in India for children under 12.",
+    "severity": "critical"
+   },
+   "conditions": [
+    {
+     "match": [
+      "peptic ulcer",
+      "gi bleed",
+      "gastrointestinal bleed"
+     ],
+     "severity": "critical",
+     "note": "Peptic ulcer / GI bleeding: contraindicated."
+    },
+    {
+     "match": [
+      "alcohol"
+     ],
+     "severity": "warning",
+     "note": "Alcohol use increases hepatotoxicity risk."
+    }
+   ],
+   "max_days": 15,
+   "allergy": [
+    "nsaid"
+   ],
+   "image": "Nimesulide"
+  },
+  {
+   "id": "mefenamic_acid",
+   "name": "Mefenamic acid",
+   "class": "NSAID",
+   "tags": [
+    "nsaid",
+    "analgesic"
+   ],
+   "usual": [
+    1500,
+    1500
+   ],
+   "max_single": 500,
+   "max_daily": 1500,
+   "elderly": {
+    "severity": "warning",
+    "note": "Avoid chronic NSAID use in older adults."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <30: avoid."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid, especially from 20 weeks."
+   },
+   "paeds": {
+    "min_age": 0.5,
+    "mg_kg_dose_max": 10,
+    "mg_kg_day_max": 30
+   },
+   "conditions": [
+    {
+     "match": [
+      "peptic ulcer",
+      "gi bleed",
+      "inflammatory bowel",
+      "ulcerative colitis",
+      "crohn"
+     ],
+     "severity": "critical",
+     "note": "Peptic ulcer / IBD: contraindicated."
+    }
+   ],
+   "max_days": 7,
+   "allergy": [
+    "nsaid"
+   ],
+   "image": "Mefenamic acid"
+  },
+  {
+   "id": "aspirin",
+   "name": "Aspirin",
+   "class": "Antiplatelet / NSAID",
+   "tags": [
+    "antiplatelet",
+    "nsaid_low"
+   ],
+   "usual": [
+    75,
+    150
+   ],
+   "max_single": 1000,
+   "max_daily": 4000,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: avoid starting for primary prevention in older adults (bleeding outweighs benefit)."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Low dose only when indicated (e.g. pre-eclampsia prophylaxis); avoid analgesic doses."
+   },
+   "paeds": {
+    "min_age": 16,
+    "note": "Avoid under 16 years (Reye's syndrome) except specialist indications."
+   },
+   "conditions": [
+    {
+     "match": [
+      "peptic ulcer",
+      "gi bleed",
+      "gastrointestinal bleed"
+     ],
+     "severity": "warning",
+     "note": "Prior GI bleeding: needs PPI cover; reconsider indication."
+    },
+    {
+     "match": [
+      "haemophilia",
+      "hemophilia",
+      "bleeding disorder"
+     ],
+     "severity": "critical",
+     "note": "Bleeding disorder: avoid."
+    }
+   ],
+   "allergy": [
+    "nsaid"
+   ],
+   "image": "Aspirin tablets"
+  },
+  {
+   "id": "tramadol",
+   "name": "Tramadol",
+   "class": "Opioid analgesic",
+   "tags": [
+    "opioid",
+    "serotonergic",
+    "analgesic"
+   ],
+   "usual": [
+    100,
+    300
+   ],
+   "max_single": 100,
+   "max_daily": 400,
+   "elderly": {
+    "severity": "warning",
+    "max_daily": 300,
+    "note": "Over 75: max 300 mg/day; Beers 2023 — use with caution (hyponatraemia, falls, delirium)."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 200,
+     "severity": "warning",
+     "note": "eGFR <30: dose every 12 h, max 200 mg/day."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 100,
+    "note": "Cirrhosis: 50 mg every 12 h."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid; neonatal withdrawal with prolonged use."
+   },
+   "paeds": {
+    "min_age": 12,
+    "note": "Contraindicated under 12 years.",
+    "severity": "critical"
+   },
+   "conditions": [
+    {
+     "match": [
+      "epilepsy",
+      "seizure"
+     ],
+     "severity": "warning",
+     "note": "Lowers seizure threshold."
+    }
+   ],
+   "allergy": [
+    "opioid"
+   ],
+   "image": "Tramadol capsules"
+  },
+  {
+   "id": "pantoprazole",
+   "name": "Pantoprazole",
+   "class": "Proton-pump inhibitor",
+   "tags": [
+    "ppi"
+   ],
+   "usual": [
+    40,
+    40
+   ],
+   "max_single": 80,
+   "max_daily": 80,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: avoid scheduled PPI use beyond 8 weeks without a clear indication (C. difficile, fractures, B12 deficiency)."
+   },
+   "hepatic": {
+    "severity": "info",
+    "max_daily": 40,
+    "note": "Severe hepatic impairment: max 40 mg/day."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "paeds": {
+    "min_age": 5
+   },
+   "allergy": [],
+   "image": "Pantoprazole tablets"
+  },
+  {
+   "id": "omeprazole",
+   "name": "Omeprazole",
+   "class": "Proton-pump inhibitor",
+   "tags": [
+    "ppi"
+   ],
+   "usual": [
+    20,
+    40
+   ],
+   "max_single": 40,
+   "max_daily": 40,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: avoid scheduled PPI use beyond 8 weeks without a clear indication."
+   },
+   "hepatic": {
+    "severity": "info",
+    "max_daily": 20,
+    "note": "Hepatic impairment: max 20 mg/day."
+   },
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Most experience of PPIs in pregnancy."
+   },
+   "allergy": [],
+   "image": "Omeprazole capsules"
+  },
+  {
+   "id": "rabeprazole",
+   "name": "Rabeprazole",
+   "class": "Proton-pump inhibitor",
+   "tags": [
+    "ppi"
+   ],
+   "usual": [
+    20,
+    20
+   ],
+   "max_single": 40,
+   "max_daily": 40,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: avoid scheduled PPI use beyond 8 weeks without a clear indication."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "allergy": [],
+   "image": "Rabeprazole"
+  },
+  {
+   "id": "esomeprazole",
+   "name": "Esomeprazole",
+   "class": "Proton-pump inhibitor",
+   "tags": [
+    "ppi"
+   ],
+   "usual": [
+    20,
+    40
+   ],
+   "max_single": 40,
+   "max_daily": 80,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: avoid scheduled PPI use beyond 8 weeks without a clear indication."
+   },
+   "hepatic": {
+    "severity": "info",
+    "max_daily": 20,
+    "note": "Severe hepatic impairment: max 20 mg/day."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "allergy": [],
+   "image": "Esomeprazole"
+  },
+  {
+   "id": "famotidine",
+   "name": "Famotidine",
+   "class": "H2-receptor antagonist",
+   "tags": [
+    "h2ra"
+   ],
+   "usual": [
+    20,
+    40
+   ],
+   "max_single": 40,
+   "max_daily": 80,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: H2 blockers can cause delirium — reduce dose in older adults with reduced renal function."
+   },
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 20,
+     "severity": "warning",
+     "note": "eGFR <50: halve the dose or give every 48 h (CNS effects, QT)."
+    }
+   ],
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "allergy": [],
+   "image": "Famotidine tablets"
+  },
+  {
+   "id": "domperidone",
+   "name": "Domperidone",
+   "class": "Antiemetic / prokinetic",
+   "tags": [
+    "antiemetic_d2",
+    "qt"
+   ],
+   "usual": [
+    30,
+    30
+   ],
+   "max_single": 30,
+   "max_daily": 30,
+   "elderly": {
+    "severity": "warning",
+    "note": "Over 60: higher risk of ventricular arrhythmia and sudden death — lowest dose, shortest course."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "severity": "info",
+     "note": "Severe renal impairment: reduce frequency to once or twice daily."
+    }
+   ],
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Moderate–severe hepatic impairment: contraindicated."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Limited data."
+   },
+   "paeds": {
+    "mg_kg_dose_max": 0.25,
+    "mg_kg_day_max": 0.75
+   },
+   "conditions": [
+    {
+     "match": [
+      "qt prolongation",
+      "long qt",
+      "arrhythmia",
+      "heart failure"
+     ],
+     "severity": "critical",
+     "note": "QT prolongation, arrhythmia or significant cardiac disease: contraindicated."
+    }
+   ],
+   "max_days": 7,
+   "allergy": [],
+   "image": "Domperidone tablets",
+   "max_daily_note": "Sustained-release 30 mg once daily equals the 10 mg three-times-daily maximum."
+  },
+  {
+   "id": "ondansetron",
+   "name": "Ondansetron",
+   "class": "Antiemetic (5-HT3)",
+   "tags": [
+    "qt",
+    "serotonergic_weak"
+   ],
+   "usual": [
+    8,
+    16
+   ],
+   "max_single": 8,
+   "max_daily": 24,
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 8,
+    "note": "Moderate–severe hepatic impairment: max 8 mg/day."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Small possible increase in oral clefts with first-trimester use."
+   },
+   "paeds": {
+    "min_age": 0.5,
+    "mg_kg_dose_max": 0.15
+   },
+   "conditions": [
+    {
+     "match": [
+      "long qt",
+      "qt prolongation"
+     ],
+     "severity": "critical",
+     "note": "Congenital long QT: avoid."
+    }
+   ],
+   "allergy": [],
+   "image": "Ondansetron"
+  },
+  {
+   "id": "metoclopramide",
+   "name": "Metoclopramide",
+   "class": "Antiemetic / prokinetic",
+   "tags": [
+    "antiemetic_d2"
+   ],
+   "usual": [
+    30,
+    30
+   ],
+   "max_single": 10,
+   "max_daily": 30,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid unless for gastroparesis (extrapyramidal effects, tardive dyskinesia)."
+   },
+   "renal": [
+    {
+     "below": 15,
+     "max_daily": 10,
+     "severity": "warning",
+     "note": "End-stage renal disease: reduce dose by 75%."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Widely used for nausea in pregnancy."
+   },
+   "paeds": {
+    "min_age": 1,
+    "mg_kg_dose_max": 0.15,
+    "mg_kg_day_max": 0.5,
+    "note": "Children: second line only (dystonia)."
+   },
+   "conditions": [
+    {
+     "match": [
+      "parkinson"
+     ],
+     "severity": "critical",
+     "note": "Parkinson's disease: dopamine antagonist contraindicated."
+    },
+    {
+     "match": [
+      "epilepsy",
+      "seizure"
+     ],
+     "severity": "warning",
+     "note": "May increase seizure frequency."
+    }
+   ],
+   "max_days": 5,
+   "allergy": [],
+   "image": "Metoclopramide"
+  },
+  {
+   "id": "dicyclomine",
+   "name": "Dicyclomine",
+   "class": "Antispasmodic (anticholinergic)",
+   "tags": [
+    "anticholinergic",
+    "antispasmodic"
+   ],
+   "usual": [
+    30,
+    80
+   ],
+   "max_single": 20,
+   "max_daily": 160,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: strongly anticholinergic — avoid in older adults (confusion, constipation, urinary retention)."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "paeds": {
+    "min_age": 0.5
+   },
+   "conditions": [
+    {
+     "match": [
+      "glaucoma"
+     ],
+     "severity": "warning",
+     "note": "Angle-closure glaucoma: anticholinergics contraindicated."
+    },
+    {
+     "match": [
+      "benign prostatic",
+      "bph",
+      "urinary retention"
+     ],
+     "severity": "warning",
+     "note": "Risk of urinary retention."
+    },
+    {
+     "match": [
+      "myasthenia"
+     ],
+     "severity": "critical",
+     "note": "Myasthenia gravis: contraindicated."
+    }
+   ],
+   "allergy": [],
+   "image": "Dicyclomine"
+  },
+  {
+   "id": "drotaverine",
+   "name": "Drotaverine",
+   "class": "Antispasmodic",
+   "tags": [
+    "antispasmodic"
+   ],
+   "usual": [
+    120,
+    240
+   ],
+   "max_single": 80,
+   "max_daily": 240,
+   "hepatic": {
+    "severity": "warning",
+    "note": "Severe hepatic impairment: avoid."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "severity": "warning",
+     "note": "Severe renal impairment: avoid."
+    }
+   ],
+   "pregnancy": {
+    "level": "caution",
+    "note": "Limited data."
+   },
+   "conditions": [
+    {
+     "match": [
+      "heart block",
+      "av block"
+     ],
+     "severity": "warning",
+     "note": "Second/third-degree AV block: avoid."
+    }
+   ],
+   "allergy": [],
+   "image": "Drotaverine"
+  },
+  {
+   "id": "hyoscine_butylbromide",
+   "name": "Hyoscine butylbromide",
+   "class": "Antispasmodic (anticholinergic)",
+   "tags": [
+    "anticholinergic",
+    "antispasmodic"
+   ],
+   "usual": [
+    30,
+    60
+   ],
+   "max_single": 20,
+   "max_daily": 80,
+   "elderly": {
+    "severity": "info",
+    "note": "Anticholinergic: watch for urinary retention and constipation."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "conditions": [
+    {
+     "match": [
+      "glaucoma"
+     ],
+     "severity": "warning",
+     "note": "Angle-closure glaucoma: avoid."
+    },
+    {
+     "match": [
+      "myasthenia"
+     ],
+     "severity": "critical",
+     "note": "Myasthenia gravis: contraindicated."
+    },
+    {
+     "match": [
+      "benign prostatic",
+      "bph",
+      "urinary retention"
+     ],
+     "severity": "warning",
+     "note": "Risk of urinary retention."
+    }
+   ],
+   "allergy": [],
+   "image": "Hyoscine butylbromide"
+  },
+  {
+   "id": "loperamide",
+   "name": "Loperamide",
+   "class": "Antidiarrhoeal",
+   "tags": [],
+   "usual": [
+    4,
+    8
+   ],
+   "max_single": 4,
+   "max_daily": 16,
+   "pregnancy": {
+    "level": "caution",
+    "note": "Avoid in first trimester if possible."
+   },
+   "paeds": {
+    "min_age": 12,
+    "note": "Not for children under 12 without specialist advice."
+   },
+   "conditions": [
+    {
+     "match": [
+      "dysentery",
+      "bloody diarrhoea",
+      "bloody diarrhea",
+      "ulcerative colitis",
+      "pseudomembranous"
+     ],
+     "severity": "critical",
+     "note": "Bloody/invasive diarrhoea or acute colitis: risk of toxic megacolon."
+    }
+   ],
+   "allergy": [],
+   "image": "Loperamide capsules"
+  },
+  {
+   "id": "metronidazole",
+   "name": "Metronidazole",
+   "class": "Nitroimidazole antimicrobial",
+   "tags": [
+    "nitroimidazole"
+   ],
+   "usual": [
+    1200,
+    1200
+   ],
+   "max_single": 800,
+   "max_daily": 2400,
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 800,
+    "note": "Severe hepatic impairment: reduce to one third of the daily dose."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Avoid high-dose regimens in pregnancy."
+   },
+   "paeds": {
+    "mg_kg_dose_max": 10,
+    "mg_kg_day_max": 30
+   },
+   "conditions": [
+    {
+     "match": [
+      "alcohol"
+     ],
+     "severity": "warning",
+     "note": "Disulfiram-like reaction — no alcohol during and 48 h after."
+    }
+   ],
+   "max_days": 10,
+   "allergy": [
+    "nitroimidazole"
+   ],
+   "image": "Metronidazole tablets"
+  },
+  {
+   "id": "ornidazole",
+   "name": "Ornidazole",
+   "class": "Nitroimidazole antimicrobial",
+   "tags": [
+    "nitroimidazole"
+   ],
+   "usual": [
+    1000,
+    1500
+   ],
+   "max_single": 1500,
+   "max_daily": 2000,
+   "hepatic": {
+    "severity": "warning",
+    "note": "Hepatic impairment: double the dosing interval."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in the first trimester."
+   },
+   "paeds": {
+    "mg_kg_day_max": 25
+   },
+   "allergy": [
+    "nitroimidazole"
+   ],
+   "image": "Ornidazole"
+  },
+  {
+   "id": "tinidazole",
+   "name": "Tinidazole",
+   "class": "Nitroimidazole antimicrobial",
+   "tags": [
+    "nitroimidazole"
+   ],
+   "usual": [
+    1000,
+    2000
+   ],
+   "max_single": 2000,
+   "max_daily": 2000,
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in the first trimester."
+   },
+   "paeds": {
+    "min_age": 3,
+    "mg_kg_day_max": 50
+   },
+   "conditions": [
+    {
+     "match": [
+      "alcohol"
+     ],
+     "severity": "warning",
+     "note": "Disulfiram-like reaction with alcohol."
+    }
+   ],
+   "allergy": [
+    "nitroimidazole"
+   ],
+   "image": "Tinidazole"
+  },
+  {
+   "id": "norfloxacin",
+   "name": "Norfloxacin",
+   "class": "Fluoroquinolone",
+   "tags": [
+    "fluoroquinolone",
+    "qt"
+   ],
+   "usual": [
+    800,
+    800
+   ],
+   "max_single": 400,
+   "max_daily": 800,
+   "elderly": {
+    "severity": "warning",
+    "note": "Fluoroquinolones in older adults: tendon rupture, delirium, dysglycaemia, aortic aneurysm."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 400,
+     "severity": "warning",
+     "note": "eGFR <30: 400 mg once daily."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in pregnancy."
+   },
+   "paeds": {
+    "min_age": 18,
+    "note": "Avoid in children (arthropathy)."
+   },
+   "conditions": [
+    {
+     "match": [
+      "myasthenia"
+     ],
+     "severity": "critical",
+     "note": "Myasthenia gravis: fluoroquinolones may cause crisis."
+    },
+    {
+     "match": [
+      "epilepsy",
+      "seizure"
+     ],
+     "severity": "warning",
+     "note": "Lowers seizure threshold."
+    },
+    {
+     "match": [
+      "aortic aneurysm"
+     ],
+     "severity": "warning",
+     "note": "Aortic aneurysm: avoid fluoroquinolones."
+    }
+   ],
+   "allergy": [
+    "fluoroquinolone"
+   ],
+   "image": "Norfloxacin"
+  },
+  {
+   "id": "ciprofloxacin",
+   "name": "Ciprofloxacin",
+   "class": "Fluoroquinolone",
+   "tags": [
+    "fluoroquinolone",
+    "qt"
+   ],
+   "usual": [
+    500,
+    1500
+   ],
+   "max_single": 750,
+   "max_daily": 1500,
+   "elderly": {
+    "severity": "warning",
+    "note": "Fluoroquinolones in older adults: tendon rupture, delirium, dysglycaemia, aortic aneurysm."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 750,
+     "severity": "warning",
+     "note": "eGFR <30: halve the dose."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in pregnancy."
+   },
+   "paeds": {
+    "min_age": 18,
+    "note": "Avoid in children except specialist indications."
+   },
+   "conditions": [
+    {
+     "match": [
+      "myasthenia"
+     ],
+     "severity": "critical",
+     "note": "Myasthenia gravis: fluoroquinolones may cause crisis."
+    },
+    {
+     "match": [
+      "epilepsy",
+      "seizure"
+     ],
+     "severity": "warning",
+     "note": "Lowers seizure threshold."
+    },
+    {
+     "match": [
+      "aortic aneurysm"
+     ],
+     "severity": "warning",
+     "note": "Aortic aneurysm: avoid fluoroquinolones."
+    }
+   ],
+   "allergy": [
+    "fluoroquinolone"
+   ],
+   "image": "Ciprofloxacin tablets"
+  },
+  {
+   "id": "ofloxacin",
+   "name": "Ofloxacin",
+   "class": "Fluoroquinolone",
+   "tags": [
+    "fluoroquinolone",
+    "qt"
+   ],
+   "usual": [
+    400,
+    800
+   ],
+   "max_single": 400,
+   "max_daily": 800,
+   "elderly": {
+    "severity": "warning",
+    "note": "Fluoroquinolones in older adults: tendon rupture, delirium, dysglycaemia, aortic aneurysm."
+   },
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 400,
+     "severity": "warning",
+     "note": "eGFR 20–50: usual dose every 24 h."
+    },
+    {
+     "below": 20,
+     "max_daily": 200,
+     "severity": "warning",
+     "note": "eGFR <20: half dose every 24 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in pregnancy."
+   },
+   "paeds": {
+    "min_age": 18,
+    "note": "Avoid in children."
+   },
+   "conditions": [
+    {
+     "match": [
+      "myasthenia"
+     ],
+     "severity": "critical",
+     "note": "Myasthenia gravis: fluoroquinolones may cause crisis."
+    },
+    {
+     "match": [
+      "epilepsy",
+      "seizure"
+     ],
+     "severity": "warning",
+     "note": "Lowers seizure threshold."
+    }
+   ],
+   "allergy": [
+    "fluoroquinolone"
+   ],
+   "image": "Ofloxacin"
+  },
+  {
+   "id": "levofloxacin",
+   "name": "Levofloxacin",
+   "class": "Fluoroquinolone",
+   "tags": [
+    "fluoroquinolone",
+    "qt"
+   ],
+   "usual": [
+    500,
+    750
+   ],
+   "max_single": 750,
+   "max_daily": 750,
+   "elderly": {
+    "severity": "warning",
+    "note": "Fluoroquinolones in older adults: tendon rupture, delirium, dysglycaemia, aortic aneurysm."
+   },
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 500,
+     "severity": "warning",
+     "note": "eGFR 20–49: 750 mg every 48 h or 250 mg daily after the first dose."
+    },
+    {
+     "below": 20,
+     "max_daily": 250,
+     "severity": "warning",
+     "note": "eGFR <20: 250 mg every 48 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in pregnancy."
+   },
+   "paeds": {
+    "min_age": 18,
+    "note": "Avoid in children."
+   },
+   "conditions": [
+    {
+     "match": [
+      "myasthenia"
+     ],
+     "severity": "critical",
+     "note": "Myasthenia gravis: fluoroquinolones may cause crisis."
+    },
+    {
+     "match": [
+      "epilepsy",
+      "seizure"
+     ],
+     "severity": "warning",
+     "note": "Lowers seizure threshold."
+    },
+    {
+     "match": [
+      "aortic aneurysm"
+     ],
+     "severity": "warning",
+     "note": "Aortic aneurysm: avoid fluoroquinolones."
+    }
+   ],
+   "allergy": [
+    "fluoroquinolone"
+   ],
+   "image": "Levofloxacin tablets"
+  },
+  {
+   "id": "amoxicillin",
+   "name": "Amoxicillin",
+   "class": "Penicillin antibiotic",
+   "tags": [
+    "penicillin"
+   ],
+   "usual": [
+    750,
+    1500
+   ],
+   "max_single": 1000,
+   "max_daily": 3000,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 1000,
+     "severity": "warning",
+     "note": "eGFR 10–30: max 500 mg every 12 h."
+    },
+    {
+     "below": 10,
+     "max_daily": 500,
+     "severity": "warning",
+     "note": "eGFR <10: 500 mg every 24 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Compatible with pregnancy."
+   },
+   "paeds": {
+    "mg_kg_day_max": 90,
+    "note": "Usual 40–90 mg/kg/day in divided doses."
+   },
+   "allergy": [
+    "penicillin"
+   ],
+   "image": "Amoxicillin capsules"
+  },
+  {
+   "id": "clavulanic_acid",
+   "name": "Clavulanic acid",
+   "class": "Beta-lactamase inhibitor",
+   "tags": [
+    "penicillin_combo"
+   ],
+   "usual": [
+    250,
+    375
+   ],
+   "max_single": 125,
+   "max_daily": 375,
+   "hepatic": {
+    "severity": "warning",
+    "note": "Co-amoxiclav: cholestatic jaundice risk, especially in older men and courses >14 days."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "severity": "warning",
+     "note": "eGFR <30: avoid the 875/125 (1000 mg) strength; use 500/125 every 12 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "caution",
+    "note": "Avoid in preterm rupture of membranes (NEC risk)."
+   },
+   "allergy": [
+    "penicillin"
+   ],
+   "image": "Amoxicillin clavulanate tablets"
+  },
+  {
+   "id": "azithromycin",
+   "name": "Azithromycin",
+   "class": "Macrolide antibiotic",
+   "tags": [
+    "macrolide",
+    "qt"
+   ],
+   "usual": [
+    500,
+    500
+   ],
+   "max_single": 2000,
+   "max_daily": 500,
+   "max_daily_note": "Single 1 g / 2 g doses are used only for specific STIs — record the indication.",
+   "hepatic": {
+    "severity": "warning",
+    "note": "Severe hepatic impairment: avoid."
+   },
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Generally considered compatible."
+   },
+   "paeds": {
+    "mg_kg_day_max": 10,
+    "note": "10 mg/kg once daily for 3 days (max 500 mg)."
+   },
+   "conditions": [
+    {
+     "match": [
+      "long qt",
+      "qt prolongation"
+     ],
+     "severity": "critical",
+     "note": "QT prolongation: avoid macrolides."
+    },
+    {
+     "match": [
+      "myasthenia"
+     ],
+     "severity": "warning",
+     "note": "May exacerbate myasthenia gravis."
+    }
+   ],
+   "max_days": 5,
+   "allergy": [
+    "macrolide"
+   ],
+   "image": "Azithromycin tablets"
+  },
+  {
+   "id": "clarithromycin",
+   "name": "Clarithromycin",
+   "class": "Macrolide antibiotic",
+   "tags": [
+    "macrolide",
+    "qt",
+    "cyp3a4_strong"
+   ],
+   "usual": [
+    500,
+    1000
+   ],
+   "max_single": 500,
+   "max_daily": 1000,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 500,
+     "severity": "warning",
+     "note": "eGFR <30: halve the dose."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid, particularly in the first trimester."
+   },
+   "paeds": {
+    "mg_kg_day_max": 15
+   },
+   "conditions": [
+    {
+     "match": [
+      "long qt",
+      "qt prolongation"
+     ],
+     "severity": "critical",
+     "note": "QT prolongation: avoid macrolides."
+    }
+   ],
+   "allergy": [
+    "macrolide"
+   ],
+   "image": "Clarithromycin"
+  },
+  {
+   "id": "cefixime",
+   "name": "Cefixime",
+   "class": "Cephalosporin (3rd gen)",
+   "tags": [
+    "cephalosporin"
+   ],
+   "usual": [
+    400,
+    400
+   ],
+   "max_single": 400,
+   "max_daily": 400,
+   "renal": [
+    {
+     "below": 20,
+     "max_daily": 200,
+     "severity": "warning",
+     "note": "eGFR <20: 200 mg once daily."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Cephalosporins are generally compatible."
+   },
+   "paeds": {
+    "min_age": 0.5,
+    "mg_kg_day_max": 8
+   },
+   "allergy": [
+    "cephalosporin"
+   ],
+   "image": "Cefixime"
+  },
+  {
+   "id": "cefuroxime",
+   "name": "Cefuroxime axetil",
+   "class": "Cephalosporin (2nd gen)",
+   "tags": [
+    "cephalosporin"
+   ],
+   "usual": [
+    500,
+    1000
+   ],
+   "max_single": 500,
+   "max_daily": 1000,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 500,
+     "severity": "warning",
+     "note": "eGFR 10–30: usual single dose every 24 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Cephalosporins are generally compatible."
+   },
+   "paeds": {
+    "min_age": 0.25,
+    "mg_kg_day_max": 30
+   },
+   "allergy": [
+    "cephalosporin"
+   ],
+   "image": "Cefuroxime axetil"
+  },
+  {
+   "id": "cefpodoxime",
+   "name": "Cefpodoxime",
+   "class": "Cephalosporin (3rd gen)",
+   "tags": [
+    "cephalosporin"
+   ],
+   "usual": [
+    200,
+    400
+   ],
+   "max_single": 200,
+   "max_daily": 400,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 200,
+     "severity": "warning",
+     "note": "eGFR <30: dose every 24 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Cephalosporins are generally compatible."
+   },
+   "paeds": {
+    "mg_kg_day_max": 10
+   },
+   "allergy": [
+    "cephalosporin"
+   ],
+   "image": "Cefpodoxime"
+  },
+  {
+   "id": "cephalexin",
+   "name": "Cephalexin",
+   "class": "Cephalosporin (1st gen)",
+   "tags": [
+    "cephalosporin"
+   ],
+   "usual": [
+    1000,
+    2000
+   ],
+   "max_single": 1000,
+   "max_daily": 4000,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 1500,
+     "severity": "warning",
+     "note": "eGFR 15–30: 250–500 mg every 8–12 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Cephalosporins are generally compatible."
+   },
+   "paeds": {
+    "mg_kg_day_max": 100
+   },
+   "allergy": [
+    "cephalosporin"
+   ],
+   "image": "Cephalexin capsules"
+  },
+  {
+   "id": "doxycycline",
+   "name": "Doxycycline",
+   "class": "Tetracycline antibiotic",
+   "tags": [
+    "tetracycline"
+   ],
+   "usual": [
+    100,
+    200
+   ],
+   "max_single": 200,
+   "max_daily": 200,
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Tetracyclines stain teeth and affect fetal bone — contraindicated."
+   },
+   "paeds": {
+    "min_age": 8,
+    "note": "Avoid under 8 years except specific indications (e.g. rickettsial disease)."
+   },
+   "allergy": [
+    "tetracycline"
+   ],
+   "image": "Doxycycline capsules"
+  },
+  {
+   "id": "nitrofurantoin",
+   "name": "Nitrofurantoin",
+   "class": "Urinary antiseptic",
+   "tags": [],
+   "usual": [
+    200,
+    400
+   ],
+   "max_single": 100,
+   "max_daily": 400,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid with CrCl <30 and for long-term suppression (pulmonary, hepatic toxicity)."
+   },
+   "renal": [
+    {
+     "below": 45,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <45: ineffective in urine and toxicity accumulates — avoid (a short course may be used at 30–44 only for resistant organisms)."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid at term (neonatal haemolysis)."
+   },
+   "paeds": {
+    "min_age": 0.25,
+    "mg_kg_day_max": 6
+   },
+   "conditions": [
+    {
+     "match": [
+      "g6pd"
+     ],
+     "severity": "critical",
+     "note": "G6PD deficiency: haemolysis risk."
+    }
+   ],
+   "allergy": [],
+   "image": "Nitrofurantoin"
+  },
+  {
+   "id": "sulfamethoxazole",
+   "name": "Sulfamethoxazole",
+   "class": "Sulfonamide (co-trimoxazole)",
+   "tags": [
+    "sulfonamide",
+    "potassium_raising"
+   ],
+   "usual": [
+    1600,
+    1600
+   ],
+   "max_single": 1600,
+   "max_daily": 3200,
+   "elderly": {
+    "severity": "warning",
+    "note": "Older adults: higher risk of hyperkalaemia and marrow suppression."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 800,
+     "severity": "warning",
+     "note": "eGFR 15–30: halve the dose."
+    },
+    {
+     "below": 15,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <15: avoid."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Folate antagonist — avoid in the first trimester and near term."
+   },
+   "paeds": {
+    "min_age": 0.1
+   },
+   "conditions": [
+    {
+     "match": [
+      "g6pd"
+     ],
+     "severity": "critical",
+     "note": "G6PD deficiency: haemolysis risk."
+    }
+   ],
+   "labs": [
+    {
+     "code": "potassium",
+     "above": 5.0,
+     "severity": "warning",
+     "note": "Trimethoprim raises potassium."
+    }
+   ],
+   "allergy": [
+    "sulfonamide"
+   ],
+   "image": "Co-trimoxazole tablets"
+  },
+  {
+   "id": "trimethoprim",
+   "name": "Trimethoprim",
+   "class": "Antifolate antibiotic",
+   "tags": [
+    "potassium_raising"
+   ],
+   "usual": [
+    320,
+    320
+   ],
+   "max_single": 320,
+   "max_daily": 640,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 160,
+     "severity": "warning",
+     "note": "eGFR 15–30: halve the dose."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Folate antagonist — avoid in the first trimester."
+   },
+   "allergy": [],
+   "image": "Trimethoprim"
+  },
+  {
+   "id": "fluconazole",
+   "name": "Fluconazole",
+   "class": "Azole antifungal",
+   "tags": [
+    "azole",
+    "qt",
+    "cyp_inhibitor"
+   ],
+   "usual": [
+    150,
+    200
+   ],
+   "max_single": 400,
+   "max_daily": 400,
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 200,
+     "severity": "info",
+     "note": "eGFR <50: halve multiple-dose regimens (single 150 mg dose unaffected)."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "note": "Hepatotoxicity — monitor LFTs on longer courses."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid (high or prolonged doses teratogenic); topical treatment preferred."
+   },
+   "paeds": {
+    "mg_kg_day_max": 12
+   },
+   "conditions": [
+    {
+     "match": [
+      "long qt",
+      "qt prolongation"
+     ],
+     "severity": "warning",
+     "note": "QT prolongation."
+    }
+   ],
+   "allergy": [
+    "azole"
+   ],
+   "image": "Fluconazole capsules"
+  },
+  {
+   "id": "itraconazole",
+   "name": "Itraconazole",
+   "class": "Azole antifungal",
+   "tags": [
+    "azole",
+    "cyp3a4_strong"
+   ],
+   "usual": [
+    100,
+    400
+   ],
+   "max_single": 200,
+   "max_daily": 400,
+   "hepatic": {
+    "severity": "warning",
+    "note": "Hepatotoxicity — monitor LFTs."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Contraindicated for superficial infections in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "heart failure",
+      "cardiac failure",
+      "ventricular dysfunction"
+     ],
+     "severity": "critical",
+     "note": "Negative inotrope — contraindicated in heart failure."
+    }
+   ],
+   "allergy": [
+    "azole"
+   ],
+   "image": "Itraconazole capsules"
+  },
+  {
+   "id": "terbinafine",
+   "name": "Terbinafine",
+   "class": "Allylamine antifungal",
+   "tags": [],
+   "usual": [
+    250,
+    250
+   ],
+   "max_single": 250,
+   "max_daily": 250,
+   "renal": [
+    {
+     "below": 50,
+     "severity": "warning",
+     "note": "eGFR <50: oral terbinafine not recommended."
+    }
+   ],
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Chronic or active liver disease: avoid oral terbinafine."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Defer oral treatment until after pregnancy."
+   },
+   "allergy": [],
+   "image": "Terbinafine"
+  },
+  {
+   "id": "acyclovir",
+   "name": "Acyclovir",
+   "class": "Antiviral",
+   "tags": [],
+   "usual": [
+    1000,
+    4000
+   ],
+   "max_single": 800,
+   "max_daily": 4000,
+   "renal": [
+    {
+     "below": 25,
+     "max_daily": 2400,
+     "severity": "warning",
+     "note": "eGFR 10–25 (zoster dosing): 800 mg every 8 h."
+    },
+    {
+     "below": 10,
+     "max_daily": 1600,
+     "severity": "warning",
+     "note": "eGFR <10: 800 mg every 12 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Used when benefit outweighs risk."
+   },
+   "allergy": [],
+   "image": "Aciclovir tablets"
+  },
+  {
+   "id": "valacyclovir",
+   "name": "Valacyclovir",
+   "class": "Antiviral",
+   "tags": [],
+   "usual": [
+    1000,
+    3000
+   ],
+   "max_single": 2000,
+   "max_daily": 4000,
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 2000,
+     "severity": "warning",
+     "note": "eGFR 30–49 (zoster): 1 g every 12 h."
+    },
+    {
+     "below": 30,
+     "max_daily": 1000,
+     "severity": "warning",
+     "note": "eGFR 10–29: 1 g every 24 h."
+    }
+   ],
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use when benefit outweighs risk."
+   },
+   "allergy": [],
+   "image": "Valaciclovir"
+  },
+  {
+   "id": "albendazole",
+   "name": "Albendazole",
+   "class": "Anthelmintic",
+   "tags": [],
+   "usual": [
+    400,
+    400
+   ],
+   "max_single": 400,
+   "max_daily": 800,
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in the first trimester."
+   },
+   "paeds": {
+    "min_age": 1,
+    "note": "1–2 years: 200 mg."
+   },
+   "allergy": [],
+   "image": "Albendazole tablets"
+  },
+  {
+   "id": "cetirizine",
+   "name": "Cetirizine",
+   "class": "Antihistamine (2nd gen)",
+   "tags": [
+    "antihistamine"
+   ],
+   "usual": [
+    10,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 10,
+   "elderly": {
+    "severity": "info",
+    "max_daily": 5,
+    "note": "Older adults: 5 mg is often enough (sedation)."
+   },
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 5,
+     "severity": "warning",
+     "note": "eGFR <50: 5 mg once daily."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Preferred antihistamine in pregnancy."
+   },
+   "paeds": {
+    "min_age": 2,
+    "note": "2–6 years: 2.5 mg twice daily."
+   },
+   "allergy": [],
+   "image": "Cetirizine tablets"
+  },
+  {
+   "id": "levocetirizine",
+   "name": "Levocetirizine",
+   "class": "Antihistamine (2nd gen)",
+   "tags": [
+    "antihistamine"
+   ],
+   "usual": [
+    5,
+    5
+   ],
+   "max_single": 5,
+   "max_daily": 5,
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 2.5,
+     "severity": "warning",
+     "note": "eGFR 30–49: 5 mg every 48 h."
+    },
+    {
+     "below": 10,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <10: contraindicated."
+    }
+   ],
+   "pregnancy": {
+    "level": "caution",
+    "note": "Cetirizine has more pregnancy data."
+   },
+   "paeds": {
+    "min_age": 2,
+    "note": "2–6 years: 1.25 mg twice daily."
+   },
+   "allergy": [],
+   "image": "Levocetirizine"
+  },
+  {
+   "id": "fexofenadine",
+   "name": "Fexofenadine",
+   "class": "Antihistamine (2nd gen)",
+   "tags": [
+    "antihistamine"
+   ],
+   "usual": [
+    120,
+    180
+   ],
+   "max_single": 180,
+   "max_daily": 180,
+   "pregnancy": {
+    "level": "caution",
+    "note": "Limited data."
+   },
+   "paeds": {
+    "min_age": 6,
+    "note": "6–11 years: 30 mg twice daily."
+   },
+   "allergy": [],
+   "image": "Fexofenadine"
+  },
+  {
+   "id": "chlorpheniramine",
+   "name": "Chlorpheniramine",
+   "class": "Antihistamine (1st gen)",
+   "tags": [
+    "antihistamine",
+    "anticholinergic"
+   ],
+   "usual": [
+    8,
+    16
+   ],
+   "max_single": 4,
+   "max_daily": 24,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: first-generation antihistamines are strongly anticholinergic — avoid in older adults."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "paeds": {
+    "min_age": 1,
+    "mg_kg_day_max": 0.35
+   },
+   "conditions": [
+    {
+     "match": [
+      "glaucoma"
+     ],
+     "severity": "warning",
+     "note": "Angle-closure glaucoma: avoid."
+    },
+    {
+     "match": [
+      "benign prostatic",
+      "bph",
+      "urinary retention"
+     ],
+     "severity": "warning",
+     "note": "Risk of urinary retention."
+    }
+   ],
+   "allergy": [],
+   "image": "Chlorphenamine"
+  },
+  {
+   "id": "montelukast",
+   "name": "Montelukast",
+   "class": "Leukotriene receptor antagonist",
+   "tags": [],
+   "usual": [
+    10,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 10,
+   "pregnancy": {
+    "level": "caution",
+    "note": "Continue if needed for asthma control."
+   },
+   "paeds": {
+    "min_age": 0.5,
+    "note": "6 months–5 years: 4 mg; 6–14 years: 5 mg."
+   },
+   "conditions": [
+    {
+     "match": [
+      "depression",
+      "suicid",
+      "anxiety"
+     ],
+     "severity": "warning",
+     "note": "Boxed warning: neuropsychiatric events (agitation, depression, suicidality)."
+    }
+   ],
+   "allergy": [],
+   "image": "Montelukast"
+  },
+  {
+   "id": "salbutamol",
+   "name": "Salbutamol (oral)",
+   "class": "Beta-2 agonist",
+   "tags": [],
+   "usual": [
+    6,
+    16
+   ],
+   "max_single": 8,
+   "max_daily": 32,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: start 2 mg 3–4 times daily (tremor, tachycardia)."
+   },
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Inhaled route preferred."
+   },
+   "conditions": [
+    {
+     "match": [
+      "tachyarrhythmia",
+      "hyperthyroid",
+      "thyrotoxicosis"
+     ],
+     "severity": "warning",
+     "note": "Oral beta-agonists worsen tachyarrhythmia."
+    }
+   ],
+   "labs": [
+    {
+     "code": "potassium",
+     "below": 3.3,
+     "severity": "warning",
+     "note": "Beta-agonists lower potassium."
+    }
+   ],
+   "allergy": [],
+   "image": "Salbutamol tablets"
+  },
+  {
+   "id": "ambroxol",
+   "name": "Ambroxol",
+   "class": "Mucolytic",
+   "tags": [],
+   "usual": [
+    60,
+    90
+   ],
+   "max_single": 30,
+   "max_daily": 120,
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in the first trimester."
+   },
+   "paeds": {
+    "min_age": 2,
+    "mg_kg_day_max": 1.5
+   },
+   "allergy": [],
+   "image": "Ambroxol"
+  },
+  {
+   "id": "prednisolone",
+   "name": "Prednisolone",
+   "class": "Corticosteroid",
+   "tags": [
+    "corticosteroid"
+   ],
+   "usual": [
+    5,
+    40
+   ],
+   "max_single": 60,
+   "max_daily": 60,
+   "max_daily_note": "Higher doses only for specific indications under supervision.",
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: osteoporosis, hyperglycaemia, delirium — lowest effective dose."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Prednisolone is the preferred oral steroid in pregnancy."
+   },
+   "paeds": {
+    "mg_kg_day_max": 2
+   },
+   "conditions": [
+    {
+     "match": [
+      "diabetes"
+     ],
+     "severity": "warning",
+     "note": "Will raise blood glucose — monitor and adjust diabetes treatment."
+    },
+    {
+     "match": [
+      "peptic ulcer"
+     ],
+     "severity": "warning",
+     "note": "Peptic ulcer: consider PPI cover."
+    },
+    {
+     "match": [
+      "tuberculosis"
+     ],
+     "severity": "warning",
+     "note": "May reactivate tuberculosis."
+    },
+    {
+     "match": [
+      "osteoporosis"
+     ],
+     "severity": "info",
+     "note": "Bone protection if ≥3 months."
+    }
+   ],
+   "allergy": [],
+   "image": "Prednisolone tablets"
+  },
+  {
+   "id": "amlodipine",
+   "name": "Amlodipine",
+   "class": "Calcium-channel blocker",
+   "tags": [
+    "ccb",
+    "antihypertensive"
+   ],
+   "usual": [
+    5,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 10,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: start 2.5 mg; ankle oedema is dose-related."
+   },
+   "hepatic": {
+    "severity": "info",
+    "max_daily": 5,
+    "note": "Hepatic impairment: start low, titrate slowly."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Nifedipine has more pregnancy data."
+   },
+   "conditions": [
+    {
+     "match": [
+      "aortic stenosis"
+     ],
+     "severity": "warning",
+     "note": "Severe aortic stenosis: vasodilators can cause hypotension."
+    }
+   ],
+   "labs": [
+    {
+     "code": "systolic_bp",
+     "below": 100,
+     "severity": "warning",
+     "note": "Low blood pressure recorded."
+    }
+   ],
+   "allergy": [],
+   "image": "Amlodipine tablets"
+  },
+  {
+   "id": "telmisartan",
+   "name": "Telmisartan",
+   "class": "Angiotensin II receptor blocker",
+   "tags": [
+    "arb",
+    "raas",
+    "antihypertensive",
+    "potassium_raising"
+   ],
+   "usual": [
+    40,
+    80
+   ],
+   "max_single": 80,
+   "max_daily": 80,
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 40,
+    "note": "Mild–moderate hepatic impairment: max 40 mg/day; avoid in biliary obstruction."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "severity": "info",
+     "note": "eGFR <30: start low; monitor creatinine and potassium after starting."
+    }
+   ],
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "ARBs are fetotoxic in the 2nd/3rd trimester — contraindicated."
+   },
+   "labs": [
+    {
+     "code": "potassium",
+     "above": 5.5,
+     "severity": "critical",
+     "note": "Potassium >5.5 — do not start or increase RAAS blockade."
+    },
+    {
+     "code": "potassium",
+     "above": 5.0,
+     "severity": "warning",
+     "note": "Potassium above 5.0 — recheck after starting."
+    }
+   ],
+   "allergy": [],
+   "image": "Telmisartan tablets"
+  },
+  {
+   "id": "losartan",
+   "name": "Losartan",
+   "class": "Angiotensin II receptor blocker",
+   "tags": [
+    "arb",
+    "raas",
+    "antihypertensive",
+    "potassium_raising"
+   ],
+   "usual": [
+    50,
+    100
+   ],
+   "max_single": 100,
+   "max_daily": 100,
+   "hepatic": {
+    "severity": "info",
+    "max_daily": 25,
+    "note": "Hepatic impairment: start 25 mg."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "severity": "info",
+     "note": "eGFR <30: monitor creatinine and potassium after starting."
+    }
+   ],
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "ARBs are fetotoxic — contraindicated."
+   },
+   "labs": [
+    {
+     "code": "potassium",
+     "above": 5.5,
+     "severity": "critical",
+     "note": "Potassium >5.5 — do not start or increase RAAS blockade."
+    },
+    {
+     "code": "potassium",
+     "above": 5.0,
+     "severity": "warning",
+     "note": "Potassium above 5.0 — recheck after starting."
+    }
+   ],
+   "allergy": [],
+   "image": "Losartan potassium tablets"
+  },
+  {
+   "id": "olmesartan",
+   "name": "Olmesartan",
+   "class": "Angiotensin II receptor blocker",
+   "tags": [
+    "arb",
+    "raas",
+    "antihypertensive",
+    "potassium_raising"
+   ],
+   "usual": [
+    20,
+    40
+   ],
+   "max_single": 40,
+   "max_daily": 40,
+   "renal": [
+    {
+     "below": 40,
+     "max_daily": 20,
+     "severity": "warning",
+     "note": "eGFR <40: max 20 mg/day."
+    }
+   ],
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "ARBs are fetotoxic — contraindicated."
+   },
+   "labs": [
+    {
+     "code": "potassium",
+     "above": 5.5,
+     "severity": "critical",
+     "note": "Potassium >5.5 — do not start or increase RAAS blockade."
+    }
+   ],
+   "allergy": [],
+   "image": "Olmesartan"
+  },
+  {
+   "id": "ramipril",
+   "name": "Ramipril",
+   "class": "ACE inhibitor",
+   "tags": [
+    "acei",
+    "raas",
+    "antihypertensive",
+    "potassium_raising"
+   ],
+   "usual": [
+    2.5,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 10,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 5,
+     "severity": "warning",
+     "note": "eGFR <30: start 1.25 mg, max 5 mg/day."
+    }
+   ],
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "ACE inhibitors are fetotoxic — contraindicated."
+   },
+   "conditions": [
+    {
+     "match": [
+      "angioedema"
+     ],
+     "severity": "critical",
+     "note": "History of angioedema: ACE inhibitors contraindicated."
+    },
+    {
+     "match": [
+      "renal artery stenosis"
+     ],
+     "severity": "warning",
+     "note": "Bilateral renal artery stenosis: risk of AKI."
+    }
+   ],
+   "labs": [
+    {
+     "code": "potassium",
+     "above": 5.5,
+     "severity": "critical",
+     "note": "Potassium >5.5 — do not start or increase RAAS blockade."
+    },
+    {
+     "code": "potassium",
+     "above": 5.0,
+     "severity": "warning",
+     "note": "Potassium above 5.0 — recheck after starting."
+    }
+   ],
+   "allergy": [
+    "acei"
+   ],
+   "image": "Ramipril capsules"
+  },
+  {
+   "id": "enalapril",
+   "name": "Enalapril",
+   "class": "ACE inhibitor",
+   "tags": [
+    "acei",
+    "raas",
+    "antihypertensive",
+    "potassium_raising"
+   ],
+   "usual": [
+    10,
+    20
+   ],
+   "max_single": 20,
+   "max_daily": 40,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 20,
+     "severity": "warning",
+     "note": "eGFR <30: start 2.5 mg."
+    }
+   ],
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "ACE inhibitors are fetotoxic — contraindicated."
+   },
+   "conditions": [
+    {
+     "match": [
+      "angioedema"
+     ],
+     "severity": "critical",
+     "note": "History of angioedema: ACE inhibitors contraindicated."
+    }
+   ],
+   "labs": [
+    {
+     "code": "potassium",
+     "above": 5.5,
+     "severity": "critical",
+     "note": "Potassium >5.5 — do not start or increase RAAS blockade."
+    }
+   ],
+   "allergy": [
+    "acei"
+   ],
+   "image": "Enalapril maleate tablets"
+  },
+  {
+   "id": "metoprolol",
+   "name": "Metoprolol",
+   "class": "Beta-blocker (cardioselective)",
+   "tags": [
+    "beta_blocker",
+    "antihypertensive"
+   ],
+   "usual": [
+    50,
+    200
+   ],
+   "max_single": 200,
+   "max_daily": 400,
+   "hepatic": {
+    "severity": "info",
+    "note": "Severe hepatic impairment: reduce dose."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "May cause fetal growth restriction and neonatal bradycardia."
+   },
+   "conditions": [
+    {
+     "match": [
+      "asthma"
+     ],
+     "severity": "warning",
+     "note": "Asthma: even cardioselective beta-blockers can cause bronchospasm — use only if clearly needed."
+    },
+    {
+     "match": [
+      "heart block",
+      "av block",
+      "sick sinus",
+      "bradycardia"
+     ],
+     "severity": "critical",
+     "note": "Bradycardia / heart block: contraindicated."
+    },
+    {
+     "match": [
+      "diabetes"
+     ],
+     "severity": "info",
+     "note": "May mask hypoglycaemia symptoms."
+    }
+   ],
+   "labs": [
+    {
+     "code": "heart_rate",
+     "below": 55,
+     "severity": "warning",
+     "note": "Resting heart rate below 55."
+    },
+    {
+     "code": "systolic_bp",
+     "below": 100,
+     "severity": "warning",
+     "note": "Low blood pressure recorded."
+    }
+   ],
+   "allergy": [],
+   "image": "Metoprolol tablets"
+  },
+  {
+   "id": "atenolol",
+   "name": "Atenolol",
+   "class": "Beta-blocker (cardioselective)",
+   "tags": [
+    "beta_blocker",
+    "antihypertensive"
+   ],
+   "usual": [
+    50,
+    100
+   ],
+   "max_single": 100,
+   "max_daily": 100,
+   "renal": [
+    {
+     "below": 35,
+     "max_daily": 50,
+     "severity": "warning",
+     "note": "eGFR 15–35: max 50 mg/day."
+    },
+    {
+     "below": 15,
+     "max_daily": 25,
+     "severity": "warning",
+     "note": "eGFR <15: max 25 mg/day."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Associated with fetal growth restriction."
+   },
+   "conditions": [
+    {
+     "match": [
+      "asthma"
+     ],
+     "severity": "warning",
+     "note": "Asthma: beta-blockers can cause bronchospasm."
+    },
+    {
+     "match": [
+      "heart block",
+      "av block",
+      "sick sinus",
+      "bradycardia"
+     ],
+     "severity": "critical",
+     "note": "Bradycardia / heart block: contraindicated."
+    }
+   ],
+   "labs": [
+    {
+     "code": "heart_rate",
+     "below": 55,
+     "severity": "warning",
+     "note": "Resting heart rate below 55."
+    }
+   ],
+   "allergy": [],
+   "image": "Atenolol tablets"
+  },
+  {
+   "id": "bisoprolol",
+   "name": "Bisoprolol",
+   "class": "Beta-blocker (cardioselective)",
+   "tags": [
+    "beta_blocker",
+    "antihypertensive"
+   ],
+   "usual": [
+    2.5,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 20,
+   "renal": [
+    {
+     "below": 20,
+     "max_daily": 10,
+     "severity": "warning",
+     "note": "eGFR <20: max 10 mg/day."
+    }
+   ],
+   "hepatic": {
+    "severity": "info",
+    "max_daily": 10,
+    "note": "Severe hepatic impairment: max 10 mg/day."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "May cause fetal growth restriction."
+   },
+   "conditions": [
+    {
+     "match": [
+      "asthma"
+     ],
+     "severity": "warning",
+     "note": "Asthma: use only if clearly needed."
+    },
+    {
+     "match": [
+      "heart block",
+      "av block",
+      "sick sinus",
+      "bradycardia"
+     ],
+     "severity": "critical",
+     "note": "Bradycardia / heart block: contraindicated."
+    }
+   ],
+   "labs": [
+    {
+     "code": "heart_rate",
+     "below": 55,
+     "severity": "warning",
+     "note": "Resting heart rate below 55."
+    }
+   ],
+   "allergy": [],
+   "image": "Bisoprolol"
+  },
+  {
+   "id": "hydrochlorothiazide",
+   "name": "Hydrochlorothiazide",
+   "class": "Thiazide diuretic",
+   "tags": [
+    "thiazide",
+    "antihypertensive"
+   ],
+   "usual": [
+    12.5,
+    25
+   ],
+   "max_single": 50,
+   "max_daily": 50,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: hyponatraemia and hypokalaemia — check electrolytes."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "severity": "warning",
+     "note": "eGFR <30: thiazides are largely ineffective."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Not for hypertension in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "gout"
+     ],
+     "severity": "warning",
+     "note": "Raises uric acid — can precipitate gout."
+    },
+    {
+     "match": [
+      "diabetes"
+     ],
+     "severity": "info",
+     "note": "May worsen glycaemic control at higher doses."
+    }
+   ],
+   "labs": [
+    {
+     "code": "sodium",
+     "below": 133,
+     "severity": "warning",
+     "note": "Low sodium recorded."
+    },
+    {
+     "code": "potassium",
+     "below": 3.5,
+     "severity": "warning",
+     "note": "Low potassium recorded."
+    }
+   ],
+   "allergy": [],
+   "image": "Hydrochlorothiazide"
+  },
+  {
+   "id": "chlorthalidone",
+   "name": "Chlorthalidone",
+   "class": "Thiazide-like diuretic",
+   "tags": [
+    "thiazide",
+    "antihypertensive"
+   ],
+   "usual": [
+    6.25,
+    25
+   ],
+   "max_single": 50,
+   "max_daily": 50,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: hyponatraemia and hypokalaemia — check electrolytes."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "severity": "info",
+     "note": "eGFR <30: reduced effect (still used in advanced CKD under supervision)."
+    }
+   ],
+   "conditions": [
+    {
+     "match": [
+      "gout"
+     ],
+     "severity": "warning",
+     "note": "Raises uric acid."
+    }
+   ],
+   "labs": [
+    {
+     "code": "sodium",
+     "below": 133,
+     "severity": "warning",
+     "note": "Low sodium recorded."
+    },
+    {
+     "code": "potassium",
+     "below": 3.5,
+     "severity": "warning",
+     "note": "Low potassium recorded."
+    }
+   ],
+   "allergy": [],
+   "image": "Chlorthalidone"
+  },
+  {
+   "id": "furosemide",
+   "name": "Furosemide",
+   "class": "Loop diuretic",
+   "tags": [
+    "loop_diuretic"
+   ],
+   "usual": [
+    20,
+    120
+   ],
+   "max_single": 120,
+   "max_daily": 600,
+   "max_daily_note": "Doses above 120 mg/day are for resistant oedema or advanced CKD under supervision.",
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: dehydration, postural hypotension, electrolytes."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Not for gestational oedema or hypertension."
+   },
+   "paeds": {
+    "mg_kg_day_max": 6
+   },
+   "labs": [
+    {
+     "code": "potassium",
+     "below": 3.5,
+     "severity": "warning",
+     "note": "Low potassium recorded."
+    },
+    {
+     "code": "sodium",
+     "below": 133,
+     "severity": "warning",
+     "note": "Low sodium recorded."
+    }
+   ],
+   "allergy": [],
+   "image": "Furosemide tablets"
+  },
+  {
+   "id": "torsemide",
+   "name": "Torsemide",
+   "class": "Loop diuretic",
+   "tags": [
+    "loop_diuretic"
+   ],
+   "usual": [
+    5,
+    20
+   ],
+   "max_single": 100,
+   "max_daily": 200,
+   "labs": [
+    {
+     "code": "potassium",
+     "below": 3.5,
+     "severity": "warning",
+     "note": "Low potassium recorded."
+    }
+   ],
+   "allergy": [],
+   "image": "Torasemide"
+  },
+  {
+   "id": "spironolactone",
+   "name": "Spironolactone",
+   "class": "Potassium-sparing diuretic",
+   "tags": [
+    "k_sparing",
+    "potassium_raising"
+   ],
+   "usual": [
+    25,
+    100
+   ],
+   "max_single": 100,
+   "max_daily": 400,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: avoid in heart failure with CrCl <30; monitor potassium."
+   },
+   "renal": [
+    {
+     "below": 45,
+     "severity": "warning",
+     "note": "eGFR 30–45: max 25 mg daily or alternate days; check potassium within a week."
+    },
+    {
+     "below": 30,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <30: high risk of hyperkalaemia — avoid."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Anti-androgenic effects on the fetus."
+   },
+   "conditions": [
+    {
+     "match": [
+      "addison"
+     ],
+     "severity": "critical",
+     "note": "Addison's disease: contraindicated."
+    }
+   ],
+   "labs": [
+    {
+     "code": "potassium",
+     "above": 5.0,
+     "severity": "critical",
+     "note": "Potassium >5.0 — do not start spironolactone."
+    }
+   ],
+   "allergy": [],
+   "image": "Spironolactone tablets"
+  },
+  {
+   "id": "atorvastatin",
+   "name": "Atorvastatin",
+   "class": "Statin",
+   "tags": [
+    "statin"
+   ],
+   "usual": [
+    10,
+    40
+   ],
+   "max_single": 80,
+   "max_daily": 80,
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Active liver disease or unexplained persistent transaminase rise: contraindicated."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Stop statins in pregnancy."
+   },
+   "paeds": {
+    "min_age": 10
+   },
+   "conditions": [
+    {
+     "match": [
+      "myopathy",
+      "rhabdomyolysis"
+     ],
+     "severity": "warning",
+     "note": "Previous myopathy."
+    }
+   ],
+   "allergy": [
+    "statin"
+   ],
+   "image": "Atorvastatin tablets"
+  },
+  {
+   "id": "rosuvastatin",
+   "name": "Rosuvastatin",
+   "class": "Statin",
+   "tags": [
+    "statin"
+   ],
+   "usual": [
+    5,
+    20
+   ],
+   "max_single": 40,
+   "max_daily": 40,
+   "max_daily_note": "Asian patients: start 5 mg; 40 mg only under specialist supervision.",
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 10,
+     "severity": "warning",
+     "note": "eGFR <30: start 5 mg, max 10 mg/day."
+    }
+   ],
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Active liver disease: contraindicated."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Stop statins in pregnancy."
+   },
+   "allergy": [
+    "statin"
+   ],
+   "image": "Rosuvastatin"
+  },
+  {
+   "id": "clopidogrel",
+   "name": "Clopidogrel",
+   "class": "Antiplatelet (P2Y12)",
+   "tags": [
+    "antiplatelet"
+   ],
+   "usual": [
+    75,
+    75
+   ],
+   "max_single": 600,
+   "max_daily": 600,
+   "max_daily_note": "Doses above 75 mg are single loading doses.",
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use only if clearly needed."
+   },
+   "conditions": [
+    {
+     "match": [
+      "active bleeding",
+      "intracranial haemorrhage",
+      "intracranial hemorrhage"
+     ],
+     "severity": "critical",
+     "note": "Active pathological bleeding: contraindicated."
+    }
+   ],
+   "allergy": [],
+   "image": "Clopidogrel tablets"
+  },
+  {
+   "id": "warfarin",
+   "name": "Warfarin",
+   "class": "Anticoagulant (VKA)",
+   "tags": [
+    "anticoagulant"
+   ],
+   "usual": [
+    2,
+    7.5
+   ],
+   "max_single": 15,
+   "max_daily": 15,
+   "max_daily_note": "Dose is titrated to INR.",
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: lower maintenance dose; bleeding risk."
+   },
+   "hepatic": {
+    "severity": "warning",
+    "note": "Hepatic impairment increases sensitivity — closer INR monitoring."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Teratogenic — contraindicated (except specific mechanical-valve situations)."
+   },
+   "labs": [
+    {
+     "code": "inr",
+     "above": 4.0,
+     "severity": "critical",
+     "note": "INR above 4 — review dosing before continuing."
+    }
+   ],
+   "allergy": [],
+   "image": "Warfarin tablets"
+  },
+  {
+   "id": "apixaban",
+   "name": "Apixaban",
+   "class": "Anticoagulant (DOAC)",
+   "tags": [
+    "anticoagulant"
+   ],
+   "usual": [
+    5,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 20,
+   "max_daily_note": "10 mg twice daily is only for the first 7 days of VTE treatment.",
+   "renal": [
+    {
+     "below": 25,
+     "severity": "warning",
+     "note": "CrCl 15–29: use with caution; AF dose 2.5 mg twice daily."
+    },
+    {
+     "below": 15,
+     "avoid": true,
+     "severity": "critical",
+     "note": "CrCl <15: not recommended."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "note": "Severe hepatic impairment: not recommended."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Not recommended in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "active bleeding",
+      "intracranial haemorrhage",
+      "intracranial hemorrhage"
+     ],
+     "severity": "critical",
+     "note": "Active bleeding: contraindicated."
+    },
+    {
+     "match": [
+      "mechanical valve",
+      "prosthetic valve"
+     ],
+     "severity": "critical",
+     "note": "Mechanical heart valves: DOACs contraindicated."
+    }
+   ],
+   "allergy": [],
+   "image": "Apixaban"
+  },
+  {
+   "id": "rivaroxaban",
+   "name": "Rivaroxaban",
+   "class": "Anticoagulant (DOAC)",
+   "tags": [
+    "anticoagulant"
+   ],
+   "usual": [
+    10,
+    20
+   ],
+   "max_single": 20,
+   "max_daily": 30,
+   "max_daily_note": "15 mg twice daily only for the first 21 days of VTE treatment.",
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 15,
+     "severity": "warning",
+     "note": "AF with CrCl 15–49: 15 mg once daily."
+    },
+    {
+     "below": 15,
+     "avoid": true,
+     "severity": "critical",
+     "note": "CrCl <15: avoid."
+    }
+   ],
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Hepatic disease with coagulopathy: contraindicated."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Contraindicated in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "mechanical valve",
+      "prosthetic valve"
+     ],
+     "severity": "critical",
+     "note": "Mechanical heart valves: DOACs contraindicated."
+    }
+   ],
+   "allergy": [],
+   "image": "Rivaroxaban"
+  },
+  {
+   "id": "metformin",
+   "name": "Metformin",
+   "class": "Biguanide",
+   "tags": [
+    "antidiabetic"
+   ],
+   "usual": [
+    1000,
+    2000
+   ],
+   "max_single": 1000,
+   "max_daily": 2550,
+   "renal": [
+    {
+     "below": 45,
+     "max_daily": 1000,
+     "severity": "warning",
+     "note": "eGFR 30–44: max 1000 mg/day; do not initiate."
+    },
+    {
+     "below": 30,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <30: contraindicated (lactic acidosis)."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "note": "Hepatic impairment: avoid (lactic acidosis)."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Used in gestational diabetes under supervision."
+   },
+   "paeds": {
+    "min_age": 10
+   },
+   "conditions": [
+    {
+     "match": [
+      "alcohol"
+     ],
+     "severity": "warning",
+     "note": "Alcohol excess increases lactic acidosis risk."
+    },
+    {
+     "match": [
+      "heart failure"
+     ],
+     "severity": "info",
+     "note": "Unstable or acute heart failure: hold metformin."
+    }
+   ],
+   "labs": [
+    {
+     "code": "b12",
+     "below": 200,
+     "severity": "info",
+     "note": "Low B12 recorded — long-term metformin lowers B12."
+    }
+   ],
+   "allergy": [],
+   "image": "Metformin hydrochloride tablets"
+  },
+  {
+   "id": "glimepiride",
+   "name": "Glimepiride",
+   "class": "Sulfonylurea",
+   "tags": [
+    "sulfonylurea",
+    "antidiabetic",
+    "hypoglycaemic"
+   ],
+   "usual": [
+    1,
+    4
+   ],
+   "max_single": 8,
+   "max_daily": 8,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid sulfonylureas as first or second line in older adults (prolonged hypoglycaemia); if used, start 1 mg."
+   },
+   "renal": [
+    {
+     "below": 60,
+     "severity": "info",
+     "note": "Reduced eGFR: start 1 mg, titrate slowly (hypoglycaemia)."
+    },
+    {
+     "below": 30,
+     "severity": "critical",
+     "avoid": true,
+     "note": "eGFR <30: avoid (accumulation, hypoglycaemia)."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "note": "Severe hepatic impairment: avoid."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Switch to insulin in pregnancy."
+   },
+   "labs": [
+    {
+     "code": "hba1c",
+     "below": 6.5,
+     "severity": "warning",
+     "note": "HbA1c already below 6.5% — hypoglycaemia risk with a sulfonylurea."
+    }
+   ],
+   "allergy": [
+    "sulfonylurea"
+   ],
+   "image": "Glimepiride tablets"
+  },
+  {
+   "id": "gliclazide",
+   "name": "Gliclazide",
+   "class": "Sulfonylurea",
+   "tags": [
+    "sulfonylurea",
+    "antidiabetic",
+    "hypoglycaemic"
+   ],
+   "usual": [
+    40,
+    160
+   ],
+   "max_single": 160,
+   "max_daily": 320,
+   "max_daily_note": "Modified-release gliclazide: max 120 mg/day.",
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: if a sulfonylurea is needed, short-acting gliclazide is preferred; start low."
+   },
+   "renal": [
+    {
+     "below": 30,
+     "severity": "warning",
+     "note": "eGFR <30: use with great caution, start low."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Switch to insulin in pregnancy."
+   },
+   "labs": [
+    {
+     "code": "hba1c",
+     "below": 6.5,
+     "severity": "warning",
+     "note": "HbA1c already below 6.5% — hypoglycaemia risk with a sulfonylurea."
+    }
+   ],
+   "allergy": [
+    "sulfonylurea"
+   ],
+   "image": "Gliclazide"
+  },
+  {
+   "id": "glibenclamide",
+   "name": "Glibenclamide",
+   "class": "Sulfonylurea",
+   "tags": [
+    "sulfonylurea",
+    "antidiabetic",
+    "hypoglycaemic"
+   ],
+   "usual": [
+    2.5,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 15,
+   "elderly": {
+    "severity": "critical",
+    "note": "Beers 2023: avoid glibenclamide in older adults — long-acting, high risk of prolonged hypoglycaemia."
+   },
+   "renal": [
+    {
+     "below": 60,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <60: avoid (active metabolites accumulate)."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Insulin preferred in pregnancy."
+   },
+   "allergy": [
+    "sulfonylurea"
+   ],
+   "image": "Glibenclamide"
+  },
+  {
+   "id": "sitagliptin",
+   "name": "Sitagliptin",
+   "class": "DPP-4 inhibitor",
+   "tags": [
+    "dpp4",
+    "antidiabetic"
+   ],
+   "usual": [
+    100,
+    100
+   ],
+   "max_single": 100,
+   "max_daily": 100,
+   "renal": [
+    {
+     "below": 45,
+     "max_daily": 50,
+     "severity": "warning",
+     "note": "eGFR 30–44: 50 mg once daily."
+    },
+    {
+     "below": 30,
+     "max_daily": 25,
+     "severity": "warning",
+     "note": "eGFR <30: 25 mg once daily."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Insulin preferred in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "pancreatitis"
+     ],
+     "severity": "warning",
+     "note": "History of pancreatitis."
+    }
+   ],
+   "allergy": [],
+   "image": "Sitagliptin"
+  },
+  {
+   "id": "vildagliptin",
+   "name": "Vildagliptin",
+   "class": "DPP-4 inhibitor",
+   "tags": [
+    "dpp4",
+    "antidiabetic"
+   ],
+   "usual": [
+    100,
+    100
+   ],
+   "max_single": 50,
+   "max_daily": 100,
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 50,
+     "severity": "warning",
+     "note": "eGFR <50: 50 mg once daily."
+    }
+   ],
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Hepatic impairment or ALT >3× ULN: avoid."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Insulin preferred in pregnancy."
+   },
+   "allergy": [],
+   "image": "Vildagliptin"
+  },
+  {
+   "id": "teneligliptin",
+   "name": "Teneligliptin",
+   "class": "DPP-4 inhibitor",
+   "tags": [
+    "dpp4",
+    "antidiabetic"
+   ],
+   "usual": [
+    20,
+    20
+   ],
+   "max_single": 40,
+   "max_daily": 40,
+   "hepatic": {
+    "severity": "warning",
+    "note": "Severe hepatic impairment: limited data."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Insulin preferred in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "long qt",
+      "qt prolongation"
+     ],
+     "severity": "warning",
+     "note": "QT prolongation reported at 40 mg."
+    }
+   ],
+   "allergy": [],
+   "image": "Teneligliptin"
+  },
+  {
+   "id": "dapagliflozin",
+   "name": "Dapagliflozin",
+   "class": "SGLT2 inhibitor",
+   "tags": [
+    "sglt2",
+    "antidiabetic"
+   ],
+   "usual": [
+    10,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 10,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: volume depletion, genital infections; hold when acutely unwell."
+   },
+   "renal": [
+    {
+     "below": 25,
+     "severity": "warning",
+     "note": "eGFR <25: do not initiate (glucose-lowering effect lost; renal/HF benefit may continue)."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "type 1 diabetes",
+      "diabetic ketoacidosis",
+      "dka"
+     ],
+     "severity": "critical",
+     "note": "Type 1 diabetes / prior DKA: risk of (euglycaemic) ketoacidosis."
+    },
+    {
+     "match": [
+      "urinary tract infection",
+      "uti"
+     ],
+     "severity": "info",
+     "note": "Recurrent UTIs / genital mycotic infections."
+    }
+   ],
+   "allergy": [],
+   "image": "Dapagliflozin"
+  },
+  {
+   "id": "empagliflozin",
+   "name": "Empagliflozin",
+   "class": "SGLT2 inhibitor",
+   "tags": [
+    "sglt2",
+    "antidiabetic"
+   ],
+   "usual": [
+    10,
+    25
+   ],
+   "max_single": 25,
+   "max_daily": 25,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: volume depletion, genital infections; hold when acutely unwell."
+   },
+   "renal": [
+    {
+     "below": 20,
+     "severity": "warning",
+     "note": "eGFR <20: do not initiate."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "type 1 diabetes",
+      "diabetic ketoacidosis",
+      "dka"
+     ],
+     "severity": "critical",
+     "note": "Type 1 diabetes / prior DKA: risk of ketoacidosis."
+    }
+   ],
+   "allergy": [],
+   "image": "Empagliflozin"
+  },
+  {
+   "id": "pioglitazone",
+   "name": "Pioglitazone",
+   "class": "Thiazolidinedione",
+   "tags": [
+    "antidiabetic"
+   ],
+   "usual": [
+    15,
+    30
+   ],
+   "max_single": 45,
+   "max_daily": 45,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid in heart failure; fluid retention, fractures."
+   },
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Hepatic impairment or ALT >2.5× ULN: avoid."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Insulin preferred in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "heart failure",
+      "cardiac failure"
+     ],
+     "severity": "critical",
+     "note": "Heart failure: contraindicated (fluid retention)."
+    },
+    {
+     "match": [
+      "bladder cancer",
+      "haematuria",
+      "hematuria"
+     ],
+     "severity": "critical",
+     "note": "Bladder cancer or uninvestigated haematuria: contraindicated."
+    }
+   ],
+   "allergy": [],
+   "image": "Pioglitazone"
+  },
+  {
+   "id": "voglibose",
+   "name": "Voglibose",
+   "class": "Alpha-glucosidase inhibitor",
+   "tags": [
+    "antidiabetic"
+   ],
+   "usual": [
+    0.6,
+    0.9
+   ],
+   "max_single": 0.3,
+   "max_daily": 0.9,
+   "conditions": [
+    {
+     "match": [
+      "intestinal obstruction",
+      "inflammatory bowel"
+     ],
+     "severity": "warning",
+     "note": "Bowel obstruction / IBD: avoid."
+    }
+   ],
+   "allergy": [],
+   "image": "Voglibose"
+  },
+  {
+   "id": "levothyroxine",
+   "name": "Levothyroxine",
+   "unit": "mcg",
+   "class": "Thyroid hormone",
+   "tags": [],
+   "usual": [
+    25,
+    150
+   ],
+   "max_single": 300,
+   "max_daily": 300,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults or cardiac disease: start 12.5–25 mcg and titrate every 4–6 weeks."
+   },
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Requirement usually rises in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "ischaemic heart disease",
+      "ischemic heart disease",
+      "coronary artery disease",
+      "angina"
+     ],
+     "severity": "warning",
+     "note": "Ischaemic heart disease: start low (12.5–25 mcg)."
+    },
+    {
+     "match": [
+      "adrenal insufficiency",
+      "addison"
+     ],
+     "severity": "critical",
+     "note": "Correct adrenal insufficiency first."
+    }
+   ],
+   "labs": [
+    {
+     "code": "tsh",
+     "below": 0.3,
+     "severity": "warning",
+     "note": "TSH is suppressed — dose may already be high."
+    }
+   ],
+   "allergy": [],
+   "image": "Levothyroxine sodium tablets"
+  },
+  {
+   "id": "carbimazole",
+   "name": "Carbimazole",
+   "class": "Antithyroid",
+   "tags": [],
+   "usual": [
+    5,
+    40
+   ],
+   "max_single": 60,
+   "max_daily": 60,
+   "pregnancy": {
+    "level": "avoid",
+    "note": "First trimester: propylthiouracil preferred (embryopathy)."
+   },
+   "allergy": [],
+   "image": "Carbimazole"
+  },
+  {
+   "id": "amitriptyline",
+   "name": "Amitriptyline",
+   "class": "Tricyclic antidepressant",
+   "tags": [
+    "anticholinergic",
+    "serotonergic",
+    "qt"
+   ],
+   "usual": [
+    10,
+    75
+   ],
+   "max_single": 150,
+   "max_daily": 150,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: strongly anticholinergic and sedating — avoid in older adults."
+   },
+   "hepatic": {
+    "severity": "warning",
+    "note": "Severe hepatic impairment: avoid."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Neonatal withdrawal possible."
+   },
+   "conditions": [
+    {
+     "match": [
+      "myocardial infarction",
+      "heart block",
+      "arrhythmia"
+     ],
+     "severity": "critical",
+     "note": "Recent MI, heart block or arrhythmia: contraindicated."
+    },
+    {
+     "match": [
+      "glaucoma"
+     ],
+     "severity": "warning",
+     "note": "Angle-closure glaucoma."
+    },
+    {
+     "match": [
+      "benign prostatic",
+      "bph",
+      "urinary retention"
+     ],
+     "severity": "warning",
+     "note": "Urinary retention."
+    }
+   ],
+   "allergy": [],
+   "image": "Amitriptyline tablets"
+  },
+  {
+   "id": "gabapentin",
+   "name": "Gabapentin",
+   "class": "Gabapentinoid",
+   "tags": [
+    "gabapentinoid",
+    "cns_depressant"
+   ],
+   "usual": [
+    900,
+    1800
+   ],
+   "max_single": 1200,
+   "max_daily": 3600,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: dizziness, falls — titrate slowly; Beers: avoid with opioids."
+   },
+   "renal": [
+    {
+     "below": 60,
+     "max_daily": 1400,
+     "severity": "warning",
+     "note": "CrCl 30–59: 400–1400 mg/day."
+    },
+    {
+     "below": 30,
+     "max_daily": 700,
+     "severity": "warning",
+     "note": "CrCl 15–29: 200–700 mg/day."
+    },
+    {
+     "below": 15,
+     "max_daily": 300,
+     "severity": "warning",
+     "note": "CrCl <15: 100–300 mg/day."
+    }
+   ],
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use only if clearly needed."
+   },
+   "allergy": [],
+   "image": "Gabapentin capsules"
+  },
+  {
+   "id": "pregabalin",
+   "name": "Pregabalin",
+   "class": "Gabapentinoid",
+   "tags": [
+    "gabapentinoid",
+    "cns_depressant"
+   ],
+   "usual": [
+    150,
+    300
+   ],
+   "max_single": 300,
+   "max_daily": 600,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: dizziness, falls — start 25–75 mg; Beers: avoid with opioids."
+   },
+   "renal": [
+    {
+     "below": 60,
+     "max_daily": 300,
+     "severity": "warning",
+     "note": "CrCl 30–60: max 300 mg/day."
+    },
+    {
+     "below": 30,
+     "max_daily": 150,
+     "severity": "warning",
+     "note": "CrCl 15–30: max 150 mg/day."
+    },
+    {
+     "below": 15,
+     "max_daily": 75,
+     "severity": "warning",
+     "note": "CrCl <15: max 75 mg/day."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid unless clearly needed."
+   },
+   "allergy": [],
+   "image": "Pregabalin capsules"
+  },
+  {
+   "id": "sertraline",
+   "name": "Sertraline",
+   "class": "SSRI",
+   "tags": [
+    "ssri",
+    "serotonergic"
+   ],
+   "usual": [
+    50,
+    100
+   ],
+   "max_single": 200,
+   "max_daily": 200,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: SSRIs cause hyponatraemia/SIADH and falls — check sodium."
+   },
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 100,
+    "note": "Hepatic impairment: lower dose or longer interval."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Preferred SSRI in pregnancy when treatment is needed."
+   },
+   "labs": [
+    {
+     "code": "sodium",
+     "below": 133,
+     "severity": "warning",
+     "note": "Low sodium recorded — SSRIs worsen hyponatraemia."
+    }
+   ],
+   "allergy": [],
+   "image": "Sertraline tablets"
+  },
+  {
+   "id": "escitalopram",
+   "name": "Escitalopram",
+   "class": "SSRI",
+   "tags": [
+    "ssri",
+    "serotonergic",
+    "qt"
+   ],
+   "usual": [
+    10,
+    20
+   ],
+   "max_single": 20,
+   "max_daily": 20,
+   "elderly": {
+    "severity": "warning",
+    "max_daily": 10,
+    "note": "Over 65: max 10 mg/day (QT prolongation); hyponatraemia."
+   },
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 10,
+    "note": "Hepatic impairment: max 10 mg/day."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if benefit outweighs risk."
+   },
+   "conditions": [
+    {
+     "match": [
+      "long qt",
+      "qt prolongation"
+     ],
+     "severity": "critical",
+     "note": "Known QT prolongation: contraindicated."
+    }
+   ],
+   "labs": [
+    {
+     "code": "sodium",
+     "below": 133,
+     "severity": "warning",
+     "note": "Low sodium recorded."
+    }
+   ],
+   "allergy": [],
+   "image": "Escitalopram"
+  },
+  {
+   "id": "fluoxetine",
+   "name": "Fluoxetine",
+   "class": "SSRI",
+   "tags": [
+    "ssri",
+    "serotonergic",
+    "cyp_inhibitor"
+   ],
+   "usual": [
+    20,
+    40
+   ],
+   "max_single": 60,
+   "max_daily": 60,
+   "elderly": {
+    "severity": "info",
+    "note": "Beers 2023: SSRIs cause hyponatraemia and falls."
+   },
+   "hepatic": {
+    "severity": "warning",
+    "note": "Hepatic impairment: lower dose or alternate days."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if benefit outweighs risk."
+   },
+   "allergy": [],
+   "image": "Fluoxetine capsules"
+  },
+  {
+   "id": "alprazolam",
+   "name": "Alprazolam",
+   "class": "Benzodiazepine",
+   "tags": [
+    "benzodiazepine",
+    "cns_depressant"
+   ],
+   "usual": [
+    0.5,
+    1.5
+   ],
+   "max_single": 1,
+   "max_daily": 4,
+   "elderly": {
+    "severity": "warning",
+    "max_daily": 0.75,
+    "note": "Beers 2023: avoid benzodiazepines in older adults (falls, fractures, delirium)."
+   },
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 0.75,
+    "note": "Hepatic impairment: start 0.25 mg two or three times daily."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Neonatal sedation and withdrawal."
+   },
+   "conditions": [
+    {
+     "match": [
+      "sleep apnoea",
+      "sleep apnea",
+      "copd",
+      "respiratory failure"
+     ],
+     "severity": "warning",
+     "note": "Respiratory depression risk."
+    },
+    {
+     "match": [
+      "myasthenia"
+     ],
+     "severity": "critical",
+     "note": "Myasthenia gravis: contraindicated."
+    }
+   ],
+   "max_days": 28,
+   "allergy": [],
+   "image": "Alprazolam"
+  },
+  {
+   "id": "clonazepam",
+   "name": "Clonazepam",
+   "class": "Benzodiazepine",
+   "tags": [
+    "benzodiazepine",
+    "cns_depressant"
+   ],
+   "usual": [
+    0.25,
+    2
+   ],
+   "max_single": 2,
+   "max_daily": 20,
+   "max_daily_note": "Doses above 4 mg/day are for epilepsy under specialist care.",
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid benzodiazepines in older adults (falls, fractures, delirium)."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Neonatal sedation and withdrawal."
+   },
+   "conditions": [
+    {
+     "match": [
+      "sleep apnoea",
+      "sleep apnea",
+      "copd",
+      "respiratory failure"
+     ],
+     "severity": "warning",
+     "note": "Respiratory depression risk."
+    }
+   ],
+   "allergy": [],
+   "image": "Clonazepam"
+  },
+  {
+   "id": "lorazepam",
+   "name": "Lorazepam",
+   "class": "Benzodiazepine",
+   "tags": [
+    "benzodiazepine",
+    "cns_depressant"
+   ],
+   "usual": [
+    1,
+    4
+   ],
+   "max_single": 4,
+   "max_daily": 10,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid benzodiazepines in older adults."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Neonatal sedation and withdrawal."
+   },
+   "conditions": [
+    {
+     "match": [
+      "sleep apnoea",
+      "sleep apnea",
+      "copd",
+      "respiratory failure"
+     ],
+     "severity": "warning",
+     "note": "Respiratory depression risk."
+    }
+   ],
+   "allergy": [],
+   "image": "Lorazepam"
+  },
+  {
+   "id": "zolpidem",
+   "name": "Zolpidem",
+   "class": "Hypnotic (Z-drug)",
+   "tags": [
+    "cns_depressant"
+   ],
+   "usual": [
+    5,
+    10
+   ],
+   "max_single": 10,
+   "max_daily": 10,
+   "elderly": {
+    "severity": "warning",
+    "max_daily": 5,
+    "note": "Beers 2023: avoid Z-drugs in older adults (falls, delirium); if used, 5 mg."
+   },
+   "hepatic": {
+    "severity": "warning",
+    "max_daily": 5,
+    "note": "Hepatic impairment: 5 mg."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid in late pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "sleep apnoea",
+      "sleep apnea"
+     ],
+     "severity": "warning",
+     "note": "Sleep apnoea."
+    }
+   ],
+   "max_days": 28,
+   "allergy": [],
+   "image": "Zolpidem"
+  },
+  {
+   "id": "levetiracetam",
+   "name": "Levetiracetam",
+   "class": "Antiepileptic",
+   "tags": [],
+   "usual": [
+    1000,
+    3000
+   ],
+   "max_single": 1500,
+   "max_daily": 3000,
+   "renal": [
+    {
+     "below": 80,
+     "max_daily": 2000,
+     "severity": "warning",
+     "note": "CrCl 50–79: 500–1000 mg twice daily."
+    },
+    {
+     "below": 50,
+     "max_daily": 1500,
+     "severity": "warning",
+     "note": "CrCl 30–49: 250–750 mg twice daily."
+    },
+    {
+     "below": 30,
+     "max_daily": 1000,
+     "severity": "warning",
+     "note": "CrCl <30: 250–500 mg twice daily."
+    }
+   ],
+   "pregnancy": {
+    "level": "caution",
+    "note": "One of the preferred antiepileptics in pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "depression",
+      "suicid"
+     ],
+     "severity": "info",
+     "note": "Can cause mood changes and irritability."
+    }
+   ],
+   "allergy": [],
+   "image": "Levetiracetam"
+  },
+  {
+   "id": "sodium_valproate",
+   "name": "Sodium valproate",
+   "class": "Antiepileptic",
+   "tags": [],
+   "usual": [
+    600,
+    2000
+   ],
+   "max_single": 1500,
+   "max_daily": 2500,
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Active liver disease: contraindicated (hepatotoxicity)."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Highly teratogenic — must not be used in pregnancy or women of childbearing potential without a pregnancy-prevention programme."
+   },
+   "paeds": {
+    "mg_kg_day_max": 60
+   },
+   "allergy": [],
+   "image": "Sodium valproate"
+  },
+  {
+   "id": "phenytoin",
+   "name": "Phenytoin",
+   "class": "Antiepileptic",
+   "tags": [
+    "enzyme_inducer"
+   ],
+   "usual": [
+    300,
+    400
+   ],
+   "max_single": 300,
+   "max_daily": 600,
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: lower doses; check levels."
+   },
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Fetal hydantoin syndrome."
+   },
+   "allergy": [],
+   "image": "Phenytoin sodium"
+  },
+  {
+   "id": "betahistine",
+   "name": "Betahistine",
+   "class": "Antivertigo",
+   "tags": [],
+   "usual": [
+    24,
+    48
+   ],
+   "max_single": 24,
+   "max_daily": 48,
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Avoid unless clearly necessary."
+   },
+   "conditions": [
+    {
+     "match": [
+      "phaeochromocytoma",
+      "pheochromocytoma"
+     ],
+     "severity": "critical",
+     "note": "Phaeochromocytoma: contraindicated."
+    },
+    {
+     "match": [
+      "peptic ulcer"
+     ],
+     "severity": "info",
+     "note": "History of peptic ulcer."
+    },
+    {
+     "match": [
+      "asthma"
+     ],
+     "severity": "info",
+     "note": "Asthma: monitor."
+    }
+   ],
+   "allergy": [],
+   "image": "Betahistine"
+  },
+  {
+   "id": "cinnarizine",
+   "name": "Cinnarizine",
+   "class": "Antivertigo / antihistamine",
+   "tags": [
+    "antihistamine"
+   ],
+   "usual": [
+    75,
+    75
+   ],
+   "max_single": 30,
+   "max_daily": 225,
+   "elderly": {
+    "severity": "warning",
+    "note": "Older adults: drug-induced parkinsonism and sedation with prolonged use."
+   },
+   "conditions": [
+    {
+     "match": [
+      "parkinson"
+     ],
+     "severity": "warning",
+     "note": "Parkinson's disease: can worsen symptoms."
+    }
+   ],
+   "allergy": [],
+   "image": "Cinnarizine"
+  },
+  {
+   "id": "prochlorperazine",
+   "name": "Prochlorperazine",
+   "class": "Antiemetic / antivertigo (phenothiazine)",
+   "tags": [
+    "antiemetic_d2"
+   ],
+   "usual": [
+    15,
+    30
+   ],
+   "max_single": 10,
+   "max_daily": 40,
+   "elderly": {
+    "severity": "warning",
+    "note": "Beers 2023: avoid in older adults where possible (extrapyramidal effects)."
+   },
+   "conditions": [
+    {
+     "match": [
+      "parkinson"
+     ],
+     "severity": "critical",
+     "note": "Parkinson's disease: contraindicated."
+    }
+   ],
+   "max_days": 7,
+   "allergy": [],
+   "image": "Prochlorperazine"
+  },
+  {
+   "id": "sumatriptan",
+   "name": "Sumatriptan",
+   "class": "Triptan",
+   "tags": [
+    "serotonergic"
+   ],
+   "usual": [
+    50,
+    100
+   ],
+   "max_single": 100,
+   "max_daily": 300,
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "conditions": [
+    {
+     "match": [
+      "ischaemic heart disease",
+      "ischemic heart disease",
+      "coronary artery disease",
+      "myocardial infarction",
+      "angina",
+      "stroke",
+      "peripheral vascular"
+     ],
+     "severity": "critical",
+     "note": "Vascular disease: triptans contraindicated."
+    },
+    {
+     "match": [
+      "uncontrolled hypertension"
+     ],
+     "severity": "critical",
+     "note": "Uncontrolled hypertension: contraindicated."
+    }
+   ],
+   "allergy": [],
+   "image": "Sumatriptan"
+  },
+  {
+   "id": "allopurinol",
+   "name": "Allopurinol",
+   "class": "Xanthine oxidase inhibitor",
+   "tags": [],
+   "usual": [
+    100,
+    300
+   ],
+   "max_single": 300,
+   "max_daily": 900,
+   "renal": [
+    {
+     "below": 60,
+     "severity": "info",
+     "note": "Reduced eGFR: start ≤100 mg (≤50 mg if eGFR <30) and titrate to urate target."
+    },
+    {
+     "below": 30,
+     "max_daily": 300,
+     "severity": "warning",
+     "note": "eGFR <30: start 50 mg; titrate slowly with monitoring."
+    }
+   ],
+   "pregnancy": {
+    "level": "avoid",
+    "note": "Limited data."
+   },
+   "conditions": [
+    {
+     "match": [
+      "hla-b*5801",
+      "hla b 5801"
+     ],
+     "severity": "critical",
+     "note": "HLA-B*58:01 positive: high risk of SJS/TEN."
+    }
+   ],
+   "allergy": [],
+   "image": "Allopurinol tablets"
+  },
+  {
+   "id": "febuxostat",
+   "name": "Febuxostat",
+   "class": "Xanthine oxidase inhibitor",
+   "tags": [],
+   "usual": [
+    40,
+    80
+   ],
+   "max_single": 120,
+   "max_daily": 120,
+   "renal": [
+    {
+     "below": 30,
+     "max_daily": 40,
+     "severity": "warning",
+     "note": "eGFR <30: max 40 mg/day."
+    }
+   ],
+   "conditions": [
+    {
+     "match": [
+      "ischaemic heart disease",
+      "ischemic heart disease",
+      "coronary artery disease",
+      "myocardial infarction",
+      "heart failure",
+      "stroke"
+     ],
+     "severity": "warning",
+     "note": "Established cardiovascular disease: higher CV mortality than allopurinol (boxed warning)."
+    }
+   ],
+   "allergy": [],
+   "image": "Febuxostat"
+  },
+  {
+   "id": "colchicine",
+   "name": "Colchicine",
+   "class": "Anti-gout",
+   "tags": [],
+   "usual": [
+    0.5,
+    1
+   ],
+   "max_single": 1,
+   "max_daily": 2,
+   "max_daily_note": "Flare: 1 mg then 0.5 mg after 1 h; max 6 mg per course.",
+   "elderly": {
+    "severity": "info",
+    "note": "Older adults: lower doses."
+   },
+   "renal": [
+    {
+     "below": 50,
+     "max_daily": 1,
+     "severity": "warning",
+     "note": "eGFR 30–50: reduce dose / frequency."
+    },
+    {
+     "below": 30,
+     "max_daily": 0.5,
+     "severity": "warning",
+     "note": "eGFR <30: 0.5 mg/day maximum; avoid repeat courses within 3 days."
+    }
+   ],
+   "hepatic": {
+    "severity": "warning",
+    "note": "Hepatic impairment: reduce dose."
+   },
+   "pregnancy": {
+    "level": "caution",
+    "note": "Use if clearly needed."
+   },
+   "allergy": [],
+   "image": "Colchicine"
+  },
+  {
+   "id": "tamsulosin",
+   "name": "Tamsulosin",
+   "class": "Alpha-1 blocker",
+   "tags": [],
+   "usual": [
+    0.4,
+    0.4
+   ],
+   "max_single": 0.8,
+   "max_daily": 0.8,
+   "elderly": {
+    "severity": "info",
+    "note": "Orthostatic hypotension — take after the same meal each day."
+   },
+   "conditions": [
+    {
+     "match": [
+      "orthostatic hypotension",
+      "postural hypotension",
+      "syncope"
+     ],
+     "severity": "warning",
+     "note": "Orthostatic hypotension."
+    },
+    {
+     "match": [
+      "cataract"
+     ],
+     "severity": "info",
+     "note": "Tell the eye surgeon (intraoperative floppy iris)."
+    }
+   ],
+   "allergy": [],
+   "image": "Tamsulosin capsules"
+  },
+  {
+   "id": "hydroxychloroquine",
+   "name": "Hydroxychloroquine",
+   "class": "Antimalarial / DMARD",
+   "tags": [
+    "qt"
+   ],
+   "usual": [
+    200,
+    400
+   ],
+   "max_single": 400,
+   "max_daily": 400,
+   "mg_kg_day_cap": 5,
+   "renal": [
+    {
+     "below": 30,
+     "severity": "warning",
+     "note": "Reduced eGFR increases retinal toxicity risk — reduce dose."
+    }
+   ],
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Continue in lupus during pregnancy."
+   },
+   "conditions": [
+    {
+     "match": [
+      "retinopathy",
+      "maculopathy"
+     ],
+     "severity": "critical",
+     "note": "Pre-existing maculopathy: avoid."
+    },
+    {
+     "match": [
+      "g6pd"
+     ],
+     "severity": "info",
+     "note": "G6PD deficiency: haemolysis is rare."
+    }
+   ],
+   "allergy": [],
+   "image": "Hydroxychloroquine sulfate tablets"
+  },
+  {
+   "id": "methotrexate",
+   "name": "Methotrexate",
+   "class": "Antimetabolite / DMARD",
+   "tags": [],
+   "usual": [
+    7.5,
+    25
+   ],
+   "max_single": 25,
+   "max_daily": 25,
+   "weekly_only": true,
+   "renal": [
+    {
+     "below": 60,
+     "severity": "warning",
+     "note": "eGFR <60: reduce dose (50% at 30–59)."
+    },
+    {
+     "below": 30,
+     "avoid": true,
+     "severity": "critical",
+     "note": "eGFR <30: avoid."
+    }
+   ],
+   "hepatic": {
+    "avoid": true,
+    "severity": "critical",
+    "note": "Liver disease or alcohol excess: contraindicated."
+   },
+   "pregnancy": {
+    "level": "contraindicated",
+    "note": "Teratogenic and abortifacient — contraindicated."
+   },
+   "conditions": [
+    {
+     "match": [
+      "alcohol"
+     ],
+     "severity": "critical",
+     "note": "Alcohol excess: hepatotoxicity."
+    }
+   ],
+   "labs": [
+    {
+     "code": "wbc",
+     "below": 3.5,
+     "severity": "critical",
+     "note": "Low white count — hold methotrexate."
+    },
+    {
+     "code": "platelets",
+     "below": 100,
+     "severity": "critical",
+     "note": "Low platelets — hold methotrexate."
+    }
+   ],
+   "allergy": [],
+   "image": "Methotrexate tablets"
+  },
+  {
+   "id": "folic_acid",
+   "name": "Folic acid",
+   "class": "Vitamin",
+   "tags": [],
+   "usual": [
+    0.4,
+    5
+   ],
+   "max_single": 5,
+   "max_daily": 15,
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Recommended preconception and in the first trimester."
+   },
+   "allergy": [],
+   "image": "Folic acid tablets"
+  },
+  {
+   "id": "methylcobalamin",
+   "name": "Methylcobalamin",
+   "unit": "mcg",
+   "class": "Vitamin B12",
+   "tags": [],
+   "usual": [
+    500,
+    1500
+   ],
+   "max_single": 1500,
+   "max_daily": 3000,
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Compatible."
+   },
+   "allergy": [],
+   "image": "Methylcobalamin"
+  },
+  {
+   "id": "cholecalciferol",
+   "name": "Cholecalciferol (Vitamin D3)",
+   "unit": "IU",
+   "class": "Vitamin D",
+   "tags": [],
+   "usual": [
+    600,
+    8600
+   ],
+   "max_single": 60000,
+   "max_daily": 10000,
+   "max_daily_note": "Averaged over the week; 60,000 IU weekly courses are usually limited to 8–12 weeks.",
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Routine supplementation is safe."
+   },
+   "labs": [
+    {
+     "code": "calcium",
+     "above": 10.5,
+     "severity": "critical",
+     "note": "High calcium recorded — do not give vitamin D."
+    },
+    {
+     "code": "vitamin_d",
+     "above": 100,
+     "severity": "warning",
+     "note": "Vitamin D already above 100 ng/mL."
+    }
+   ],
+   "allergy": [],
+   "image": "Cholecalciferol"
+  },
+  {
+   "id": "ferrous_ascorbate",
+   "name": "Ferrous ascorbate",
+   "class": "Iron supplement",
+   "tags": [],
+   "usual": [
+    100,
+    200
+   ],
+   "max_single": 100,
+   "max_daily": 200,
+   "_unit_note": "elemental iron",
+   "pregnancy": {
+    "level": "compatible",
+    "note": "Recommended for anaemia in pregnancy."
+   },
+   "labs": [
+    {
+     "code": "ferritin",
+     "above": 300,
+     "severity": "warning",
+     "note": "Ferritin already high — check the indication."
+    }
+   ],
+   "allergy": [],
+   "image": "Ferrous sulfate tablets"
+  },
+  {
+   "id": "calcium_carbonate",
+   "name": "Calcium carbonate",
+   "class": "Calcium supplement",
+   "tags": [],
+   "usual": [
+    500,
+    1000
+   ],
+   "max_single": 1000,
+   "max_daily": 2000,
+   "_unit_note": "elemental calcium",
+   "conditions": [
+    {
+     "match": [
+      "hypercalcaemia",
+      "hypercalcemia",
+      "renal calculi",
+      "kidney stone"
+     ],
+     "severity": "warning",
+     "note": "Hypercalcaemia / calcium stones."
+    }
+   ],
+   "labs": [
+    {
+     "code": "calcium",
+     "above": 10.5,
+     "severity": "critical",
+     "note": "High calcium recorded."
+    }
+   ],
+   "allergy": [],
+   "image": "Calcium carbonate tablets"
+  }
+ ],
+ "products": [
+  {
+   "brand": "Dolo",
+   "generic": "paracetamol",
+   "form": "tab",
+   "strengths": [
+    500,
+    650
+   ]
+  },
+  {
+   "brand": "Crocin",
+   "generic": "paracetamol",
+   "form": "tab",
+   "strengths": [
+    500,
+    650
+   ]
+  },
+  {
+   "brand": "Calpol",
+   "generic": "paracetamol",
+   "form": "tab",
+   "strengths": [
+    500,
+    650
+   ]
+  },
+  {
+   "brand": "Calpol",
+   "generic": "paracetamol",
+   "form": "syrup",
+   "per_5ml": [
+    120,
+    250
+   ]
+  },
+  {
+   "brand": "P-250",
+   "generic": "paracetamol",
+   "form": "syrup",
+   "per_5ml": [
+    250
+   ]
+  },
+  {
+   "brand": "Pacimol",
+   "generic": "paracetamol",
+   "form": "tab",
+   "strengths": [
+    500,
+    650
+   ]
+  },
+  {
+   "brand": "Brufen",
+   "generic": "ibuprofen",
+   "form": "tab",
+   "strengths": [
+    200,
+    400,
+    600
+   ]
+  },
+  {
+   "brand": "Ibugesic",
+   "generic": "ibuprofen",
+   "form": "syrup",
+   "per_5ml": [
+    100
+   ]
+  },
+  {
+   "brand": "Combiflam",
+   "form": "tab",
+   "combo": {
+    "": {
+     "ibuprofen": 400,
+     "paracetamol": 325
+    }
+   }
+  },
+  {
+   "brand": "Voveran",
+   "generic": "diclofenac",
+   "form": "tab",
+   "strengths": [
+    50
+   ]
+  },
+  {
+   "brand": "Voveran SR",
+   "generic": "diclofenac",
+   "form": "tab",
+   "strengths": [
+    75,
+    100
+   ]
+  },
+  {
+   "brand": "Dynapar",
+   "generic": "diclofenac",
+   "form": "tab",
+   "strengths": [
+    50
+   ]
+  },
+  {
+   "brand": "Hifenac",
+   "generic": "aceclofenac",
+   "form": "tab",
+   "strengths": [
+    100
+   ]
+  },
+  {
+   "brand": "Zerodol",
+   "generic": "aceclofenac",
+   "form": "tab",
+   "strengths": [
+    100
+   ]
+  },
+  {
+   "brand": "Zerodol-P",
+   "form": "tab",
+   "combo": {
+    "": {
+     "aceclofenac": 100,
+     "paracetamol": 325
+    }
+   }
+  },
+  {
+   "brand": "Hifenac-P",
+   "form": "tab",
+   "combo": {
+    "": {
+     "aceclofenac": 100,
+     "paracetamol": 325
+    }
+   }
+  },
+  {
+   "brand": "Nise",
+   "generic": "nimesulide",
+   "form": "tab",
+   "strengths": [
+    100
+   ]
+  },
+  {
+   "brand": "Nimulid",
+   "generic": "nimesulide",
+   "form": "tab",
+   "strengths": [
+    100
+   ]
+  },
+  {
+   "brand": "Meftal",
+   "generic": "mefenamic_acid",
+   "form": "tab",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Meftal-Spas",
+   "form": "tab",
+   "combo": {
+    "": {
+     "mefenamic_acid": 250,
+     "dicyclomine": 10
+    }
+   }
+  },
+  {
+   "brand": "Ecosprin",
+   "generic": "aspirin",
+   "form": "tab",
+   "strengths": [
+    75,
+    150
+   ]
+  },
+  {
+   "brand": "Disprin",
+   "generic": "aspirin",
+   "form": "tab",
+   "strengths": [
+    350
+   ]
+  },
+  {
+   "brand": "Contramal",
+   "generic": "tramadol",
+   "form": "cap",
+   "strengths": [
+    50
+   ]
+  },
+  {
+   "brand": "Ultracet",
+   "form": "tab",
+   "combo": {
+    "": {
+     "tramadol": 37.5,
+     "paracetamol": 325
+    }
+   }
+  },
+  {
+   "brand": "Pan",
+   "generic": "pantoprazole",
+   "form": "tab",
+   "strengths": [
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Pantocid",
+   "generic": "pantoprazole",
+   "form": "tab",
+   "strengths": [
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Pan-D",
+   "form": "cap",
+   "combo": {
+    "": {
+     "pantoprazole": 40,
+     "domperidone": 30
+    }
+   }
+  },
+  {
+   "brand": "Pantocid-DSR",
+   "form": "cap",
+   "combo": {
+    "": {
+     "pantoprazole": 40,
+     "domperidone": 30
+    }
+   }
+  },
+  {
+   "brand": "Omez",
+   "generic": "omeprazole",
+   "form": "cap",
+   "strengths": [
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Omez-D",
+   "form": "cap",
+   "combo": {
+    "": {
+     "omeprazole": 10,
+     "domperidone": 10
+    }
+   }
+  },
+  {
+   "brand": "Razo",
+   "generic": "rabeprazole",
+   "form": "tab",
+   "strengths": [
+    10,
+    20
+   ]
+  },
+  {
+   "brand": "Rablet",
+   "generic": "rabeprazole",
+   "form": "tab",
+   "strengths": [
+    20
+   ]
+  },
+  {
+   "brand": "Razo-D",
+   "form": "cap",
+   "combo": {
+    "": {
+     "rabeprazole": 20,
+     "domperidone": 30
+    }
+   }
+  },
+  {
+   "brand": "Nexpro",
+   "generic": "esomeprazole",
+   "form": "tab",
+   "strengths": [
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Sompraz",
+   "generic": "esomeprazole",
+   "form": "tab",
+   "strengths": [
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Famocid",
+   "generic": "famotidine",
+   "form": "tab",
+   "strengths": [
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Domstal",
+   "generic": "domperidone",
+   "form": "tab",
+   "strengths": [
+    10
+   ]
+  },
+  {
+   "brand": "Emeset",
+   "generic": "ondansetron",
+   "form": "tab",
+   "strengths": [
+    4,
+    8
+   ]
+  },
+  {
+   "brand": "Ondem",
+   "generic": "ondansetron",
+   "form": "tab",
+   "strengths": [
+    4,
+    8
+   ]
+  },
+  {
+   "brand": "Vomikind",
+   "generic": "ondansetron",
+   "form": "tab",
+   "strengths": [
+    4,
+    8
+   ]
+  },
+  {
+   "brand": "Perinorm",
+   "generic": "metoclopramide",
+   "form": "tab",
+   "strengths": [
+    10
+   ]
+  },
+  {
+   "brand": "Cyclopam",
+   "form": "tab",
+   "combo": {
+    "": {
+     "dicyclomine": 20,
+     "paracetamol": 325
+    }
+   }
+  },
+  {
+   "brand": "Drotin",
+   "generic": "drotaverine",
+   "form": "tab",
+   "strengths": [
+    40,
+    80
+   ]
+  },
+  {
+   "brand": "Drotin-M",
+   "form": "tab",
+   "combo": {
+    "": {
+     "drotaverine": 80,
+     "mefenamic_acid": 250
+    }
+   }
+  },
+  {
+   "brand": "Buscopan",
+   "generic": "hyoscine_butylbromide",
+   "form": "tab",
+   "strengths": [
+    10
+   ]
+  },
+  {
+   "brand": "Eldoper",
+   "generic": "loperamide",
+   "form": "cap",
+   "strengths": [
+    2
+   ]
+  },
+  {
+   "brand": "Flagyl",
+   "generic": "metronidazole",
+   "form": "tab",
+   "strengths": [
+    200,
+    400
+   ]
+  },
+  {
+   "brand": "Metrogyl",
+   "generic": "metronidazole",
+   "form": "tab",
+   "strengths": [
+    200,
+    400
+   ]
+  },
+  {
+   "brand": "Dazolic",
+   "generic": "ornidazole",
+   "form": "tab",
+   "strengths": [
+    500
+   ]
+  },
+  {
+   "brand": "Tiniba",
+   "generic": "tinidazole",
+   "form": "tab",
+   "strengths": [
+    300,
+    500
+   ]
+  },
+  {
+   "brand": "Norflox",
+   "generic": "norfloxacin",
+   "form": "tab",
+   "strengths": [
+    400
+   ]
+  },
+  {
+   "brand": "Norflox-TZ",
+   "form": "tab",
+   "combo": {
+    "": {
+     "norfloxacin": 400,
+     "tinidazole": 600
+    }
+   }
+  },
+  {
+   "brand": "Ciplox",
+   "generic": "ciprofloxacin",
+   "form": "tab",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Cifran",
+   "generic": "ciprofloxacin",
+   "form": "tab",
+   "strengths": [
+    250,
+    500,
+    750
+   ]
+  },
+  {
+   "brand": "Ciplox-TZ",
+   "form": "tab",
+   "combo": {
+    "": {
+     "ciprofloxacin": 500,
+     "tinidazole": 600
+    }
+   }
+  },
+  {
+   "brand": "Zanocin",
+   "generic": "ofloxacin",
+   "form": "tab",
+   "strengths": [
+    200,
+    400
+   ]
+  },
+  {
+   "brand": "Oflox",
+   "generic": "ofloxacin",
+   "form": "tab",
+   "strengths": [
+    200,
+    400
+   ]
+  },
+  {
+   "brand": "O2",
+   "form": "tab",
+   "combo": {
+    "": {
+     "ofloxacin": 200,
+     "ornidazole": 500
+    }
+   }
+  },
+  {
+   "brand": "Zenflox-OZ",
+   "form": "tab",
+   "combo": {
+    "": {
+     "ofloxacin": 200,
+     "ornidazole": 500
+    }
+   }
+  },
+  {
+   "brand": "Levoflox",
+   "generic": "levofloxacin",
+   "form": "tab",
+   "strengths": [
+    250,
+    500,
+    750
+   ]
+  },
+  {
+   "brand": "Glevo",
+   "generic": "levofloxacin",
+   "form": "tab",
+   "strengths": [
+    250,
+    500,
+    750
+   ]
+  },
+  {
+   "brand": "Mox",
+   "generic": "amoxicillin",
+   "form": "cap",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Novamox",
+   "generic": "amoxicillin",
+   "form": "cap",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Mox",
+   "generic": "amoxicillin",
+   "form": "syrup",
+   "per_5ml": [
+    125,
+    250
+   ]
+  },
+  {
+   "brand": "Augmentin",
+   "form": "tab",
+   "combo": {
+    "375": {
+     "amoxicillin": 250,
+     "clavulanic_acid": 125
+    },
+    "625": {
+     "amoxicillin": 500,
+     "clavulanic_acid": 125
+    },
+    "1000": {
+     "amoxicillin": 875,
+     "clavulanic_acid": 125
+    }
+   }
+  },
+  {
+   "brand": "Augmentin Duo",
+   "form": "syrup",
+   "combo_per_5ml": {
+    "": {
+     "amoxicillin": 400,
+     "clavulanic_acid": 57
+    }
+   }
+  },
+  {
+   "brand": "Clavam",
+   "form": "tab",
+   "combo": {
+    "375": {
+     "amoxicillin": 250,
+     "clavulanic_acid": 125
+    },
+    "625": {
+     "amoxicillin": 500,
+     "clavulanic_acid": 125
+    },
+    "1000": {
+     "amoxicillin": 875,
+     "clavulanic_acid": 125
+    }
+   }
+  },
+  {
+   "brand": "Moxikind-CV",
+   "form": "tab",
+   "combo": {
+    "375": {
+     "amoxicillin": 250,
+     "clavulanic_acid": 125
+    },
+    "625": {
+     "amoxicillin": 500,
+     "clavulanic_acid": 125
+    }
+   }
+  },
+  {
+   "brand": "Azithral",
+   "generic": "azithromycin",
+   "form": "tab",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Azee",
+   "generic": "azithromycin",
+   "form": "tab",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Azithral",
+   "generic": "azithromycin",
+   "form": "syrup",
+   "per_5ml": [
+    100,
+    200
+   ]
+  },
+  {
+   "brand": "Claribid",
+   "generic": "clarithromycin",
+   "form": "tab",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Taxim-O",
+   "generic": "cefixime",
+   "form": "tab",
+   "strengths": [
+    100,
+    200
+   ]
+  },
+  {
+   "brand": "Zifi",
+   "generic": "cefixime",
+   "form": "tab",
+   "strengths": [
+    100,
+    200
+   ]
+  },
+  {
+   "brand": "Zifi",
+   "generic": "cefixime",
+   "form": "syrup",
+   "per_5ml": [
+    50,
+    100
+   ]
+  },
+  {
+   "brand": "Ceftum",
+   "generic": "cefuroxime",
+   "form": "tab",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Cepodem",
+   "generic": "cefpodoxime",
+   "form": "tab",
+   "strengths": [
+    100,
+    200
+   ]
+  },
+  {
+   "brand": "Sporidex",
+   "generic": "cephalexin",
+   "form": "cap",
+   "strengths": [
+    250,
+    500
+   ]
+  },
+  {
+   "brand": "Doxy-1",
+   "generic": "doxycycline",
+   "form": "cap",
+   "strengths": [
+    100
+   ]
+  },
+  {
+   "brand": "Niftran",
+   "generic": "nitrofurantoin",
+   "form": "cap",
+   "strengths": [
+    100
+   ]
+  },
+  {
+   "brand": "Martifur",
+   "generic": "nitrofurantoin",
+   "form": "cap",
+   "strengths": [
+    100
+   ]
+  },
+  {
+   "brand": "Septran DS",
+   "form": "tab",
+   "combo": {
+    "": {
+     "sulfamethoxazole": 800,
+     "trimethoprim": 160
+    }
+   }
+  },
+  {
+   "brand": "Bactrim DS",
+   "form": "tab",
+   "combo": {
+    "": {
+     "sulfamethoxazole": 800,
+     "trimethoprim": 160
+    }
+   }
+  },
+  {
+   "brand": "Forcan",
+   "generic": "fluconazole",
+   "form": "tab",
+   "strengths": [
+    50,
+    150,
+    200
+   ]
+  },
+  {
+   "brand": "Zocon",
+   "generic": "fluconazole",
+   "form": "tab",
+   "strengths": [
+    150,
+    400
+   ]
+  },
+  {
+   "brand": "Canditral",
+   "generic": "itraconazole",
+   "form": "cap",
+   "strengths": [
+    100,
+    200
+   ]
+  },
+  {
+   "brand": "Terbicip",
+   "generic": "terbinafine",
+   "form": "tab",
+   "strengths": [
+    250
+   ]
+  },
+  {
+   "brand": "Acivir",
+   "generic": "acyclovir",
+   "form": "tab",
+   "strengths": [
+    200,
+    400,
+    800
+   ]
+  },
+  {
+   "brand": "Valcivir",
+   "generic": "valacyclovir",
+   "form": "tab",
+   "strengths": [
+    500,
+    1000
+   ]
+  },
+  {
+   "brand": "Zentel",
+   "generic": "albendazole",
+   "form": "tab",
+   "strengths": [
+    400
+   ]
+  },
+  {
+   "brand": "Cetzine",
+   "generic": "cetirizine",
+   "form": "tab",
+   "strengths": [
+    10
+   ]
+  },
+  {
+   "brand": "Okacet",
+   "generic": "cetirizine",
+   "form": "tab",
+   "strengths": [
+    10
+   ]
+  },
+  {
+   "brand": "Levocet",
+   "generic": "levocetirizine",
+   "form": "tab",
+   "strengths": [
+    5
+   ]
+  },
+  {
+   "brand": "Teczine",
+   "generic": "levocetirizine",
+   "form": "tab",
+   "strengths": [
+    5
+   ]
+  },
+  {
+   "brand": "Allegra",
+   "generic": "fexofenadine",
+   "form": "tab",
+   "strengths": [
+    120,
+    180
+   ]
+  },
+  {
+   "brand": "Montair",
+   "generic": "montelukast",
+   "form": "tab",
+   "strengths": [
+    4,
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Montair-LC",
+   "form": "tab",
+   "combo": {
+    "": {
+     "montelukast": 10,
+     "levocetirizine": 5
+    }
+   }
+  },
+  {
+   "brand": "Montek-LC",
+   "form": "tab",
+   "combo": {
+    "": {
+     "montelukast": 10,
+     "levocetirizine": 5
+    }
+   }
+  },
+  {
+   "brand": "Asthalin",
+   "generic": "salbutamol",
+   "form": "tab",
+   "strengths": [
+    2,
+    4
+   ]
+  },
+  {
+   "brand": "Mucolite",
+   "generic": "ambroxol",
+   "form": "tab",
+   "strengths": [
+    30
+   ]
+  },
+  {
+   "brand": "Wysolone",
+   "generic": "prednisolone",
+   "form": "tab",
+   "strengths": [
+    5,
+    10,
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Omnacortil",
+   "generic": "prednisolone",
+   "form": "tab",
+   "strengths": [
+    5,
+    10,
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Amlong",
+   "generic": "amlodipine",
+   "form": "tab",
+   "strengths": [
+    2.5,
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Stamlo",
+   "generic": "amlodipine",
+   "form": "tab",
+   "strengths": [
+    2.5,
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Amlokind",
+   "generic": "amlodipine",
+   "form": "tab",
+   "strengths": [
+    2.5,
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Telma",
+   "generic": "telmisartan",
+   "form": "tab",
+   "strengths": [
+    20,
+    40,
+    80
+   ]
+  },
+  {
+   "brand": "Telma-AM",
+   "form": "tab",
+   "combo": {
+    "": {
+     "telmisartan": 40,
+     "amlodipine": 5
+    }
+   }
+  },
+  {
+   "brand": "Telma-H",
+   "form": "tab",
+   "combo": {
+    "": {
+     "telmisartan": 40,
+     "hydrochlorothiazide": 12.5
+    }
+   }
+  },
+  {
+   "brand": "Losar",
+   "generic": "losartan",
+   "form": "tab",
+   "strengths": [
+    25,
+    50
+   ]
+  },
+  {
+   "brand": "Repace",
+   "generic": "losartan",
+   "form": "tab",
+   "strengths": [
+    25,
+    50
+   ]
+  },
+  {
+   "brand": "Losar-H",
+   "form": "tab",
+   "combo": {
+    "": {
+     "losartan": 50,
+     "hydrochlorothiazide": 12.5
+    }
+   }
+  },
+  {
+   "brand": "Olmezest",
+   "generic": "olmesartan",
+   "form": "tab",
+   "strengths": [
+    10,
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Cardace",
+   "generic": "ramipril",
+   "form": "tab",
+   "strengths": [
+    1.25,
+    2.5,
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Envas",
+   "generic": "enalapril",
+   "form": "tab",
+   "strengths": [
+    2.5,
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Metolar",
+   "generic": "metoprolol",
+   "form": "tab",
+   "strengths": [
+    25,
+    50
+   ]
+  },
+  {
+   "brand": "Met XL",
+   "generic": "metoprolol",
+   "form": "tab",
+   "strengths": [
+    12.5,
+    25,
+    50
+   ]
+  },
+  {
+   "brand": "Aten",
+   "generic": "atenolol",
+   "form": "tab",
+   "strengths": [
+    25,
+    50
+   ]
+  },
+  {
+   "brand": "Concor",
+   "generic": "bisoprolol",
+   "form": "tab",
+   "strengths": [
+    2.5,
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Lasix",
+   "generic": "furosemide",
+   "form": "tab",
+   "strengths": [
+    40
+   ]
+  },
+  {
+   "brand": "Dytor",
+   "generic": "torsemide",
+   "form": "tab",
+   "strengths": [
+    5,
+    10,
+    20
+   ]
+  },
+  {
+   "brand": "Aldactone",
+   "generic": "spironolactone",
+   "form": "tab",
+   "strengths": [
+    25,
+    50
+   ]
+  },
+  {
+   "brand": "Atorva",
+   "generic": "atorvastatin",
+   "form": "tab",
+   "strengths": [
+    10,
+    20,
+    40,
+    80
+   ]
+  },
+  {
+   "brand": "Storvas",
+   "generic": "atorvastatin",
+   "form": "tab",
+   "strengths": [
+    10,
+    20,
+    40,
+    80
+   ]
+  },
+  {
+   "brand": "Ecosprin-AV",
+   "form": "cap",
+   "combo": {
+    "75": {
+     "aspirin": 75,
+     "atorvastatin": 10
+    },
+    "150": {
+     "aspirin": 150,
+     "atorvastatin": 20
+    }
+   }
+  },
+  {
+   "brand": "Rosuvas",
+   "generic": "rosuvastatin",
+   "form": "tab",
+   "strengths": [
+    5,
+    10,
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Rozavel",
+   "generic": "rosuvastatin",
+   "form": "tab",
+   "strengths": [
+    5,
+    10,
+    20
+   ]
+  },
+  {
+   "brand": "Clopilet",
+   "generic": "clopidogrel",
+   "form": "tab",
+   "strengths": [
+    75
+   ]
+  },
+  {
+   "brand": "Deplatt",
+   "generic": "clopidogrel",
+   "form": "tab",
+   "strengths": [
+    75
+   ]
+  },
+  {
+   "brand": "Deplatt-A",
+   "form": "cap",
+   "combo": {
+    "": {
+     "clopidogrel": 75,
+     "aspirin": 75
+    }
+   }
+  },
+  {
+   "brand": "Warf",
+   "generic": "warfarin",
+   "form": "tab",
+   "strengths": [
+    1,
+    2,
+    5
+   ]
+  },
+  {
+   "brand": "Eliquis",
+   "generic": "apixaban",
+   "form": "tab",
+   "strengths": [
+    2.5,
+    5
+   ]
+  },
+  {
+   "brand": "Xarelto",
+   "generic": "rivaroxaban",
+   "form": "tab",
+   "strengths": [
+    10,
+    15,
+    20
+   ]
+  },
+  {
+   "brand": "Glycomet",
+   "generic": "metformin",
+   "form": "tab",
+   "strengths": [
+    250,
+    500,
+    850,
+    1000
+   ]
+  },
+  {
+   "brand": "Glycomet SR",
+   "generic": "metformin",
+   "form": "tab",
+   "strengths": [
+    500,
+    1000
+   ]
+  },
+  {
+   "brand": "Obimet",
+   "generic": "metformin",
+   "form": "tab",
+   "strengths": [
+    500,
+    850,
+    1000
+   ]
+  },
+  {
+   "brand": "Glycomet-GP",
+   "form": "tab",
+   "combo": {
+    "0.5": {
+     "glimepiride": 0.5,
+     "metformin": 500
+    },
+    "1": {
+     "glimepiride": 1,
+     "metformin": 500
+    },
+    "2": {
+     "glimepiride": 2,
+     "metformin": 500
+    }
+   }
+  },
+  {
+   "brand": "Gemer",
+   "form": "tab",
+   "combo": {
+    "1": {
+     "glimepiride": 1,
+     "metformin": 500
+    },
+    "2": {
+     "glimepiride": 2,
+     "metformin": 500
+    }
+   }
+  },
+  {
+   "brand": "Amaryl",
+   "generic": "glimepiride",
+   "form": "tab",
+   "strengths": [
+    1,
+    2,
+    4
+   ]
+  },
+  {
+   "brand": "Glizid",
+   "generic": "gliclazide",
+   "form": "tab",
+   "strengths": [
+    40,
+    80
+   ]
+  },
+  {
+   "brand": "Daonil",
+   "generic": "glibenclamide",
+   "form": "tab",
+   "strengths": [
+    5
+   ]
+  },
+  {
+   "brand": "Januvia",
+   "generic": "sitagliptin",
+   "form": "tab",
+   "strengths": [
+    25,
+    50,
+    100
+   ]
+  },
+  {
+   "brand": "Istavel",
+   "generic": "sitagliptin",
+   "form": "tab",
+   "strengths": [
+    25,
+    50,
+    100
+   ]
+  },
+  {
+   "brand": "Istamet",
+   "form": "tab",
+   "combo": {
+    "50/500": {
+     "sitagliptin": 50,
+     "metformin": 500
+    },
+    "50/1000": {
+     "sitagliptin": 50,
+     "metformin": 1000
+    }
+   }
+  },
+  {
+   "brand": "Galvus",
+   "generic": "vildagliptin",
+   "form": "tab",
+   "strengths": [
+    50
+   ]
+  },
+  {
+   "brand": "Galvus Met",
+   "form": "tab",
+   "combo": {
+    "50/500": {
+     "vildagliptin": 50,
+     "metformin": 500
+    },
+    "50/1000": {
+     "vildagliptin": 50,
+     "metformin": 1000
+    }
+   }
+  },
+  {
+   "brand": "Tenepride",
+   "generic": "teneligliptin",
+   "form": "tab",
+   "strengths": [
+    20
+   ]
+  },
+  {
+   "brand": "Forxiga",
+   "generic": "dapagliflozin",
+   "form": "tab",
+   "strengths": [
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Jardiance",
+   "generic": "empagliflozin",
+   "form": "tab",
+   "strengths": [
+    10,
+    25
+   ]
+  },
+  {
+   "brand": "Pioz",
+   "generic": "pioglitazone",
+   "form": "tab",
+   "strengths": [
+    15,
+    30
+   ]
+  },
+  {
+   "brand": "Volix",
+   "generic": "voglibose",
+   "form": "tab",
+   "strengths": [
+    0.2,
+    0.3
+   ]
+  },
+  {
+   "brand": "Thyronorm",
+   "generic": "levothyroxine",
+   "form": "tab",
+   "strengths": [
+    12.5,
+    25,
+    50,
+    75,
+    88,
+    100,
+    125,
+    150
+   ]
+  },
+  {
+   "brand": "Eltroxin",
+   "generic": "levothyroxine",
+   "form": "tab",
+   "strengths": [
+    25,
+    50,
+    100
+   ]
+  },
+  {
+   "brand": "Neo-Mercazole",
+   "generic": "carbimazole",
+   "form": "tab",
+   "strengths": [
+    5,
+    10,
+    20
+   ]
+  },
+  {
+   "brand": "Tryptomer",
+   "generic": "amitriptyline",
+   "form": "tab",
+   "strengths": [
+    10,
+    25
+   ]
+  },
+  {
+   "brand": "Gabapin",
+   "generic": "gabapentin",
+   "form": "tab",
+   "strengths": [
+    100,
+    300,
+    400
+   ]
+  },
+  {
+   "brand": "Pregalin",
+   "generic": "pregabalin",
+   "form": "cap",
+   "strengths": [
+    75,
+    150
+   ]
+  },
+  {
+   "brand": "Lyrica",
+   "generic": "pregabalin",
+   "form": "cap",
+   "strengths": [
+    75,
+    150
+   ]
+  },
+  {
+   "brand": "Daxid",
+   "generic": "sertraline",
+   "form": "tab",
+   "strengths": [
+    25,
+    50,
+    100
+   ]
+  },
+  {
+   "brand": "Serta",
+   "generic": "sertraline",
+   "form": "tab",
+   "strengths": [
+    25,
+    50,
+    100
+   ]
+  },
+  {
+   "brand": "Nexito",
+   "generic": "escitalopram",
+   "form": "tab",
+   "strengths": [
+    5,
+    10,
+    20
+   ]
+  },
+  {
+   "brand": "Fludac",
+   "generic": "fluoxetine",
+   "form": "cap",
+   "strengths": [
+    20,
+    40
+   ]
+  },
+  {
+   "brand": "Restyl",
+   "generic": "alprazolam",
+   "form": "tab",
+   "strengths": [
+    0.25,
+    0.5,
+    1
+   ]
+  },
+  {
+   "brand": "Rivotril",
+   "generic": "clonazepam",
+   "form": "tab",
+   "strengths": [
+    0.25,
+    0.5,
+    2
+   ]
+  },
+  {
+   "brand": "Clonotril",
+   "generic": "clonazepam",
+   "form": "tab",
+   "strengths": [
+    0.25,
+    0.5,
+    2
+   ]
+  },
+  {
+   "brand": "Ativan",
+   "generic": "lorazepam",
+   "form": "tab",
+   "strengths": [
+    1,
+    2
+   ]
+  },
+  {
+   "brand": "Zolfresh",
+   "generic": "zolpidem",
+   "form": "tab",
+   "strengths": [
+    5,
+    10
+   ]
+  },
+  {
+   "brand": "Levipil",
+   "generic": "levetiracetam",
+   "form": "tab",
+   "strengths": [
+    250,
+    500,
+    750,
+    1000
+   ]
+  },
+  {
+   "brand": "Encorate",
+   "generic": "sodium_valproate",
+   "form": "tab",
+   "strengths": [
+    200,
+    300,
+    500
+   ]
+  },
+  {
+   "brand": "Eptoin",
+   "generic": "phenytoin",
+   "form": "tab",
+   "strengths": [
+    50,
+    100
+   ]
+  },
+  {
+   "brand": "Vertin",
+   "generic": "betahistine",
+   "form": "tab",
+   "strengths": [
+    8,
+    16,
+    24
+   ]
+  },
+  {
+   "brand": "Stugeron",
+   "generic": "cinnarizine",
+   "form": "tab",
+   "strengths": [
+    25
+   ]
+  },
+  {
+   "brand": "Stemetil",
+   "generic": "prochlorperazine",
+   "form": "tab",
+   "strengths": [
+    5
+   ]
+  },
+  {
+   "brand": "Suminat",
+   "generic": "sumatriptan",
+   "form": "tab",
+   "strengths": [
+    25,
+    50,
+    100
+   ]
+  },
+  {
+   "brand": "Zyloric",
+   "generic": "allopurinol",
+   "form": "tab",
+   "strengths": [
+    100,
+    300
+   ]
+  },
+  {
+   "brand": "Febutaz",
+   "generic": "febuxostat",
+   "form": "tab",
+   "strengths": [
+    40,
+    80
+   ]
+  },
+  {
+   "brand": "Zycolchin",
+   "generic": "colchicine",
+   "form": "tab",
+   "strengths": [
+    0.5
+   ]
+  },
+  {
+   "brand": "Urimax",
+   "generic": "tamsulosin",
+   "form": "cap",
+   "strengths": [
+    0.4
+   ]
+  },
+  {
+   "brand": "Veltam",
+   "generic": "tamsulosin",
+   "form": "cap",
+   "strengths": [
+    0.4
+   ]
+  },
+  {
+   "brand": "HCQS",
+   "generic": "hydroxychloroquine",
+   "form": "tab",
+   "strengths": [
+    200,
+    300,
+    400
+   ]
+  },
+  {
+   "brand": "Folitrax",
+   "generic": "methotrexate",
+   "form": "tab",
+   "strengths": [
+    2.5,
+    7.5,
+    10,
+    15
+   ]
+  },
+  {
+   "brand": "Folvite",
+   "generic": "folic_acid",
+   "form": "tab",
+   "strengths": [
+    5
+   ]
+  },
+  {
+   "brand": "Nurokind",
+   "generic": "methylcobalamin",
+   "form": "tab",
+   "strengths": [
+    500,
+    1500
+   ]
+  },
+  {
+   "brand": "Uprise-D3",
+   "generic": "cholecalciferol",
+   "form": "cap",
+   "strengths": [
+    60000
+   ]
+  },
+  {
+   "brand": "Calcirol",
+   "generic": "cholecalciferol",
+   "form": "sachet",
+   "strengths": [
+    60000
+   ]
+  },
+  {
+   "brand": "Orofer XT",
+   "form": "tab",
+   "combo": {
+    "": {
+     "ferrous_ascorbate": 100,
+     "folic_acid": 1.5
+    }
+   }
+  },
+  {
+   "brand": "Shelcal",
+   "form": "tab",
+   "combo": {
+    "500": {
+     "calcium_carbonate": 500,
+     "cholecalciferol": 250
+    }
+   }
+  }
+ ],
+ "interactions": [
+  {
+   "a": [
+    "class:anticoagulant"
+   ],
+   "b": [
+    "class:nsaid",
+    "aspirin"
+   ],
+   "severity": "critical",
+   "title": "Major bleeding risk",
+   "note": "Anticoagulant with an NSAID or aspirin markedly increases GI and other bleeding. Avoid; if unavoidable, add PPI cover and review."
+  },
+  {
+   "a": [
+    "class:anticoagulant"
+   ],
+   "b": [
+    "clopidogrel"
+   ],
+   "severity": "warning",
+   "title": "Bleeding risk",
+   "note": "Anticoagulant plus antiplatelet — confirm the indication and planned duration."
+  },
+  {
+   "a": [
+    "class:anticoagulant"
+   ],
+   "b": [
+    "class:anticoagulant"
+   ],
+   "severity": "critical",
+   "title": "Two anticoagulants",
+   "note": "Two anticoagulants together — only during a planned switch."
+  },
+  {
+   "a": [
+    "class:nsaid"
+   ],
+   "b": [
+    "aspirin",
+    "clopidogrel"
+   ],
+   "severity": "warning",
+   "title": "GI bleeding risk",
+   "note": "NSAID with antiplatelet therapy increases GI bleeding; ibuprofen may blunt aspirin's antiplatelet effect. Consider paracetamol and PPI cover."
+  },
+  {
+   "a": [
+    "warfarin"
+   ],
+   "b": [
+    "metronidazole",
+    "fluconazole",
+    "sulfamethoxazole",
+    "ciprofloxacin",
+    "levofloxacin",
+    "clarithromycin",
+    "ornidazole",
+    "tinidazole"
+   ],
+   "severity": "critical",
+   "title": "INR will rise",
+   "note": "Inhibits warfarin metabolism — INR can rise sharply. Avoid or reduce warfarin and check INR within 3–5 days."
+  },
+  {
+   "a": [
+    "clopidogrel"
+   ],
+   "b": [
+    "omeprazole",
+    "esomeprazole"
+   ],
+   "severity": "warning",
+   "title": "Reduced clopidogrel effect",
+   "note": "Omeprazole/esomeprazole inhibit CYP2C19 activation of clopidogrel — prefer pantoprazole."
+  },
+  {
+   "a": [
+    "clarithromycin",
+    "itraconazole"
+   ],
+   "b": [
+    "atorvastatin"
+   ],
+   "severity": "warning",
+   "title": "Statin myopathy risk",
+   "note": "Strong CYP3A4 inhibitor raises atorvastatin levels — cap atorvastatin at 20 mg or pause it during the course."
+  },
+  {
+   "a": [
+    "clarithromycin",
+    "itraconazole"
+   ],
+   "b": [
+    "colchicine"
+   ],
+   "severity": "critical",
+   "title": "Colchicine toxicity",
+   "note": "Strong CYP3A4/P-gp inhibitor with colchicine can be fatal — avoid the combination."
+  },
+  {
+   "a": [
+    "colchicine"
+   ],
+   "b": [
+    "class:statin"
+   ],
+   "severity": "info",
+   "title": "Myopathy",
+   "note": "Colchicine with a statin: report muscle pain."
+  },
+  {
+   "a": [
+    "domperidone"
+   ],
+   "b": [
+    "clarithromycin",
+    "itraconazole",
+    "fluconazole",
+    "class:macrolide"
+   ],
+   "severity": "critical",
+   "title": "QT prolongation",
+   "note": "Domperidone with CYP3A4 inhibitors or QT-prolonging antimicrobials is contraindicated (arrhythmia)."
+  },
+  {
+   "a": [
+    "class:qt"
+   ],
+   "b": [
+    "class:qt"
+   ],
+   "severity": "warning",
+   "title": "Additive QT prolongation",
+   "note": "Two QT-prolonging drugs — check ECG/electrolytes in high-risk patients or choose an alternative."
+  },
+  {
+   "a": [
+    "tramadol"
+   ],
+   "b": [
+    "class:ssri",
+    "amitriptyline",
+    "sumatriptan"
+   ],
+   "severity": "warning",
+   "title": "Serotonin syndrome / seizures",
+   "note": "Tramadol with serotonergic drugs: serotonin toxicity and lowered seizure threshold."
+  },
+  {
+   "a": [
+    "class:opioid"
+   ],
+   "b": [
+    "class:benzodiazepine",
+    "class:gabapentinoid",
+    "zolpidem"
+   ],
+   "severity": "critical",
+   "title": "Respiratory depression",
+   "note": "Opioid with a benzodiazepine, gabapentinoid or Z-drug: profound sedation and respiratory depression — avoid or use lowest doses."
+  },
+  {
+   "a": [
+    "class:benzodiazepine"
+   ],
+   "b": [
+    "zolpidem",
+    "class:gabapentinoid"
+   ],
+   "severity": "warning",
+   "title": "Additive sedation",
+   "note": "Two CNS depressants — falls and respiratory depression."
+  },
+  {
+   "a": [
+    "class:acei"
+   ],
+   "b": [
+    "class:arb"
+   ],
+   "severity": "critical",
+   "title": "Dual RAAS blockade",
+   "note": "ACE inhibitor with ARB: hyperkalaemia and AKI with no outcome benefit — avoid."
+  },
+  {
+   "a": [
+    "class:raas"
+   ],
+   "b": [
+    "spironolactone",
+    "trimethoprim",
+    "sulfamethoxazole"
+   ],
+   "severity": "warning",
+   "title": "Hyperkalaemia",
+   "note": "RAAS blocker with a potassium-raising drug — check potassium within a week."
+  },
+  {
+   "a": [
+    "class:raas"
+   ],
+   "b": [
+    "class:nsaid"
+   ],
+   "severity": "warning",
+   "title": "AKI risk (\"triple whammy\" with a diuretic)",
+   "note": "NSAIDs with ACE inhibitors/ARBs (especially plus a diuretic) can cause acute kidney injury — avoid or monitor creatinine."
+  },
+  {
+   "a": [
+    "methotrexate"
+   ],
+   "b": [
+    "sulfamethoxazole",
+    "trimethoprim"
+   ],
+   "severity": "critical",
+   "title": "Methotrexate toxicity",
+   "note": "Antifolate synergy — fatal marrow suppression reported. Avoid."
+  },
+  {
+   "a": [
+    "methotrexate"
+   ],
+   "b": [
+    "class:nsaid",
+    "class:ppi"
+   ],
+   "severity": "warning",
+   "title": "Raised methotrexate levels",
+   "note": "Reduces methotrexate clearance — monitor blood counts and renal function."
+  },
+  {
+   "a": [
+    "class:sulfonylurea"
+   ],
+   "b": [
+    "fluconazole",
+    "clarithromycin",
+    "sulfamethoxazole"
+   ],
+   "severity": "warning",
+   "title": "Hypoglycaemia",
+   "note": "Raises sulfonylurea levels — warn about hypoglycaemia and check glucose."
+  },
+  {
+   "a": [
+    "class:fluoroquinolone"
+   ],
+   "b": [
+    "class:corticosteroid"
+   ],
+   "severity": "warning",
+   "title": "Tendon rupture",
+   "note": "Fluoroquinolone with a corticosteroid — higher tendon rupture risk, especially over 60."
+  },
+  {
+   "a": [
+    "class:nsaid"
+   ],
+   "b": [
+    "class:corticosteroid"
+   ],
+   "severity": "warning",
+   "title": "GI bleeding",
+   "note": "NSAID with a corticosteroid — add PPI cover."
+  },
+  {
+   "a": [
+    "class:ssri"
+   ],
+   "b": [
+    "class:nsaid",
+    "aspirin",
+    "clopidogrel",
+    "class:anticoagulant"
+   ],
+   "severity": "warning",
+   "title": "Bleeding risk",
+   "note": "SSRIs impair platelet function — GI bleeding with NSAIDs/antiplatelets/anticoagulants. Consider PPI cover."
+  },
+  {
+   "a": [
+    "class:beta_blocker"
+   ],
+   "b": [
+    "diltiazem",
+    "verapamil"
+   ],
+   "severity": "critical",
+   "title": "Bradycardia / heart block",
+   "note": "Beta-blocker with a rate-limiting calcium-channel blocker: risk of severe bradycardia and AV block."
+  },
+  {
+   "a": [
+    "allopurinol"
+   ],
+   "b": [
+    "azathioprine",
+    "mercaptopurine"
+   ],
+   "severity": "critical",
+   "title": "Marrow suppression",
+   "note": "Allopurinol blocks thiopurine metabolism — reduce the thiopurine to 25% or avoid."
+  },
+  {
+   "a": [
+    "levothyroxine"
+   ],
+   "b": [
+    "calcium_carbonate",
+    "ferrous_ascorbate",
+    "class:ppi"
+   ],
+   "severity": "info",
+   "title": "Reduced absorption",
+   "note": "Take levothyroxine on an empty stomach, 4 hours apart from calcium or iron."
+  },
+  {
+   "a": [
+    "class:fluoroquinolone",
+    "doxycycline"
+   ],
+   "b": [
+    "calcium_carbonate",
+    "ferrous_ascorbate"
+   ],
+   "severity": "info",
+   "title": "Chelation",
+   "note": "Calcium/iron reduce absorption — separate by at least 2 hours."
+  },
+  {
+   "a": [
+    "ciprofloxacin"
+   ],
+   "b": [
+    "theophylline"
+   ],
+   "severity": "warning",
+   "title": "Theophylline toxicity",
+   "note": "Ciprofloxacin raises theophylline levels."
+  },
+  {
+   "a": [
+    "metronidazole",
+    "tinidazole",
+    "ornidazole"
+   ],
+   "b": [
+    "alcohol"
+   ],
+   "severity": "warning",
+   "title": "Disulfiram-like reaction",
+   "note": "Avoid alcohol during and for 48–72 h after."
+  },
+  {
+   "a": [
+    "phenytoin"
+   ],
+   "b": [
+    "fluconazole",
+    "sodium_valproate",
+    "class:anticoagulant"
+   ],
+   "severity": "warning",
+   "title": "Altered levels",
+   "note": "Phenytoin interacts with azoles, valproate and anticoagulants — monitor levels/INR."
+  },
+  {
+   "a": [
+    "sodium_valproate"
+   ],
+   "b": [
+    "phenytoin"
+   ],
+   "severity": "warning",
+   "title": "Altered levels",
+   "note": "Monitor antiepileptic levels."
+  },
+  {
+   "a": [
+    "sildenafil",
+    "tadalafil"
+   ],
+   "b": [
+    "nitroglycerin",
+    "isosorbide"
+   ],
+   "severity": "critical",
+   "title": "Severe hypotension",
+   "note": "PDE-5 inhibitor with a nitrate — contraindicated."
+  }
+ ],
+ "synonyms": {
+  "acetaminophen": "paracetamol",
+  "pcm": "paracetamol",
+  "amoxycillin": "amoxicillin",
+  "frusemide": "furosemide",
+  "aciclovir": "acyclovir",
+  "valaciclovir": "valacyclovir",
+  "glyburide": "glibenclamide",
+  "albuterol": "salbutamol",
+  "chlorphenamine": "chlorpheniramine",
+  "cpm": "chlorpheniramine",
+  "cefalexin": "cephalexin",
+  "torasemide": "torsemide",
+  "valproate": "sodium_valproate",
+  "divalproex": "sodium_valproate",
+  "sodium valproate": "sodium_valproate",
+  "thyroxine": "levothyroxine",
+  "mecobalamin": "methylcobalamin",
+  "vitamin b12": "methylcobalamin",
+  "hcq": "hydroxychloroquine",
+  "mtx": "methotrexate",
+  "vitamin d3": "cholecalciferol",
+  "vit d3": "cholecalciferol",
+  "vitamin d": "cholecalciferol",
+  "mefenamic": "mefenamic_acid",
+  "folate": "folic_acid",
+  "hyoscine": "hyoscine_butylbromide",
+  "metoprolol succinate": "metoprolol",
+  "metoprolol tartrate": "metoprolol",
+  "glucophage": "metformin",
+  "co-amoxiclav": "@Augmentin",
+  "amoxyclav": "@Augmentin",
+  "amoxicillin clavulanate": "@Augmentin",
+  "amoxicillin + clavulanic acid": "@Augmentin",
+  "amoxicillin-clavulanate": "@Augmentin",
+  "co-trimoxazole": "@Septran DS",
+  "cotrimoxazole": "@Septran DS"
+ }
+}

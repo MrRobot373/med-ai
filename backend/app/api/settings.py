@@ -70,6 +70,7 @@ async def test_component(component: str, body: TestIn, db: DB, admin: AdminUser)
     section = {
         "llm": "llm",
         "vision": "vision",
+        "clinical": "clinical",
         "embeddings": "embeddings",
         "reranker": "reranker",
         "vector_store": "vector_store",
@@ -84,6 +85,10 @@ async def test_component(component: str, body: TestIn, db: DB, admin: AdminUser)
     try:
         if component == "llm":
             result = await LLMClient(cfg.llm).test()
+        elif component == "clinical":
+            from app.ai import registry
+
+            result = await registry.clinical_llm(cfg).test()
         elif component == "vision":
             vcfg = vision_llm_config(cfg.llm, cfg.vision)
             models = await list_models(vcfg.provider, vcfg.base_url, vcfg.api_key)

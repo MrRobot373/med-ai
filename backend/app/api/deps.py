@@ -53,10 +53,17 @@ def require_roles(*roles: str):
 
 
 AdminUser = Annotated[User, Depends(require_roles("admin"))]
+# Clinical writes (notes, prescriptions, results, problems…)
 WriteUser = Annotated[User, Depends(require_roles("admin", "clinician"))]
+# Reading clinical content — everyone except the front desk
+ClinicalUser = Annotated[User, Depends(require_roles("admin", "clinician", "viewer"))]
+# Registration, report uploads and the day list — clinical staff and the front desk
+StaffUser = Annotated[User, Depends(require_roles("admin", "clinician", "front_desk"))]
 
 
 def ai_user(user: CurrentUser, db: DB) -> User:
+    if user.role == "front_desk":
+        raise HTTPException(403, "AI features are available to clinical staff only")
     if user.role == "viewer" and not runtime_config.load(db).security.allow_viewer_ai:
         raise HTTPException(403, "AI features are disabled for viewer accounts")
     return user

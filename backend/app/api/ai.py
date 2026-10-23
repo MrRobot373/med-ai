@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from app.ai import registry
 from app.ai.llm import ChatMessage
-from app.api.deps import DB, AIUser, CurrentUser, WriteUser
+from app.api.deps import DB, AIUser, ClinicalUser, WriteUser
 from app.clinical import citations
 from app.clinical.prompts import INSUFFICIENT
 from app.core.errors import AppError, ServiceUnavailable
@@ -43,7 +43,7 @@ def _conv(db, user, conv_id: str) -> Conversation:
 
 
 @router.get("/conversations", response_model=list[ConversationOut])
-def list_conversations(db: DB, user: CurrentUser, patient_id: str | None = None):
+def list_conversations(db: DB, user: ClinicalUser, patient_id: str | None = None):
     return chat.conversations_for(db, user, patient_id)
 
 
@@ -64,7 +64,7 @@ def create_conversation(body: ConversationIn, db: DB, user: AIUser):
 
 
 @router.get("/conversations/{conv_id}")
-def read_conversation(conv_id: str, db: DB, user: CurrentUser):
+def read_conversation(conv_id: str, db: DB, user: ClinicalUser):
     c = _conv(db, user, conv_id)
     patient = db.get(Patient, c.patient_id) if c.patient_id else None
     return {
@@ -75,7 +75,7 @@ def read_conversation(conv_id: str, db: DB, user: CurrentUser):
 
 
 @router.patch("/conversations/{conv_id}", response_model=ConversationOut)
-def update_conversation(conv_id: str, body: ConversationUpdate, db: DB, user: CurrentUser):
+def update_conversation(conv_id: str, body: ConversationUpdate, db: DB, user: ClinicalUser):
     c = _conv(db, user, conv_id)
     for k, v in body.model_dump(exclude_unset=True).items():
         setattr(c, k, v)
@@ -84,7 +84,7 @@ def update_conversation(conv_id: str, body: ConversationUpdate, db: DB, user: Cu
 
 
 @router.delete("/conversations/{conv_id}", status_code=204)
-def delete_conversation(conv_id: str, db: DB, user: CurrentUser):
+def delete_conversation(conv_id: str, db: DB, user: ClinicalUser):
     db.delete(_conv(db, user, conv_id))
     db.commit()
 
@@ -117,7 +117,7 @@ async def ask(conv_id: str, body: AskIn, request: Request, db: DB, user: AIUser)
 
 
 @router.post("/messages/{message_id}/feedback")
-def feedback(message_id: str, body: FeedbackIn, db: DB, user: CurrentUser):
+def feedback(message_id: str, body: FeedbackIn, db: DB, user: ClinicalUser):
     m = db.get(Message, message_id)
     if m is None or m.conversation.user_id != user.id:
         raise HTTPException(404, "Message not found")
@@ -138,7 +138,7 @@ def feedback(message_id: str, body: FeedbackIn, db: DB, user: CurrentUser):
 
 # ---- Tools ------------------------------------------------------------------
 @router.get("/tools")
-def tool_catalog(_: CurrentUser):
+def tool_catalog(_: ClinicalUser):
     return [{"id": k, **v} for k, v in tools.TOOLS.items()]
 
 
@@ -150,7 +150,7 @@ async def run_tool(tool: str, body: ToolRunIn, db: DB, user: AIUser):
 @router.get("/ai-runs", response_model=list[AIRunOut])
 def list_runs(
     db: DB,
-    _: CurrentUser,
+    _: ClinicalUser,
     patient_id: str | None = None,
     tool: str | None = None,
     status: str | None = None,
@@ -167,7 +167,7 @@ def list_runs(
 
 
 @router.get("/ai-runs/{run_id}", response_model=AIRunOut)
-def read_run(run_id: str, db: DB, _: CurrentUser):
+def read_run(run_id: str, db: DB, _: ClinicalUser):
     r = db.get(AIRun, run_id)
     if r is None:
         raise HTTPException(404, "Run not found")
@@ -247,7 +247,7 @@ async def analyze_image(
 
 # ---- Research ---------------------------------------------------------------
 @router.get("/research/providers")
-def research_providers(db: DB, _: CurrentUser):
+def research_providers(db: DB, _: ClinicalUser):
     cfg = runtime_config.load(db).research
     return {
         "enabled": cfg.enabled,

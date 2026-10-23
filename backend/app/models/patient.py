@@ -51,6 +51,12 @@ class Encounter(TimestampMixin, Base):
     reason: Mapped[str | None] = mapped_column(String(500))
     notes: Mapped[str | None] = mapped_column(Text)
     vitals: Mapped[dict] = mapped_column(JSON, default=dict)
+    # Structured consultation note
+    history: Mapped[str | None] = mapped_column(Text)
+    examination: Mapped[str | None] = mapped_column(Text)
+    assessment: Mapped[str | None] = mapped_column(Text)
+    diagnoses: Mapped[list] = mapped_column(JSON, default=list)  # [{"name": str, "code": str | None}]
+    plan: Mapped[str | None] = mapped_column(Text)
     clinician_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 
     patient: Mapped[Patient] = relationship(back_populates="encounters")
@@ -102,6 +108,8 @@ class Medication(TimestampMixin, Base):
     notes: Mapped[str | None] = mapped_column(Text)
     source: Mapped[str] = mapped_column(String(24), default="manual")
     source_document_id: Mapped[str | None] = mapped_column(ForeignKey("documents.id", ondelete="SET NULL"))
+    prescription_id: Mapped[str | None] = mapped_column(ForeignKey("prescriptions.id", ondelete="SET NULL"))
+    generic: Mapped[str | None] = mapped_column(String(200))
 
     patient: Mapped[Patient] = relationship(back_populates="medications")
 

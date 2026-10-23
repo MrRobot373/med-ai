@@ -19,6 +19,22 @@ def vision_llm(cfg: RuntimeConfig) -> LLMClient:
     return LLMClient(vision_llm_config(cfg.llm, cfg.vision))
 
 
+def clinical_llm(cfg: RuntimeConfig) -> LLMClient:
+    """The specialist medical model (e.g. MedGemma) used for medication and diagnosis review."""
+    c = cfg.clinical
+    if c.use_main_llm:
+        return LLMClient(cfg.llm)
+    return LLMClient(
+        cfg.llm.model_copy(
+            update={
+                "provider": c.provider, "base_url": c.base_url, "api_key": c.api_key, "model": c.model,
+                "temperature": c.temperature, "max_output_tokens": c.max_output_tokens,
+                "context_window": c.context_window, "timeout_seconds": c.timeout_seconds,
+            }
+        )
+    )
+
+
 def embedder(cfg: RuntimeConfig) -> Embedder:
     return Embedder(cfg.embeddings)
 

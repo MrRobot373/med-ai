@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base, TimestampMixin, UTCDateTime, utcnow
 from app.models._ids import new_id
 
-ROLES = ("admin", "clinician", "viewer")
+ROLES = ("admin", "clinician", "viewer", "front_desk")
 
 
 class User(TimestampMixin, Base):

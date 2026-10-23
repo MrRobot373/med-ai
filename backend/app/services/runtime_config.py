@@ -53,6 +53,28 @@ class VisionConfig(BaseModel):
     temperature: float = Field(0.1, ge=0, le=2)
 
 
+class ClinicalModelConfig(BaseModel):
+    """Specialist medical model for dose review, diagnosis second look and pre-visit
+    briefs (default: Google MedGemma 27B via Ollama). Chat keeps the main LLM."""
+
+    use_main_llm: bool = False
+    provider: LLMProvider = "ollama"
+    base_url: str = "http://localhost:11434"
+    api_key: str | None = None
+    model: str = "medgemma:27b"
+    temperature: float = Field(0.1, ge=0, le=2)
+    max_output_tokens: int = Field(2048, ge=64, le=32768)
+    context_window: int = Field(8192, ge=1024, le=1_048_576)
+    timeout_seconds: int = Field(600, ge=5, le=3600)
+
+
+class FormularyConfig(BaseModel):
+    region: Literal["IN"] = "IN"
+    # Look up a reference picture for a medicine by its generic name (Wikimedia).
+    # Only the drug name is ever sent — never patient data.
+    fetch_images: bool = True
+
+
 class EmbeddingConfig(BaseModel):
     provider: EmbeddingProvider = "ollama"
     base_url: str = "http://localhost:11434"
@@ -152,6 +174,8 @@ class SecurityConfig(BaseModel):
 class RuntimeConfig(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     vision: VisionConfig = Field(default_factory=VisionConfig)
+    clinical: ClinicalModelConfig = Field(default_factory=ClinicalModelConfig)
+    formulary: FormularyConfig = Field(default_factory=FormularyConfig)
     embeddings: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     reranker: RerankerConfig = Field(default_factory=RerankerConfig)
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
@@ -165,11 +189,12 @@ class RuntimeConfig(BaseModel):
     index_dimension: int | None = None
 
 
-SECTIONS = ("llm", "vision", "embeddings", "reranker", "retrieval", "vector_store", "research", "branding", "security")
+SECTIONS = ("llm", "vision", "clinical", "formulary", "embeddings", "reranker", "retrieval", "vector_store", "research", "branding", "security")
 # (section, field) pairs holding secrets.
 SECRET_FIELDS: tuple[tuple[str, str], ...] = (
     ("llm", "api_key"),
     ("vision", "api_key"),
+    ("clinical", "api_key"),
     ("embeddings", "api_key"),
     ("reranker", "api_key"),
     ("vector_store", "api_key"),
