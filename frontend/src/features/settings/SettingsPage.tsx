@@ -43,7 +43,7 @@ export default function SettingsPage() {
     <div>
       <PageHeader title="Settings" description={current.description} />
       <div className="grid gap-[var(--gap)] lg:grid-cols-[230px_1fr]">
-        <nav className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+        <nav className="glass h-fit space-y-4 rounded-2xl border border-white/70 p-2.5 shadow-card dark:border-white/[0.06] lg:sticky lg:top-[88px]">
           {GROUPS.map((g) => {
             const visible = g.items.filter((i) => !i.admin || isAdmin);
             if (!visible.length) return null;
@@ -51,7 +51,7 @@ export default function SettingsPage() {
               <div key={g.group}>
                 <div className="text-label mb-1 px-2.5 !text-[0.65rem]">{g.group}</div>
                 {visible.map((i) => (
-                  <NavLink key={i.id} to={`/settings/${i.id}`} className={({ isActive }) => cn("flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[0.84rem] font-medium transition-colors", isActive ? "bg-primary-soft text-primary-soft-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
+                  <NavLink key={i.id} to={`/settings/${i.id}`} className={({ isActive }) => cn("flex items-center gap-2.5 rounded-full px-3 py-1.5 text-[0.84rem] font-medium transition-colors", isActive ? "bg-strong text-strong-foreground shadow-card" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
                     <i.icon className="size-4" /> {i.label}
                   </NavLink>
                 ))}

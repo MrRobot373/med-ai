@@ -10,29 +10,24 @@ export interface NavItem {
   shortcut?: string;
 }
 
+/** Centre pill navigation — the clinical workspace. */
+export const PRIMARY_NAV: NavItem[] = [
+  { to: "/", label: "Dashboard", icon: Home, shortcut: "G H" },
+  { to: "/patients", label: "Patients", icon: Users, shortcut: "G P" },
+  { to: "/assistant", label: "Assistant", icon: MessagesSquare, shortcut: "G A" },
+  { to: "/inbox", label: "Inbox", icon: Inbox, badge: "inbox", shortcut: "G I" },
+];
+
+/** Left icon rail — tools and administration. */
+export const RAIL_NAV: NavItem[] = [
+  { to: "/tools", label: "Clinical tools", icon: Stethoscope },
+  { to: "/research", label: "Research", icon: Globe },
+  { to: "/library", label: "Knowledge library", icon: BookOpenText, shortcut: "G L" },
+  { to: "/audit", label: "Audit log", icon: ScrollText, roles: ["admin"] },
+  { to: "/settings", label: "Settings", icon: Settings, shortcut: "G S" },
+];
+
 export const NAV: { group: string; items: NavItem[] }[] = [
-  {
-    group: "Workspace",
-    items: [
-      { to: "/", label: "Home", icon: Home, shortcut: "G H" },
-      { to: "/inbox", label: "Inbox", icon: Inbox, badge: "inbox", shortcut: "G I" },
-      { to: "/patients", label: "Patients", icon: Users, shortcut: "G P" },
-      { to: "/assistant", label: "Assistant", icon: MessagesSquare, shortcut: "G A" },
-    ],
-  },
-  {
-    group: "Intelligence",
-    items: [
-      { to: "/tools", label: "Clinical tools", icon: Stethoscope },
-      { to: "/research", label: "Research", icon: Globe },
-      { to: "/library", label: "Knowledge library", icon: BookOpenText, shortcut: "G L" },
-    ],
-  },
-  {
-    group: "Administration",
-    items: [
-      { to: "/audit", label: "Audit log", icon: ScrollText, roles: ["admin"] },
-      { to: "/settings", label: "Settings", icon: Settings, shortcut: "G S" },
-    ],
-  },
+  { group: "Workspace", items: PRIMARY_NAV },
+  { group: "Tools & administration", items: RAIL_NAV },
 ];

@@ -72,7 +72,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     root.dataset.density = appearance.density;
     root.dataset.contrast = appearance.contrast;
     root.dataset.reduceMotion = String(appearance.reduce_motion);
-    root.style.setProperty("--radius", { sharp: "0.3rem", default: "0.625rem", round: "0.95rem" }[appearance.radius]);
+    root.style.setProperty("--radius", { sharp: "0.4rem", default: "0.875rem", round: "1.2rem" }[appearance.radius]);
     root.style.setProperty("--root-size", { sm: "14px", md: "15px", lg: "16.5px" }[appearance.font_scale]);
     root.style.setProperty("--font-sans", appearance.font_family === "system" ? "system-ui, -apple-system, 'Segoe UI'" : "'Inter Variable', Inter");
     for (const [k, v] of Object.entries(accentVars(effectiveAccent, resolvedTheme === "dark"))) root.style.setProperty(k, v);

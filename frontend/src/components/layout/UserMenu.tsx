@@ -4,13 +4,13 @@ import { useNavigate } from "react-router";
 import { useMe } from "@/api/hooks";
 import { useAppearance } from "@/app/appearance";
 import {
-  Avatar, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem,
   DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
 } from "@/components/ui";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { initials } from "@/lib/utils";
 
-export function UserMenu({ collapsed }: { collapsed?: boolean }) {
+export function UserMenu() {
   const { data: me } = useMe();
   const { appearance, update } = useAppearance();
   const navigate = useNavigate();
@@ -21,24 +21,18 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
     qc.clear();
     navigate("/login", { replace: true });
   };
-  const display = `${me.title ? me.title + " " : ""}${me.full_name.replace(/^Dr\.?\s+/, me.title ? "" : "Dr. ")}`.trim();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className={cn("flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-sidebar-active", collapsed && "justify-center")}>
-          <Avatar name={me.full_name} size="sm" />
-          {!collapsed && (
-            <div className="min-w-0 flex-1 leading-tight">
-              <div className="truncate text-[0.8rem] font-medium">{display}</div>
-              <div className="truncate text-[0.7rem] capitalize text-muted-foreground">{me.role}{me.specialty ? ` · ${me.specialty}` : ""}</div>
-            </div>
-          )}
+        <button className="flex size-10 items-center justify-center rounded-xl bg-primary text-[0.8rem] font-semibold text-primary-foreground shadow-card ring-2 ring-white/60 transition-transform hover:scale-[1.03] dark:ring-white/10" aria-label="Account menu">
+          {initials(me.full_name)}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="right" align="end" className="w-60">
+      <DropdownMenuContent className="w-60">
         <DropdownMenuLabel>
-          <div className="text-sm font-medium text-foreground">{me.full_name}</div>
+          <div className="text-sm font-medium text-foreground">{me.title ? `${me.title} ` : ""}{me.full_name.replace(/^Dr\.?\s+/, "")}</div>
           <div className="truncate">{me.email}</div>
+          <div className="mt-0.5 capitalize">{me.role}{me.specialty ? ` · ${me.specialty}` : ""}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => navigate("/settings/profile")}><UserIcon /> Profile</DropdownMenuItem>
@@ -60,3 +54,5 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
     </DropdownMenu>
   );
 }
+
+export { initials };

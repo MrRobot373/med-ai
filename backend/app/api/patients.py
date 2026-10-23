@@ -236,6 +236,13 @@ async def delete_patient(patient_id: str, db: DB, admin: AdminUser):
     )
 
 
+@router.get("/{patient_id}/scores")
+def clinical_scores(patient_id: str, db: DB, _: CurrentUser):
+    from app.clinical import scores
+
+    return scores.compute(db, get_patient(db, patient_id))
+
+
 @router.get("/{patient_id}/overview")
 def overview(patient_id: str, db: DB, _: CurrentUser):
     p = get_patient(db, patient_id)

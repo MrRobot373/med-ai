@@ -20,6 +20,7 @@ SUPPORTED = {
     "image/png": "image",
     "image/jpeg": "image",
     "image/webp": "image",
+    "application/dicom": "dicom",
 }
 EXTENSIONS = {
     ".pdf": "application/pdf",
@@ -33,6 +34,8 @@ EXTENSIONS = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
     ".webp": "image/webp",
+    ".dcm": "application/dicom",
+    ".dicom": "application/dicom",
 }
 MAGIC = {
     "pdf": [b"%PDF"],
@@ -62,6 +65,10 @@ def detect_mime(filename: str, declared: str | None) -> str | None:
 
 
 def verify_magic(family: str, data: bytes) -> bool:
+    if family == "dicom":
+        from app.ingestion.dicom import is_dicom
+
+        return is_dicom(data)
     sigs = MAGIC.get(family)
     return True if not sigs else any(data.startswith(s) for s in sigs)
 
@@ -78,7 +85,7 @@ def parse(data: bytes, mime: str) -> Parsed:
         return Parsed([{"page": 1, "text": _csv(data)}], family)
     if family == "json":
         return Parsed([{"page": 1, "text": _json(data)}], family)
-    if family == "image":
+    if family in ("image", "dicom"):
         return Parsed([], family)
     return Parsed([{"page": 1, "text": data.decode("utf-8", errors="replace")}], family)
 

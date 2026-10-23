@@ -46,6 +46,9 @@ export function accentVars(hex: string, dark: boolean): Record<string, string> {
     "--primary-foreground": fg,
     "--primary-soft": dark ? `${h} ${Math.min(s, 50)}% 17%` : `${h} ${Math.min(s, 90)}% 96%`,
     "--primary-soft-foreground": dark ? `${h} ${Math.min(s + 10, 95)}% 76%` : `${h} ${Math.min(s, 85)}% ${Math.min(lAdj, 42)}%`,
+    // Deep "navy" emphasis derived from the accent hue (active pills, key actions)
+    "--strong": dark ? `${h} ${Math.min(s, 85)}% 62%` : `${h} ${Math.min(s, 55)}% 25%`,
+    "--strong-foreground": dark ? "224 40% 8%" : "0 0% 100%",
   };
 }
 

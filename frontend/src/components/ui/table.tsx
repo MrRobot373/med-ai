@@ -9,7 +9,7 @@ export function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>)
   );
 }
 export function THead({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={cn("bg-subtle [&_tr]:border-b", className)} {...props} />;
+  return <thead className={cn("bg-subtle/70 [&_tr]:border-b", className)} {...props} />;
 }
 export function TBody({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
   return <tbody className={cn("[&_tr:last-child]:border-0", className)} {...props} />;

@@ -24,6 +24,7 @@ export default {
         warning: { DEFAULT: v("warning"), soft: v("warning-soft"), foreground: v("warning-foreground") },
         danger: { DEFAULT: v("danger"), soft: v("danger-soft"), foreground: v("danger-foreground") },
         info: { DEFAULT: v("info"), soft: v("info-soft"), foreground: v("info-foreground") },
+        strong: { DEFAULT: v("strong"), foreground: v("strong-foreground") },
         sidebar: { DEFAULT: v("sidebar"), foreground: v("sidebar-foreground"), border: v("sidebar-border"), active: v("sidebar-active") },
       },
       borderRadius: {
@@ -39,7 +40,8 @@ export default {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgb(var(--shadow) / 0.05)",
-        card: "0 1px 2px 0 rgb(var(--shadow) / 0.04), 0 1px 3px 0 rgb(var(--shadow) / 0.06)",
+        card: "0 1px 2px 0 rgb(var(--shadow) / 0.04), 0 8px 24px -12px rgb(var(--shadow) / 0.12)",
+        float: "0 18px 50px -20px rgb(var(--shadow) / 0.35), 0 2px 6px rgb(var(--shadow) / 0.06)",
         pop: "0 10px 38px -10px rgb(var(--shadow) / 0.25), 0 10px 20px -15px rgb(var(--shadow) / 0.2)",
         ring: "0 0 0 3px hsl(var(--ring) / 0.25)",
       },

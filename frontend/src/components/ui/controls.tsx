@@ -111,13 +111,13 @@ export const Tabs = TabsPrimitive.Root;
 export const TabsContent = TabsPrimitive.Content;
 
 export function TabsList({ className, ...props }: ComponentPropsWithoutRef<typeof TabsPrimitive.List>) {
-  return <TabsPrimitive.List className={cn("inline-flex items-center gap-1 rounded-lg bg-muted p-1", className)} {...props} />;
+  return <TabsPrimitive.List className={cn("inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border/60 bg-muted/80 p-1", className)} {...props} />;
 }
 
 export function TabsTrigger({ className, ...props }: ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>) {
   return (
     <TabsPrimitive.Trigger
-      className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1 text-[0.8rem] font-medium text-muted-foreground transition-all hover:text-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs [&_svg]:size-3.5", className)}
+      className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1 text-[0.8rem] font-medium text-muted-foreground transition-all hover:text-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs [&_svg]:size-3.5", className)}
       {...props}
     />
   );
@@ -128,7 +128,7 @@ export function Segmented<T extends string>({
   value, onChange, options, className, size = "md",
 }: { value: T; onChange: (v: T) => void; options: { value: T; label: ReactNode; icon?: ReactNode }[]; className?: string; size?: "sm" | "md" }) {
   return (
-    <div role="radiogroup" className={cn("inline-flex items-center gap-0.5 rounded-lg border bg-muted/60 p-0.5", className)}>
+    <div role="radiogroup" className={cn("inline-flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border border-border/60 bg-muted/80 p-0.5", className)}>
       {options.map((o) => (
         <button
           key={o.value}
@@ -137,8 +137,8 @@ export function Segmented<T extends string>({
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-md font-medium text-muted-foreground transition-all hover:text-foreground [&_svg]:size-3.5",
-            size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-[0.8rem]",
+            "inline-flex items-center gap-1.5 rounded-full font-medium text-muted-foreground transition-all hover:text-foreground [&_svg]:size-3.5",
+            size === "sm" ? "px-2.5 py-0.5 text-xs" : "px-3.5 py-1 text-[0.8rem]",
             value === o.value && "bg-card text-foreground shadow-xs",
           )}
         >

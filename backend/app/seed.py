@@ -389,6 +389,182 @@ def _pdf(
     return data
 
 
+def _report_pdf(
+    title: str, patient: tuple[str, str, date | None], report_date: date, sections: list[tuple[str, str]], facility: str
+) -> bytes:
+    import pymupdf
+
+    doc = pymupdf.open()
+    page = doc.new_page()
+    page.insert_text((50, 60), facility, fontsize=15)
+    page.insert_text((50, 82), title, fontsize=12)
+    y = 108
+    name, mrn, dob = patient
+    for line in (
+        f"Patient name: {name}",
+        f"MRN: {mrn}",
+        f"Date of birth: {dob.isoformat() if dob else 'not stated'}",
+        f"Report date: {report_date.isoformat()}",
+    ):
+        page.insert_text((50, y), line, fontsize=10)
+        y += 15
+    y += 10
+    for heading, body in sections:
+        page.insert_text((50, y), heading.upper(), fontsize=10)
+        y += 6
+        rect = pymupdf.Rect(50, y, 545, y + 140)
+        page.insert_textbox(rect, body, fontsize=10)
+        y += 18 + 13 * (len(body) // 85 + body.count("\n") + 1)
+    page.insert_text((50, 800), "Synthetic demonstration document — not a real patient.", fontsize=8)
+    data = doc.tobytes()
+    doc.close()
+    return data
+
+
+def _ecg_png(name: str, mrn: str, when: date) -> bytes:
+    """Synthetic lead-II rhythm strip: irregularly irregular narrow-complex rhythm without
+    P waves (atrial fibrillation). Clearly labelled as a demo tracing."""
+    import io
+    import math
+    import random
+
+    from PIL import Image, ImageDraw
+
+    rnd = random.Random(1004)
+    w, h, px_mm = 1800, 560, 7
+    img = Image.new("RGB", (w, h), (255, 250, 250))
+    d = ImageDraw.Draw(img)
+    for x in range(0, w, px_mm):
+        d.line([(x, 70), (x, h)], fill=(250, 214, 214) if x % (px_mm * 5) else (238, 160, 160), width=1)
+    for y in range(70, h, px_mm):
+        d.line([(0, y), (w, y)], fill=(250, 214, 214) if (y - 70) % (px_mm * 5) else (238, 160, 160), width=1)
+    d.rectangle([(0, 0), (w, 66)], fill=(255, 255, 255))
+    d.text((20, 14), f"{name}   MRN {mrn}   {when.isoformat()}   Lead II   25 mm/s   10 mm/mV", fill=(20, 30, 60))
+    d.text(
+        (20, 38), "SYNTHETIC DEMO TRACING - irregularly irregular rhythm, no discernible P waves", fill=(170, 40, 40)
+    )
+    base, mv, sec = 330, px_mm * 10, px_mm * 25
+    pts, t = [], 0.0
+    beats, tb = [], 0.25
+    while tb < w / sec:
+        beats.append(tb)
+        tb += rnd.uniform(0.45, 1.05)
+    while t * sec < w:
+        v = 0.04 * math.sin(2 * math.pi * 6.3 * t) + 0.03 * math.sin(2 * math.pi * 8.9 * t + 1)  # f-waves
+        for b in beats:
+            dt = t - b
+            v += (
+                -0.12 * math.exp(-(((dt + 0.02) / 0.008) ** 2))
+                + 1.25 * math.exp(-((dt / 0.011) ** 2))
+                - 0.28 * math.exp(-(((dt - 0.025) / 0.01) ** 2))
+            )
+            v += 0.25 * math.exp(-(((dt - 0.26) / 0.05) ** 2))  # T wave
+        pts.append((t * sec, base - v * mv))
+        t += 1 / 500
+    d.line(pts, fill=(15, 20, 35), width=2)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def _ct_phantom_dicom(name: str, mrn: str, when: date) -> bytes:
+    """Shepp–Logan head phantom (the standard synthetic CT test image) as a DICOM file."""
+    import io
+
+    import numpy as np
+    from pydicom.dataset import FileDataset, FileMetaDataset
+    from pydicom.uid import CTImageStorage, ExplicitVRLittleEndian, generate_uid
+
+    n = 512
+    y, x = np.mgrid[-1 : 1 : n * 1j, -1 : 1 : n * 1j]
+    img = np.zeros((n, n), dtype=np.float32)
+    # (intensity, a, b, x0, y0, phi-degrees) — modified Shepp-Logan, scaled to Hounsfield-like units
+    for val, a, b, x0, y0, phi in [
+        (1000, 0.69, 0.92, 0, 0, 0),
+        (-800, 0.6624, 0.874, 0, -0.0184, 0),
+        (-200, 0.11, 0.31, 0.22, 0, -18),
+        (-200, 0.16, 0.41, -0.22, 0, 18),
+        (100, 0.21, 0.25, 0, 0.35, 0),
+        (100, 0.046, 0.046, 0, 0.1, 0),
+        (100, 0.046, 0.046, 0, -0.1, 0),
+        (100, 0.046, 0.023, -0.08, -0.605, 0),
+        (100, 0.023, 0.023, 0, -0.606, 0),
+        (100, 0.023, 0.046, 0.06, -0.605, 0),
+    ]:
+        t = np.deg2rad(phi)
+        xr, yr = (x - x0) * np.cos(t) + (y - y0) * np.sin(t), -(x - x0) * np.sin(t) + (y - y0) * np.cos(t)
+        img[(xr / a) ** 2 + (yr / b) ** 2 <= 1] += val
+    pixels = np.flipud(np.clip(img + 24, 0, 4095)).astype(np.uint16)
+    meta = FileMetaDataset()
+    meta.MediaStorageSOPClassUID = CTImageStorage
+    meta.MediaStorageSOPInstanceUID = generate_uid()
+    meta.TransferSyntaxUID = ExplicitVRLittleEndian
+    ds = FileDataset(None, {}, file_meta=meta, preamble=b"\0" * 128)
+    ds.SOPClassUID, ds.SOPInstanceUID = CTImageStorage, meta.MediaStorageSOPInstanceUID
+    ds.StudyInstanceUID, ds.SeriesInstanceUID = generate_uid(), generate_uid()
+    last, first = name.split()[-1], name.split()[0]
+    ds.PatientName, ds.PatientID = f"{last}^{first}", mrn
+    ds.Modality, ds.BodyPartExamined = "CT", "HEAD"
+    ds.StudyDescription, ds.SeriesDescription = "CT HEAD (SYNTHETIC TEST PHANTOM)", "Axial 5 mm"
+    ds.StudyDate = when.strftime("%Y%m%d")
+    ds.InstitutionName = "GMS Imaging (demo)"
+    ds.ImageComments = "Shepp-Logan phantom - synthetic test image, not a patient scan"
+    ds.Rows = ds.Columns = n
+    ds.SamplesPerPixel, ds.PhotometricInterpretation = 1, "MONOCHROME2"
+    ds.BitsAllocated, ds.BitsStored, ds.HighBit, ds.PixelRepresentation = 16, 12, 11, 0
+    ds.WindowCenter, ds.WindowWidth = 240, 520
+    ds.SliceThickness, ds.PixelSpacing = 5, [0.45, 0.45]
+    ds.PixelData = pixels.tobytes()
+    buf = io.BytesIO()
+    ds.save_as(buf, enforce_file_format=True)
+    return buf.getvalue()
+
+
+IMAGING = {
+    "DEMO-1001": [
+        (
+            "pdf",
+            12,
+            "Renal ultrasound report",
+            [
+                (
+                    "Clinical indication",
+                    "Declining eGFR and albuminuria in type 2 diabetes. Assess renal size and exclude obstruction.",
+                ),
+                (
+                    "Findings",
+                    "Right kidney 10.1 cm, left kidney 10.4 cm. Mildly increased cortical echogenicity bilaterally with preserved corticomedullary differentiation. No hydronephrosis. No calculi. No focal lesion. Bladder unremarkable.",
+                ),
+                (
+                    "Impression",
+                    "Mild bilateral increase in cortical echogenicity, consistent with medical renal disease. No obstruction.",
+                ),
+            ],
+        )
+    ],
+    "DEMO-1004": [
+        ("ecg", 25, "ECG — lead II rhythm strip", None),
+        (
+            "pdf",
+            26,
+            "Echocardiogram report",
+            [
+                ("Indication", "Heart failure with reduced ejection fraction — follow-up of LV function on therapy."),
+                (
+                    "Findings",
+                    "Dilated left ventricle with global hypokinesis. Biplane LVEF 35%. Moderate functional mitral regurgitation. Left atrium severely dilated. Rhythm atrial fibrillation during study. Estimated RVSP 38 mmHg.",
+                ),
+                (
+                    "Impression",
+                    "HFrEF with LVEF 35% (previously 30%). Moderate functional MR. Severe left atrial dilatation.",
+                ),
+            ],
+        ),
+    ],
+    "DEMO-1003": [("dicom", 40, "CT head — synthetic phantom", None)],
+}
+
+
 def seed_users(db) -> User:
     admin = db.scalars(select(User).where(User.role == "admin")).first()
     for email, name, title, spec, role, pw in DEMO_USERS:
@@ -467,6 +643,35 @@ def seed_patients(db, clinician: User) -> list[str]:
                 patient=p,
                 title=title,
                 kind="lab_report",
+                document_date=d,
+            )
+            created_docs.append(doc.id)
+        for kind, days, title, sections in IMAGING.get(p.mrn, []):
+            d = ago(days).date()
+            if kind == "pdf":
+                data, fname, mime = (
+                    _report_pdf(title, ident, d, sections, "GMS Imaging Department"),
+                    f"{p.mrn}-{days}.pdf",
+                    "application/pdf",
+                )
+            elif kind == "ecg":
+                data, fname, mime = _ecg_png(p.full_name, p.mrn, d), f"{p.mrn}-ecg.png", "image/png"
+            else:
+                data, fname, mime = (
+                    _ct_phantom_dicom(p.full_name, p.mrn, d),
+                    f"{p.mrn}-ct-head.dcm",
+                    "application/dicom",
+                )
+            doc = documents.create(
+                db,
+                clinician,
+                data=data,
+                filename=fname,
+                declared_mime=mime,
+                scope="patient",
+                patient=p,
+                title=title,
+                kind="ecg" if kind == "ecg" else "imaging",
                 document_date=d,
             )
             created_docs.append(doc.id)

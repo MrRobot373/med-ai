@@ -50,8 +50,10 @@ export function fmtBytes(n: number) {
   return `${(n / 1024 / 1024).toFixed(1)} MB`;
 }
 
+const ACRONYMS: Record<string, string> = { Ecg: "ECG", Ct: "CT", Mri: "MRI", Icd: "ICD", Soap: "SOAP", Qa: "Q&A", Ent: "ENT" };
+
 export function titleCase(s: string) {
-  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\b[A-Z][a-z]+\b/g, (w) => ACRONYMS[w] ?? w);
 }
 
 export function fmtNum(v: number | null | undefined) {

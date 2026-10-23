@@ -106,3 +106,9 @@ export interface Health { status: "online" | "offline" | "degraded"; checked_at:
 export interface InboxItem { id: string; type: "identity" | "ingestion" | "lab" | "review" | "draft"; priority: "high" | "medium" | "low"; title: string; detail: string | null; patient_id: string | null; patient_name: string | null; mrn: string | null; ref_id: string; at: string }
 
 export interface Domain { id: string; name: string; group: string; count: number }
+
+export interface ScoreInput { label: string; value: string; source: string; date: string | null; document_id: string | null }
+export interface ClinicalScore {
+  id: string; kind: "score" | "check"; name: string; value: string; category: string; level: number; levels: string[];
+  summary: string; reference: string; inputs: ScoreInput[]; missing: string[]; note: string | null;
+}

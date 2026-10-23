@@ -5,65 +5,73 @@
 @layer base {
   :root {
     --font-sans: "Inter Variable", "Inter";
-    --shadow: 15 23 42;
-    --radius: 0.625rem;
+    --shadow: 30 50 90;
+    --radius: 0.875rem;
 
-    --background: 216 33% 98%;
-    --foreground: 222 47% 12%;
+    /* Soft blue-grey workspace, white glass surfaces, deep navy emphasis */
+    --background: 214 32% 94%;
+    --foreground: 220 45% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 12%;
+    --card-foreground: 220 45% 16%;
     --popover: 0 0% 100%;
-    --muted: 216 28% 95.5%;
-    --muted-foreground: 216 14% 44%;
-    --subtle: 216 30% 97.5%;
-    --border: 216 22% 89%;
-    --input: 216 20% 86%;
+    --muted: 214 30% 94%;
+    --muted-foreground: 217 16% 46%;
+    --subtle: 214 33% 97%;
+    --border: 214 26% 89%;
+    --input: 214 22% 85%;
+    --glass: 0 0% 100%;
+    --glass-alpha: 0.78;
 
     /* accent — overwritten at runtime from the user's / organisation's choice */
     --primary: 221 98% 57%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 221 90% 96%;
+    --primary-soft: 221 90% 95%;
     --primary-soft-foreground: 221 80% 42%;
     --ring: 221 98% 57%;
+    --strong: 220 55% 25%;
+    --strong-foreground: 0 0% 100%;
 
-    --success: 152 69% 37%;
-    --success-soft: 150 60% 94%;
+    --success: 152 63% 38%;
+    --success-soft: 150 55% 93%;
     --success-foreground: 152 70% 26%;
     --warning: 35 92% 48%;
-    --warning-soft: 42 100% 94%;
+    --warning-soft: 42 100% 93%;
     --warning-foreground: 28 85% 32%;
     --danger: 0 74% 54%;
-    --danger-soft: 0 86% 96%;
+    --danger-soft: 0 86% 95.5%;
     --danger-foreground: 0 70% 40%;
     --info: 199 89% 46%;
-    --info-soft: 199 90% 95%;
+    --info-soft: 199 90% 94%;
     --info-foreground: 200 80% 32%;
 
     --sidebar: 0 0% 100%;
-    --sidebar-foreground: 222 30% 30%;
-    --sidebar-border: 216 22% 91%;
-    --sidebar-active: 216 30% 95%;
+    --sidebar-foreground: 220 25% 35%;
+    --sidebar-border: 214 26% 89%;
+    --sidebar-active: 214 30% 94%;
 
-    /* density */
     --card-pad: 1.25rem;
     --row-y: 0.75rem;
-    --gap: 1.25rem;
+    --gap: 1rem;
   }
 
   .dark {
     --shadow: 0 0 0;
-    --background: 224 28% 7%;
+    --background: 224 32% 7%;
     --foreground: 214 32% 94%;
-    --card: 224 24% 10%;
+    --card: 223 28% 11%;
     --card-foreground: 214 32% 94%;
-    --popover: 224 24% 12%;
-    --muted: 224 20% 15%;
-    --muted-foreground: 216 14% 64%;
-    --subtle: 224 24% 9%;
-    --border: 224 17% 19%;
-    --input: 224 16% 24%;
-    --primary-soft: 221 45% 17%;
+    --popover: 223 28% 12%;
+    --muted: 223 22% 16%;
+    --muted-foreground: 216 15% 64%;
+    --subtle: 223 28% 9.5%;
+    --border: 223 20% 19%;
+    --input: 223 18% 25%;
+    --glass: 223 28% 12%;
+    --glass-alpha: 0.72;
+    --primary-soft: 221 45% 18%;
     --primary-soft-foreground: 221 95% 76%;
+    --strong: 221 85% 62%;
+    --strong-foreground: 224 40% 8%;
 
     --success: 152 60% 45%;
     --success-soft: 152 40% 14%;
@@ -78,10 +86,10 @@
     --info-soft: 200 50% 15%;
     --info-foreground: 199 90% 74%;
 
-    --sidebar: 224 26% 8.5%;
+    --sidebar: 223 28% 11%;
     --sidebar-foreground: 216 20% 76%;
-    --sidebar-border: 224 17% 15%;
-    --sidebar-active: 224 20% 15%;
+    --sidebar-border: 223 20% 18%;
+    --sidebar-active: 223 22% 17%;
   }
 
   [data-contrast="high"] {
@@ -118,6 +126,11 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv11", "ss01";
+    background-image:
+      radial-gradient(1200px 600px at 85% -10%, hsl(var(--primary) / 0.09), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, hsl(var(--strong) / 0.07), transparent 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
   ::selection {
     background: hsl(var(--primary) / 0.2);
@@ -149,6 +162,22 @@
 }
 
 @layer components {
+  /* Frosted glass surface used by cards, nav pills and floating panels */
+  .glass {
+    background: hsl(var(--glass) / var(--glass-alpha));
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  }
+  /* Clinical range scale: below range → in range → above range */
+  .range-gradient {
+    background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 14%, #34d399 30%, #10b981 50%, #34d399 70%, #fb923c 86%, #ef4444 100%);
+  }
+  .range-gradient-high {
+    background: linear-gradient(90deg, #10b981 0%, #34d399 45%, #fbbf24 62%, #fb923c 80%, #ef4444 100%);
+  }
+  .range-gradient-low {
+    background: linear-gradient(90deg, #ef4444 0%, #fb923c 20%, #fbbf24 38%, #34d399 55%, #10b981 100%);
+  }
   .card-pad {
     padding: var(--card-pad);
   }

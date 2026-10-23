@@ -16,6 +16,8 @@ evidence-cited AI — with every model endpoint swappable from the UI.
 | **Bring your own models** | Ollama, LM Studio, vLLM, llama.cpp, OpenAI, OpenRouter, Groq, Together — or any OpenAI-compatible endpoint. LLM, vision, embeddings and reranker are configured independently in **Settings**, tested live before saving, and take effect on the next request (no restart). API keys are encrypted at rest. |
 | **Evidence you can verify** | Hybrid retrieval (Qdrant vectors + SQLite FTS5 BM25 → reciprocal-rank fusion → optional reranking → de-dup → token budget). Every statement carries a citation chip (`P1` patient document, `K2` library, `W1` web, `R` structured record). Invalid citations are stripped and reported; a **"Why this answer"** panel shows every stage, score and timing. |
 | **Safe by construction** | Patient isolation is enforced in both indexes and re-checked in code. Uploaded documents are identity-checked against the chart; suspected wrong-patient files are **quarantined** (no values extracted, excluded from AI) until a clinician confirms. Reference ranges are never invented. The assistant abstains instead of guessing. Web research is off by default and every outbound query is de-identified and previewable. |
+| **Report & radiology viewer** | Every patient dashboard centres on a large viewer for PDFs, photos, ECGs and **DICOM** (X-ray/CT/MRI — header metadata indexed, pixels windowed and rendered), with thumbnails, paging, zoom and full screen. |
+| **Patient-specific scores** | Only the scores that apply to *this* patient, computed deterministically from documented data with sources shown: KDIGO CKD stage & risk, CHA₂DS₂-VASc, glycaemic control vs target, metformin renal dosing, apixaban dose criteria. Missing inputs are listed, never assumed. |
 | **Built for clinicians** | Patient workspace (overview, timeline, documents, trended results with provenance, medications, problems & allergies, encounters), clinical inbox, streaming assistant, structured tools (case summary, SOAP, differential, report comparison, medication reconciliation, entity extraction, image analysis, guideline Q&A) — all outputs are reviewable drafts. |
 | **Yours to brand and tune** | White-label name, logo, tagline, colours and disclaimer. Per-user light/dark/system theme, accent colour, density, corner style, text size, typeface, high contrast and reduced motion. ⌘K command palette and keyboard shortcuts. |
 | **Managed** | Roles (admin / clinician / viewer), user management, full audit log with CSV export, answer feedback, live service health, retrieval playground, one-click re-indexing when the embedding model changes. |
@@ -100,7 +102,7 @@ docs/           architecture, configuration recipes, knowledge taxonomy
 ## Testing
 
 ```bash
-cd backend && .venv/bin/pytest            # 52 tests: auth/RBAC, isolation, ingestion, quarantine, chat, tools, providers
+cd backend && .venv/bin/pytest            # 60 tests: auth/RBAC, isolation, ingestion, DICOM, quarantine, scores, chat, tools, providers
 cd frontend && npm test && npm run lint   # unit tests, ESLint, `npx tsc -b` for types
 cd frontend && E2E_BASE_URL=http://localhost:8000 npm run e2e   # against a seeded stack
 ```

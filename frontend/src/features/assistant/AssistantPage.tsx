@@ -93,8 +93,8 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] min-h-0">
-      <aside className="hidden w-72 shrink-0 flex-col border-r bg-subtle md:flex">
+    <div className="glass flex h-[calc(100vh-112px)] min-h-[560px] overflow-hidden rounded-3xl border border-white/70 shadow-card dark:border-white/[0.06]">
+      <aside className="hidden w-72 shrink-0 flex-col border-r border-border/70 bg-subtle/60 md:flex">
         <div className="space-y-2 border-b p-3">
           <Button className="w-full" onClick={() => setNewOpen(true)}><MessageSquarePlus /> New conversation</Button>
           <Input icon={<Search />} placeholder="Search conversations" value={q} onChange={(e) => setQ(e.target.value)} className="[&_input]:h-8" />

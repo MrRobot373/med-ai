@@ -74,7 +74,11 @@ def _labels(text: str) -> list[tuple[str, str]]:
     """(label, first sentence) for each evidence block in the prompt."""
     out = []
     for m in re.finditer(r"^\[([PKW]\d+)\][^\n]*\n(.+?)(?=\n\n---|\n\n=====|\Z)", text, re.S | re.M):
-        lines = [ln.strip() for ln in m.group(2).splitlines() if ln.strip() and not ln.strip().startswith("#") and not ln.strip().startswith("_")]
+        lines = [
+            ln.strip()
+            for ln in m.group(2).splitlines()
+            if ln.strip() and not ln.strip().startswith("#") and not ln.strip().startswith("_")
+        ]
         body = " ".join(" ".join(lines).split())
         sentence = re.split(r"(?<=[.!?])\s", body)[0][:220] if body else "Relevant passage"
         out.append((m.group(1), sentence))
@@ -200,7 +204,7 @@ async def chat(req: Request):
     body = await req.json()
     msgs = body.get("messages", [])
     if any(isinstance(m.get("content"), list) for m in msgs) and "JSON" not in json.dumps(msgs)[:4000]:
-        text = "LAB REPORT\nPatient name: Image Upload\nHemoglobin | 13.1 | g/dL | 12.0-15.5\n\n## Visual description\nSynthetic transcription from the mock vision model."
+        text = "## Visual description\nSynthetic description from the mock vision model — no text was recognised and no findings are reported."
     else:
         text = _answer(msgs)
     if not body.get("stream"):

@@ -106,7 +106,7 @@ def create(
     mime = parsers.detect_mime(filename, declared_mime)
     if mime is None:
         raise AppError(
-            "Unsupported file type. Use PDF, DOCX, XLSX, CSV, TXT, MD, JSON, PNG, JPG or WEBP.", status_code=415
+            "Unsupported file type. Use PDF, DOCX, XLSX, CSV, TXT, MD, JSON, PNG, JPG, WEBP or DICOM.", status_code=415
         )
     if not parsers.verify_magic(parsers.SUPPORTED[mime], data):
         raise AppError("File content does not match its extension.", status_code=415)
@@ -197,6 +197,17 @@ async def _process(db: Session, doc: Document) -> None:
         text = await vision.transcribe(cfg, data)
         pages = [{"page": 1, "text": text}]
         methods = {1: "vision"}
+    elif parsed.kind == "dicom":
+        from app.ingestion import dicom
+
+        meta = dicom.metadata_text(data)
+        description = await vision.transcribe(cfg, dicom.render_png(data, cfg.vision.max_image_dimension))
+        pages = [{"page": 1, "text": f"{meta}\n\n{description}"}]
+        methods = {1: "dicom+vision"}
+        if doc.document_date is None and (d := dicom.study_date(data)):
+            doc.document_date = date.fromisoformat(d)
+        if doc.extraction.get("kind_auto"):
+            doc.kind = "imaging"
     elif parsed.kind == "pdf":
         scanned = [p for p in pages if len(p["text"].strip()) < SCANNED_PAGE_MIN_CHARS]
         if scanned:

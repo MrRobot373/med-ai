@@ -42,7 +42,7 @@ export function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean
   const openTo = item.patient_id
     ? item.type === "lab" ? `/patients/${item.patient_id}/results`
     : item.type === "draft" ? `/patients/${item.patient_id}/tools?run=${item.ref_id}`
-    : `/patients/${item.patient_id}/documents?doc=${item.ref_id}`
+    : `/patients/${item.patient_id}/documents?doc=${item.ref_id}${item.type === "identity" || item.type === "ingestion" ? "&details=1" : ""}`
     : "/library";
 
   return (

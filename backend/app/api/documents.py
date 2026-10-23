@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, Query, UploadFile
+from fastapi.responses import FileResponse, Response
 from sqlalchemy import func, select
 
 from app.api.deps import DB, CurrentUser, WriteUser
@@ -96,6 +96,68 @@ def document_file(doc_id: str, db: DB, user: CurrentUser, download: bool = False
         media_type=d.mime_type,
         filename=d.filename,
         content_disposition_type="attachment" if download else "inline",
+    )
+
+
+def _render_preview(d: Document, page: int, width: int) -> tuple[bytes, int]:
+    import io
+
+    from PIL import Image
+
+    data = Path(d.storage_path).read_bytes()
+    if d.mime_type == "application/pdf":
+        import pymupdf
+
+        with pymupdf.open(stream=data, filetype="pdf") as pdf:
+            count = pdf.page_count
+            pg = pdf[min(max(page, 1), count) - 1]
+            zoom = width / max(pg.rect.width, 1)
+            return pg.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), alpha=False).tobytes("png"), count
+    if d.mime_type == "application/dicom":
+        from app.ingestion import dicom
+
+        return dicom.render_png(data, width), 1
+    if d.mime_type.startswith("image/"):
+        img = Image.open(io.BytesIO(data))
+        img.thumbnail((width, width * 2))
+        if img.mode not in ("RGB", "L"):
+            img = img.convert("RGB")
+        buf = io.BytesIO()
+        img.save(buf, format="PNG", optimize=True)
+        return buf.getvalue(), 1
+    raise HTTPException(415, "No visual preview for this file type")
+
+
+@router.get("/documents/{doc_id}/preview")
+def document_preview(doc_id: str, db: DB, user: CurrentUser, page: int = 1, width: int = Query(1200, ge=64, le=2400)):
+    """PNG rendering of a page (PDF), image or DICOM frame — used by the report viewer."""
+    d = _get(db, doc_id)
+    if not Path(d.storage_path).exists():
+        raise HTTPException(410, "The stored file is missing.")
+    try:
+        png, count = _render_preview(d, page, width)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(422, f"Could not render a preview: {exc.__class__.__name__}") from exc
+    if width >= 600:  # main-viewer renders are chart access; thumbnails are not logged
+        audit.record(
+            db,
+            user,
+            "document.view",
+            f"Viewed '{d.title}' (page {page})",
+            entity_type="document",
+            entity_id=d.id,
+            patient_id=d.patient_id,
+        )
+    return Response(
+        png,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "private, max-age=600",
+            "X-Page-Count": str(count),
+            "Access-Control-Expose-Headers": "X-Page-Count",
+        },
     )
 
 

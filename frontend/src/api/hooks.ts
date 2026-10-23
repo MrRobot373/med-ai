@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type {
-  AIRun, Branding, ChunkItem, Conversation, ConversationDetail, DocumentItem, Domain, Health, InboxItem, Observation,
+  AIRun, ClinicalScore, Branding, ChunkItem, Conversation, ConversationDetail, DocumentItem, Domain, Health, InboxItem, Observation,
   Patient, PatientListItem, PatientOverview, Preferences, TimelineEvent, TrendSeries, User,
 } from "./types";
 
@@ -35,6 +35,7 @@ export function usePatients(params: { q?: string; status?: string; tag?: string;
 }
 export const usePatient = (id: string) => useQuery({ queryKey: qk.patient(id), queryFn: () => api<Patient>(`/api/patients/${id}`) });
 export const useOverview = (id: string) => useQuery({ queryKey: qk.overview(id), queryFn: () => api<PatientOverview>(`/api/patients/${id}/overview`) });
+export const useScores = (id: string) => useQuery({ queryKey: qk.sub(id, "scores"), queryFn: () => api<ClinicalScore[]>(`/api/patients/${id}/scores`) });
 export const useTimeline = (id: string) => useQuery({ queryKey: qk.sub(id, "timeline"), queryFn: () => api<TimelineEvent[]>(`/api/patients/${id}/timeline`) });
 export const useTrends = (id: string) => useQuery({ queryKey: qk.sub(id, "trends"), queryFn: () => api<TrendSeries[]>(`/api/patients/${id}/trends`) });
 export const useObservations = (id: string) => useQuery({ queryKey: qk.sub(id, "observations"), enabled: !!id, queryFn: () => api<Observation[]>(`/api/patients/${id}/observations`) });

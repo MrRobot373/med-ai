@@ -62,7 +62,6 @@ export function AppearanceSection() {
         <div className="space-y-3 border-t pt-4">
           <SwitchRow label="High contrast" description="Stronger borders and darker secondary text." checked={a.contrast === "high"} onCheckedChange={(v) => update({ contrast: v ? "high" : "normal" })} />
           <SwitchRow label="Reduce motion" description="Turns off animations and transitions." checked={a.reduce_motion} onCheckedChange={(v) => update({ reduce_motion: v })} />
-          <SwitchRow label="Collapsed sidebar" description="Icons only — more room for content." checked={a.sidebar_collapsed} onCheckedChange={(v) => update({ sidebar_collapsed: v })} />
         </div>
       </SettingsCard>
       <Card className="card-pad h-fit space-y-4">
