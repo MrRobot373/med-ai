@@ -4,8 +4,6 @@ from app.ai.llm import _ThinkFilter, parse_json_response
 from app.clinical.citations import coverage, validate
 from app.ingestion.chunking import chunk_pages
 from app.ingestion.labs import extract
-from app.models import Patient
-from app.research.deidentify import deidentify
 
 
 def test_lab_parser_table_inline_and_no_invented_ranges():
@@ -41,14 +39,6 @@ def test_citation_validation():
     assert cleaned == "Value high [P1]. Also [P1]. And [R]."
     assert used == ["P1", "R"] and invalid == ["K9"]
     assert coverage("This sentence has a citation here [P1]. This one has none at all sadly.") == 0.5
-
-
-def test_deidentify_removes_patient_identifiers_but_keeps_eponyms():
-    p = Patient(first_name="James", last_name="Carter", mrn="DEMO-1001", phone="555-0101")
-    out = deidentify("James Carter (MRN DEMO-1001, 555-0101, born 1963-03-14) has a Marcus Gunn pupil", p)
-    assert "Carter" not in out.text and "DEMO-1001" not in out.text and "555" not in out.text and "1963" not in out.text
-    assert "Marcus Gunn pupil" in out.text
-    assert out.removed >= 3
 
 
 def test_think_filter_strips_reasoning_across_chunks():

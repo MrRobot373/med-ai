@@ -16,7 +16,7 @@ export const usePalette = () => useContext(PaletteContext);
 const SETTINGS_PAGES = [
   ["profile", "Profile"], ["appearance", "Appearance"], ["branding", "Organization & branding"], ["models", "AI models"],
   ["embeddings", "Embeddings & reranking"], ["retrieval", "Retrieval tuning"], ["vector", "Vector store"],
-  ["research", "Research sources"], ["users", "Users & roles"], ["security", "Security"], ["system", "System status"],
+  ["users", "Users & roles"], ["security", "Security"], ["system", "System status"],
 ];
 
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {

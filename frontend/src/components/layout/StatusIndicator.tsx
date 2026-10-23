@@ -8,7 +8,7 @@ import { cn, fmtRelative } from "@/lib/utils";
 import type { HealthComponent } from "@/api/types";
 
 const LABELS: Record<string, string> = {
-  database: "Database", llm: "Language model", embeddings: "Embeddings", reranker: "Reranker", vector_store: "Vector store", research: "Web research",
+  database: "Database", llm: "Language model", embeddings: "Embeddings", reranker: "Reranker", vector_store: "Vector store",
 };
 export const STATUS_TONE = { online: "success", degraded: "warning", offline: "danger", disabled: "neutral" } as const;
 

@@ -9,7 +9,7 @@ import { cn, fmtDateTime, fmtRelative } from "@/lib/utils";
 
 interface AuditRow { id: number; at: string; user_email: string | null; action: string; entity_type: string | null; entity_id: string | null; patient_id: string | null; summary: string; details: Record<string, any>; ip: string | null; outcome: string }
 
-const ACTION_TONE = (a: string) => (a.startsWith("auth") ? "info" : a.startsWith("ai") || a.startsWith("research") ? "primary" : a.startsWith("settings") || a.startsWith("user") ? "warning" : a.includes("delete") ? "danger" : "neutral") as any;
+const ACTION_TONE = (a: string) => (a.startsWith("auth") ? "info" : a.startsWith("ai") ? "primary" : a.startsWith("settings") || a.startsWith("user") ? "warning" : a.includes("delete") ? "danger" : "neutral") as any;
 
 function AuditLog() {
   const [q, setQ] = useState("");

@@ -18,7 +18,6 @@ class Conversation(TimestampMixin, Base):
     scope: Mapped[str] = mapped_column(String(16), default="knowledge")
     title: Mapped[str] = mapped_column(String(200), default="New conversation")
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
-    use_web: Mapped[bool] = mapped_column(Boolean, default=False)
 
     messages: Mapped[list[Message]] = relationship(
         back_populates="conversation", cascade="all, delete-orphan", order_by="Message.created_at"

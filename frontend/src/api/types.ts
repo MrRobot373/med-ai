@@ -78,7 +78,7 @@ export interface PatientOverview {
 export interface TimelineEvent { at: string; kind: string; title: string; detail: string | null; ref: Record<string, string> | null; tone: string }
 
 export interface Source {
-  label: string; scope: "patient" | "knowledge" | "web" | "record"; document_title: string; document_id?: string;
+  label: string; scope: "patient" | "knowledge" | "record"; document_title: string; document_id?: string;
   chunk_id?: string; page?: number | null; section?: string | null; excerpt?: string; kind?: string; domain?: string | null;
   document_date?: string | null; source_org?: string | null; url?: string; evidence_type?: string; cited?: boolean;
   dense_rank?: number | null; lexical_rank?: number | null; fused_score?: number; rerank_score?: number | null;
@@ -89,7 +89,6 @@ export interface Trace {
   counts?: Record<string, number>; timings?: Record<string, number>;
   candidates?: { chunk_id: string; document_title: string; scope: string; page: number | null; dense_rank: number | null; lexical_rank: number | null; fused_score: number; rerank_score: number | null; selected: boolean; label: string | null }[];
   generation?: { model: string; first_token_ms: number | null; generation_ms: number; citations_used: string[]; invalid_citations_removed: string[]; citation_coverage: number | null };
-  web?: { status: string; outbound_query?: string; identifiers_removed?: number; categories?: string[]; providers?: any[]; note?: string };
   error?: string;
 }
 
@@ -98,7 +97,7 @@ export interface ChatMessage {
   citations: Source[]; trace: Trace; model: string | null; latency_ms: number | null; feedback: "up" | "down" | null; created_at: string;
 }
 
-export interface Conversation { id: string; patient_id: string | null; scope: string; title: string; pinned: boolean; use_web: boolean; created_at: string; updated_at: string }
+export interface Conversation { id: string; patient_id: string | null; scope: string; title: string; pinned: boolean; created_at: string; updated_at: string }
 export interface ConversationDetail extends Conversation { patient: { id: string; full_name: string; mrn: string } | null; messages: ChatMessage[] }
 
 export interface HealthComponent { component: string; status: "online" | "offline" | "degraded" | "disabled"; detail?: string; error?: string; latency_ms: number; model?: string; stats?: any }

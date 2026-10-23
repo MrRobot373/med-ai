@@ -59,7 +59,7 @@ class FakeLLM:
                     "medications": [],
                 }
             )
-        labels = re.findall(r"^\[([PKW]\d+)\]", content, re.M)
+        labels = re.findall(r"^\[([PK]\d+)\]", content, re.M)
         cited = " ".join(f"[{x}]" for x in labels[:2])
         return f"Based on the evidence, the finding is documented {cited} [R]. Unsupported claim [P99]."
 

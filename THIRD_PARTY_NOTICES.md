@@ -66,4 +66,4 @@ Runtime dependencies and their licences. Versions are those resolved in the lock
 | Qdrant (server, optional) | Apache-2.0 |
 | Ollama (optional) | MIT |
 | Inter typeface (@fontsource-variable/inter) | SIL Open Font License 1.1 |
-| PubMed / openFDA / ClinicalTrials.gov APIs | Public US-government services; subject to their terms of use |
+| Wikimedia Commons (optional medicine pictures) | Each image under its own free licence; author and licence are shown with the picture |

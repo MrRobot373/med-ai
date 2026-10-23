@@ -1,6 +1,6 @@
 """Evidence-grounded chat. One turn:
 
-  question → retrieval (patient + knowledge) → optional de-identified web research →
+  question → retrieval (patient + knowledge) →
   abstain if nothing relevant → prompt with labelled evidence → stream tokens →
   validate citations → persist answer + provenance trace.
 
@@ -19,14 +19,12 @@ from app.ai import registry
 from app.ai.llm import ChatMessage
 from app.clinical import citations
 from app.clinical.context import patient_record_text
-from app.clinical.prompts import CHAT_SYSTEM, INSUFFICIENT, evidence_block, web_block
+from app.clinical.prompts import CHAT_SYSTEM, INSUFFICIENT, evidence_block
 from app.core.errors import ServiceUnavailable
 from app.core.logging import get_logger
 from app.db import utcnow
 from app.models import Conversation, Message, Patient, User
 from app.rag.retrieve import retrieve
-from app.research import providers as research
-from app.research.deidentify import deidentify
 from app.services import audit, runtime_config
 
 logger = get_logger(__name__)
@@ -72,38 +70,7 @@ async def answer(db: Session, user: User, conv: Conversation, question: str) -> 
     passages = result.passages
     trace = result.trace
 
-    # 2. Optional web research (explicit opt-in per conversation + enabled by admin)
-    web_results: list[dict] = []
-    if conv.use_web:
-        if not cfg.research.enabled:
-            trace["web"] = {"status": "disabled", "note": "Research Mode is disabled by the administrator."}
-        else:
-            yield {"event": "status", "data": {"stage": "web", "label": "Searching trusted medical sources"}}
-            clean = deidentify(question, patient)
-            rows, statuses = await research.search(db, cfg.research, clean.text)
-            for i, r in enumerate(rows[:8], start=1):
-                web_results.append({**r, "label": f"W{i}"})
-            trace["web"] = {
-                "status": "searched",
-                "outbound_query": clean.text,
-                "identifiers_removed": clean.removed,
-                "categories": clean.categories,
-                "providers": statuses,
-            }
-
-    sources = [p.public() for p in passages] + [
-        {
-            "label": w["label"],
-            "scope": "web",
-            "document_title": w["title"],
-            "source_org": w["source"],
-            "url": w["url"],
-            "excerpt": (w.get("snippet") or "")[:600],
-            "document_date": w.get("date"),
-            "evidence_type": w.get("evidence_type"),
-        }
-        for w in web_results
-    ]
+    sources = [p.public() for p in passages]
     if patient:
         sources.insert(
             0,
@@ -116,28 +83,22 @@ async def answer(db: Session, user: User, conv: Conversation, question: str) -> 
         )
     yield {"event": "sources", "data": {"sources": sources, "trace": trace}}
 
-    # 3. Abstain when nothing relevant was found (never fall back to ungrounded answering)
-    if not passages and not web_results and not patient:
-        content = f"{INSUFFICIENT}\n\nNo passages in the knowledge library matched this question." + (
-            " You can enable **web evidence** for this conversation to search trusted sources."
-            if cfg.research.enabled
-            else ""
-        )
+    # 2. Abstain when nothing relevant was found (never fall back to ungrounded answering)
+    if not passages and not patient:
+        content = f"{INSUFFICIENT}\n\nNo passages in the knowledge library matched this question."
         yield {"event": "token", "data": {"text": content}}
         msg = _save(db, conv, content, "abstained", sources, trace, None, started, [])
         yield {"event": "done", "data": _message_out(msg)}
         return
 
-    # 4. Prompt
+    # 3. Prompt
     system = CHAT_SYSTEM.format(product=cfg.branding.product_name, insufficient=INSUFFICIENT)
     blocks = []
     if patient:
         blocks.append("PATIENT RECORD [R]\n" + patient_record_text(db, patient))
     if passages:
         blocks.append("EVIDENCE\n" + evidence_block(passages))
-    if web_results:
-        blocks.append("WEB EVIDENCE (external, de-identified search)\n" + web_block(web_results))
-    if not passages and not web_results:
+    if not passages:
         blocks.append("EVIDENCE\n(no matching passages were found in documents or the knowledge library)")
     context = "\n\n=====\n\n".join(blocks)
     messages = [ChatMessage("system", system)]
@@ -183,7 +144,7 @@ async def answer(db: Session, user: User, conv: Conversation, question: str) -> 
         entity_type="conversation",
         entity_id=conv.id,
         patient_id=conv.patient_id,
-        details={"sources": len(sources), "cited": used, "web": bool(web_results)},
+        details={"sources": len(sources), "cited": used},
     )
     yield {"event": "done", "data": _message_out(msg)}
 

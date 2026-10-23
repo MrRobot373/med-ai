@@ -92,8 +92,3 @@ def test_feedback_and_conversation_privacy(client, ai):
     conv = client.post("/api/conversations", json={}).json()
     login(client, "two@test.local", "Password@123")
     assert client.get(f"/api/conversations/{conv['id']}").status_code == 404
-
-
-def test_research_disabled_by_default(clinician):
-    r = clinician.post("/api/research/search", json={"question": "latest evidence on SGLT2 inhibitors"})
-    assert r.status_code == 403

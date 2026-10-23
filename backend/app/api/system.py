@@ -104,11 +104,6 @@ async def health(db: DB, _: CurrentUser, refresh: bool = False):
         mode = "embedded" if cfg.vector_store.mode == "embedded" else cfg.vector_store.url
         return {"detail": f"Qdrant ({mode}) · {stats['knowledge'] + stats['patient']} vectors", "stats": stats}
 
-    async def research():
-        if not cfg.research.enabled:
-            return {"status": "disabled", "detail": "Research Mode off (local-only)"}
-        return {"detail": ", ".join(cfg.research.sources)}
-
     import asyncio
 
     components = await asyncio.gather(
@@ -118,7 +113,6 @@ async def health(db: DB, _: CurrentUser, refresh: bool = False):
         _check("embeddings", embeddings),
         _check("reranker", reranker),
         _check("vector_store", vectors),
-        _check("research", research),
     )
     critical = [c for c in components if c["component"] in ("database", "llm", "embeddings", "vector_store")]
     overall = (
@@ -148,7 +142,6 @@ def info(db: DB, _: CurrentUser):
         },
         "reranker": {"provider": cfg.reranker.provider, "model": cfg.reranker.model},
         "vector_store": cfg.vector_store.mode,
-        "research_enabled": cfg.research.enabled,
         "counts": {
             "patients": db.scalar(select(func.count()).select_from(Patient)),
             "documents": db.scalar(select(func.count()).select_from(Document)),

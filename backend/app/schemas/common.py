@@ -287,13 +287,11 @@ class ChunkOut(ORM):
 class ConversationIn(BaseModel):
     patient_id: str | None = None
     title: str | None = None
-    use_web: bool = False
 
 
 class ConversationUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=200)
     pinned: bool | None = None
-    use_web: bool | None = None
 
 
 class ConversationOut(ORM):
@@ -302,7 +300,6 @@ class ConversationOut(ORM):
     scope: str
     title: str
     pinned: bool
-    use_web: bool
     created_at: datetime
     updated_at: datetime
 
@@ -346,13 +343,6 @@ class AIRunOut(ORM):
 
 class ReviewIn(BaseModel):
     decision: Literal["accepted", "discarded", "draft"]
-
-
-class ResearchIn(BaseModel):
-    question: str = Field(min_length=3, max_length=2000)
-    patient_id: str | None = None
-    sources: list[str] | None = None
-    synthesize: bool = True
 
 
 class RetrievalTestIn(BaseModel):

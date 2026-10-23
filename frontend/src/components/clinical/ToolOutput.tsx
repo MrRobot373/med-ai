@@ -12,7 +12,7 @@ import { Markdown } from "./Markdown";
 const TOOL_NAMES: Record<string, string> = {
   summary: "Case summary", soap: "SOAP note", entities: "Entity extraction", differential: "Differential support",
   guideline_qa: "Guideline Q&A", comparison: "Report comparison", med_reconciliation: "Medication reconciliation",
-  vision: "Image analysis", research: "Web research",
+  vision: "Image analysis",
 };
 export const toolName = (t: string) => TOOL_NAMES[t] ?? titleCase(t);
 

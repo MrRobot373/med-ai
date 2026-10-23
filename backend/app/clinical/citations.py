@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import re
 
-_LABEL = re.compile(r"\[((?:[PKW]\d{1,3}|R)(?:\s*,\s*(?:[PKW]\d{1,3}|R))*)\]")
+_LABEL = re.compile(r"\[((?:[PK]\d{1,3}|R)(?:\s*,\s*(?:[PK]\d{1,3}|R))*)\]")
 
 
 def validate(answer: str, allowed: set[str]) -> tuple[str, list[str], list[str]]:

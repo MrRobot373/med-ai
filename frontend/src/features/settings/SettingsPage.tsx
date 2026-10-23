@@ -1,4 +1,4 @@
-import { Activity, Binary, Building2, Cpu, Database, Globe, Lock, Palette, SlidersHorizontal, UserRound, Users, type LucideIcon } from "lucide-react";
+import { Activity, Binary, Building2, Cpu, Database, Lock, Palette, SlidersHorizontal, UserRound, Users, type LucideIcon } from "lucide-react";
 import { Navigate, NavLink, useParams } from "react-router";
 import { useMe } from "@/api/hooks";
 import { PageHeader } from "@/components/ui";
@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { AppearanceSection } from "./sections/AppearanceSection";
 import { EmbeddingsSection } from "./sections/EmbeddingsSection";
 import { ModelsSection } from "./sections/ModelsSection";
-import { BrandingSection, ResearchSection, SecuritySection, SystemSection, UsersSection } from "./sections/OrgSections";
+import { BrandingSection, SecuritySection, SystemSection, UsersSection } from "./sections/OrgSections";
 import { ProfileSection } from "./sections/ProfileSection";
 import { RetrievalSection, VectorSection } from "./sections/RetrievalSection";
 
@@ -21,7 +21,6 @@ const GROUPS: { group: string; items: Item[] }[] = [
     { id: "embeddings", label: "Embeddings & reranking", icon: Binary, admin: true, render: () => <EmbeddingsSection />, description: "Semantic search models and the vector index." },
     { id: "retrieval", label: "Retrieval tuning", icon: SlidersHorizontal, admin: true, render: () => <RetrievalSection />, description: "Candidate pools, fusion, context budget and chunking." },
     { id: "vector", label: "Vector store", icon: Database, admin: true, render: () => <VectorSection />, description: "Embedded or server Qdrant." },
-    { id: "research", label: "Research sources", icon: Globe, admin: true, render: () => <ResearchSection />, description: "External evidence and de-identification." },
   ] },
   { group: "Organisation", items: [
     { id: "branding", label: "Branding", icon: Building2, admin: true, render: () => <BrandingSection />, description: "Name, logo, colours and disclaimer." },

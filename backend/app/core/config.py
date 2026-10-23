@@ -2,7 +2,7 @@
 
 Only infrastructure-level values live here (where the database is, the secret key,
 where files are stored). Everything an operator is expected to tune while the app is
-running — AI providers, models, retrieval parameters, branding, research sources —
+running — AI providers, models, retrieval parameters, branding —
 lives in the runtime configuration (`app.services.runtime_config`), which is stored
 in the database and edited from Settings. The `DEFAULT_*` values below only seed that
 runtime configuration on first start.

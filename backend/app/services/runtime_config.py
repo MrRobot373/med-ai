@@ -146,15 +146,6 @@ class VectorStoreConfig(BaseModel):
     collection_prefix: str = "gms"
 
 
-class ResearchConfig(BaseModel):
-    enabled: bool = False
-    sources: list[str] = Field(default_factory=lambda: ["pubmed", "openfda", "clinicaltrials"])
-    max_results_per_source: int = Field(5, ge=1, le=20)
-    cache_hours: int = Field(24, ge=0, le=24 * 30)
-    pubmed_api_key: str | None = None
-    timeout_seconds: int = Field(15, ge=3, le=120)
-
-
 class BrandingConfig(BaseModel):
     product_name: str = "GMS Clinical AI"
     tagline: str = "Clinical intelligence, grounded in evidence"
@@ -180,7 +171,6 @@ class RuntimeConfig(BaseModel):
     reranker: RerankerConfig = Field(default_factory=RerankerConfig)
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
     vector_store: VectorStoreConfig = Field(default_factory=VectorStoreConfig)
-    research: ResearchConfig = Field(default_factory=ResearchConfig)
     branding: BrandingConfig = Field(default_factory=BrandingConfig)
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     # Fingerprint of the embedding setup the vector index was built with. When the
@@ -198,7 +188,6 @@ SECTIONS = (
     "reranker",
     "retrieval",
     "vector_store",
-    "research",
     "branding",
     "security",
 )
@@ -210,7 +199,6 @@ SECRET_FIELDS: tuple[tuple[str, str], ...] = (
     ("embeddings", "api_key"),
     ("reranker", "api_key"),
     ("vector_store", "api_key"),
-    ("research", "pubmed_api_key"),
 )
 
 _KEY = "runtime"

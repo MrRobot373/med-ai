@@ -1,5 +1,5 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowUp, BookOpenText, Check, Copy, Globe, ListTree, PanelRightClose, PanelRightOpen, Sparkles, Square, ThumbsDown, ThumbsUp, User as UserIcon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle, ArrowUp, BookOpenText, Check, Copy, ListTree, PanelRightClose, PanelRightOpen, Sparkles, Square, ThumbsDown, ThumbsUp, User as UserIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useConversation, useMe } from "@/api/hooks";
@@ -25,10 +25,6 @@ const KNOWLEDGE_SUGGESTIONS = [
   "How should levothyroxine be taken alongside iron supplements?",
   "Which drugs need dose review as eGFR falls?",
 ];
-
-function useResearchEnabled() {
-  return useQuery({ queryKey: ["research-providers"], queryFn: () => api<{ enabled: boolean }>("/api/research/providers"), staleTime: 60_000 }).data?.enabled ?? false;
-}
 
 function AssistantBubble({ m, onCite, activeCite, selected, onSelect, onFeedback, onTrace }: { m: ChatMessage; onCite: (l: string) => void; activeCite: string | null; selected: boolean; onSelect: () => void; onFeedback: (r: "up" | "down" | null) => void; onTrace: () => void }) {
   const [copied, setCopied] = useState(false);
@@ -73,21 +69,18 @@ export function ChatView({ conversationId, patient, onCreated, className }: { co
   const { data: conv } = useConversation(conversationId);
   const { data: me } = useMe();
   const qc = useQueryClient();
-  const researchEnabled = useResearchEnabled();
   const [input, setInput] = useState("");
   const [pending, setPending] = useState<Pending | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeCite, setActiveCite] = useState<string | null>(null);
   const [tab, setTab] = useState("sources");
   const [showEvidence, setShowEvidence] = useState(() => window.innerWidth > 1280);
-  const [webDraft, setWebDraft] = useState(false);
   const [docId, setDocId] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
 
   const scopePatient = conv?.patient ?? patient ?? null;
-  const useWeb = conv ? conv.use_web : webDraft;
   const messages = useMemo(() => (conv?.messages ?? []).filter((m) => m.id !== pending?.userId), [conv, pending?.userId]);
   const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
   const selected = messages.find((m) => m.id === selectedId) ?? lastAssistant;
@@ -108,7 +101,7 @@ export function ChatView({ conversationId, patient, onCreated, className }: { co
     let id = conversationId;
     try {
       if (!id) {
-        const c = await api<{ id: string }>("/api/conversations", { method: "POST", body: { patient_id: patient?.id ?? null, use_web: webDraft } });
+        const c = await api<{ id: string }>("/api/conversations", { method: "POST", body: { patient_id: patient?.id ?? null } });
         id = c.id;
         qc.invalidateQueries({ queryKey: ["conversations"] });
         onCreated?.(c.id);
@@ -145,12 +138,6 @@ export function ChatView({ conversationId, patient, onCreated, className }: { co
     if (rating) toast.success("Thanks — feedback recorded for quality review");
   };
 
-  const toggleWeb = async () => {
-    if (!conv) return setWebDraft((w) => !w);
-    await api(`/api/conversations/${conv.id}`, { method: "PATCH", body: { use_web: !conv.use_web } });
-    qc.invalidateQueries({ queryKey: ["conversation", conv.id] });
-  };
-
   const onCite = (m: ChatMessage) => (label: string) => { setSelectedId(m.id); setActiveCite(label); setTab("sources"); setShowEvidence(true); };
   const empty = messages.length === 0 && !pending;
   const suggestions = scopePatient ? PATIENT_SUGGESTIONS : KNOWLEDGE_SUGGESTIONS;
@@ -165,11 +152,6 @@ export function ChatView({ conversationId, patient, onCreated, className }: { co
               {scopePatient ? <><UserIcon className="size-3" /> Patient: <span className="font-medium text-foreground/80">{scopePatient.full_name}</span> · {scopePatient.mrn} · record + documents + library</> : <><BookOpenText className="size-3" /> Knowledge library only — no patient data</>}
             </div>
           </div>
-          {researchEnabled && (
-            <Tooltip content={useWeb ? "Web evidence on: de-identified searches of PubMed, openFDA and ClinicalTrials.gov" : "Add trusted web evidence (de-identified)"}>
-              <Button size="sm" variant={useWeb ? "soft" : "ghost"} onClick={toggleWeb}><Globe /> Web {useWeb ? "on" : "off"}</Button>
-            </Tooltip>
-          )}
           <Tooltip content={showEvidence ? "Hide evidence" : "Show evidence"}>
             <Button size="icon-sm" variant="ghost" onClick={() => setShowEvidence((s) => !s)} className="hidden lg:inline-flex">{showEvidence ? <PanelRightClose /> : <PanelRightOpen />}</Button>
           </Tooltip>

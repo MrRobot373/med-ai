@@ -53,7 +53,6 @@ export function useSection(section: string) {
       qc.setQueryData(["settings"], (old: SettingsView | undefined) => ({ ...(old ?? {}), ...view, profiles: old?.profiles ?? {} }));
       qc.invalidateQueries({ queryKey: ["health"] });
       if (section === "branding") qc.invalidateQueries({ queryKey: ["branding"] });
-      if (section === "research") qc.invalidateQueries({ queryKey: ["research-providers"] });
       toast.success("Settings saved", { description: "Changes apply to the next request — no restart needed." });
       return view;
     } catch (e) {

@@ -1,4 +1,4 @@
-import { BookOpenText, ClipboardList, ExternalLink, FileText, Globe, ListTree, ShieldCheck } from "lucide-react";
+import { BookOpenText, ClipboardList, ExternalLink, FileText, ListTree, ShieldCheck } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { Source, Trace } from "@/api/types";
 import { Badge, EmptyState, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
@@ -7,7 +7,6 @@ import { cn, fmtDate } from "@/lib/utils";
 const SCOPE = {
   patient: { icon: FileText, label: "Patient document", chip: "bg-info-soft text-info-foreground" },
   knowledge: { icon: BookOpenText, label: "Knowledge library", chip: "bg-primary-soft text-primary-soft-foreground" },
-  web: { icon: Globe, label: "Web evidence", chip: "bg-warning-soft text-warning-foreground" },
   record: { icon: ClipboardList, label: "Structured record", chip: "bg-success-soft text-success-foreground" },
 };
 
@@ -85,18 +84,6 @@ export function TraceView({ trace }: { trace: Trace }) {
             {g.citations_used.length} sources cited{g.citation_coverage != null ? ` · ${Math.round(g.citation_coverage * 100)}% of statements carry a citation` : ""}.
             {g.invalid_citations_removed.length > 0 && <span className="text-danger-foreground"> Removed {g.invalid_citations_removed.length} citation(s) that pointed to sources that were not provided: {g.invalid_citations_removed.join(", ")}.</span>}
           </p>
-        </div>
-      )}
-      {trace.web && (
-        <div className="rounded-lg border p-3">
-          <div className="flex items-center gap-2 font-medium"><Globe className="size-4 text-warning" /> Web research</div>
-          {trace.web.status === "searched" ? (
-            <div className="mt-1 space-y-1 text-xs text-muted-foreground">
-              <div>Outbound (de-identified) query: <code className="rounded bg-muted px-1">{trace.web.outbound_query}</code></div>
-              <div>{trace.web.identifiers_removed} identifier(s) removed before sending.</div>
-              <div className="flex flex-wrap gap-1">{trace.web.providers?.map((p: any) => <Badge key={p.provider} tone={p.status === "error" ? "danger" : "neutral"}>{p.name}: {p.status === "error" ? "failed" : `${p.count}${p.status === "cached" ? " (cached)" : ""}`}</Badge>)}</div>
-            </div>
-          ) : <p className="mt-1 text-xs text-muted-foreground">{trace.web.note}</p>}
         </div>
       )}
       {!!trace.candidates?.length && (

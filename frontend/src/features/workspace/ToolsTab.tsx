@@ -139,7 +139,7 @@ export default function ToolsTab() {
             {!history?.length ? <EmptyState compact icon={<Wand2 />} title="No tool runs yet" /> : (
               <div className="divide-y">
                 {history.map((h) => (
-                  <button key={h.id} onClick={() => { setRun(h); setTool(h.tool === "research" ? tool : h.tool); setParams({ tool: h.tool, run: h.id }, { replace: true }); }} className={cn("flex w-full items-center gap-3 py-2.5 text-left text-sm hover:bg-subtle", run?.id === h.id && "bg-primary-soft/40")}>
+                  <button key={h.id} onClick={() => { setRun(h); setTool(h.tool); setParams({ tool: h.tool, run: h.id }, { replace: true }); }} className={cn("flex w-full items-center gap-3 py-2.5 text-left text-sm hover:bg-subtle", run?.id === h.id && "bg-primary-soft/40")}>
                     <span className="flex-1 font-medium">{toolName(h.tool)}</span>
                     <RunStatusBadge status={h.status} />
                     <span className="w-28 text-right text-xs text-muted-foreground">{fmtRelative(h.created_at)}</span>

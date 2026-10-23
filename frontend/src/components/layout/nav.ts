@@ -1,4 +1,4 @@
-import { BookOpenText, Globe, Home, Inbox, MessagesSquare, ScrollText, Settings, Stethoscope, Users, type LucideIcon } from "lucide-react";
+import { BookOpenText, Home, Inbox, MessagesSquare, ScrollText, Settings, Stethoscope, Users, type LucideIcon } from "lucide-react";
 import type { Role } from "@/api/types";
 
 export interface NavItem {
@@ -23,7 +23,6 @@ export const PRIMARY_NAV: NavItem[] = [
 /** Left icon rail — tools and administration. */
 export const RAIL_NAV: NavItem[] = [
   { to: "/tools", label: "Clinical tools", icon: Stethoscope, roles: CLINICAL },
-  { to: "/research", label: "Research", icon: Globe, roles: CLINICAL },
   { to: "/library", label: "Knowledge library", icon: BookOpenText, shortcut: "G L", roles: CLINICAL },
   { to: "/audit", label: "Audit log", icon: ScrollText, roles: ["admin"] },
   { to: "/settings", label: "Settings", icon: Settings, shortcut: "G S" },

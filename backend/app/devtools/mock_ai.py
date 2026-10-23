@@ -73,7 +73,7 @@ async def rerank(req: Request):
 def _labels(text: str) -> list[tuple[str, str]]:
     """(label, first sentence) for each evidence block in the prompt."""
     out = []
-    for m in re.finditer(r"^\[([PKW]\d+)\][^\n]*\n(.+?)(?=\n\n---|\n\n=====|\Z)", text, re.S | re.M):
+    for m in re.finditer(r"^\[([PK]\d+)\][^\n]*\n(.+?)(?=\n\n---|\n\n=====|\Z)", text, re.S | re.M):
         lines = [
             ln.strip()
             for ln in m.group(2).splitlines()

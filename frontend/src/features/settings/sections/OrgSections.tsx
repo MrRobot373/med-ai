@@ -1,11 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Globe, ImagePlus, KeyRound, Lock, MoreHorizontal, Palette, RefreshCw, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
+import { ImagePlus, KeyRound, Lock, MoreHorizontal, Palette, RefreshCw, Trash2, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useHealth, useMe } from "@/api/hooks";
 import type { User } from "@/api/types";
 import {
-  Avatar, Badge, Button, Card, Checkbox, Dialog, DialogContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  Avatar, Badge, Button, Card, Dialog, DialogContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
   Field, Input, KeyValue, Segmented, Select, Skeleton, SwitchRow, Table, TBody, TD, TH, THead, TR, Textarea,
 } from "@/components/ui";
 import { ComponentRow, STATUS_TONE } from "@/components/layout/StatusIndicator";
@@ -13,7 +13,7 @@ import { ACCENT_PRESETS } from "@/lib/color";
 import { api, ApiError } from "@/lib/api";
 import { cn, fmtDateTime, fmtRelative } from "@/lib/utils";
 import { useSection } from "../useSection";
-import { NumberField, SaveBar, SecretField, SettingsCard } from "../parts";
+import { NumberField, SaveBar, SettingsCard } from "../parts";
 
 async function resizeLogo(file: File): Promise<string> {
   const img = await createImageBitmap(file);
@@ -56,40 +56,6 @@ export function BrandingSection() {
         </Field>
         <Field label="Default theme"><Segmented value={d.default_theme} onChange={(v) => s.set({ default_theme: v })} options={[{ value: "light", label: "Light" }, { value: "dark", label: "Dark" }, { value: "system", label: "System" }]} /></Field>
       </div>
-    </SettingsCard>
-  );
-}
-
-const SOURCES = [
-  { id: "pubmed", name: "PubMed", text: "Peer-reviewed literature (NCBI E-utilities)" },
-  { id: "openfda", name: "openFDA", text: "FDA drug labelling" },
-  { id: "clinicaltrials", name: "ClinicalTrials.gov", text: "Trial registry" },
-];
-
-export function ResearchSection() {
-  const s = useSection("research");
-  if (!s.server) return null;
-  const d = s.draft;
-  return (
-    <SettingsCard title={<span className="flex items-center gap-2"><Globe className="size-4 text-primary" /> Research sources</span>} description="Optional external evidence. Off by default — the platform is fully local until you enable this." badge={<Badge tone={s.server.enabled ? "warning" : "success"}>{s.server.enabled ? "Online research enabled" : "Local-only"}</Badge>} footer={<SaveBar dirty={s.dirty} saving={s.saving} onSave={s.save} onReset={s.reset} />}>
-      <SwitchRow label="Enable Research Mode" description="Allows clinicians to opt in to web evidence per conversation and use the Research page." checked={d.enabled} onCheckedChange={(v) => s.set({ enabled: v })} />
-      <div className="rounded-lg border bg-subtle p-3 text-xs text-muted-foreground"><ShieldCheck className="mr-1 inline size-3.5 text-success" /> Every outbound query is de-identified first: the active patient's name, MRN, phone and email, plus emails, phone numbers, dates and addresses, are stripped. Clinicians can preview exactly what is sent, and every search is audited.</div>
-      <Field label="Sources">
-        <div className="grid gap-2 md:grid-cols-3">
-          {SOURCES.map((src) => (
-            <label key={src.id} className={cn("flex cursor-pointer items-start gap-2.5 rounded-lg border p-3", d.sources.includes(src.id) && "border-primary/50 bg-primary-soft/40")}>
-              <Checkbox checked={d.sources.includes(src.id)} onCheckedChange={(v) => s.set({ sources: v ? [...d.sources, src.id] : d.sources.filter((x: string) => x !== src.id) })} className="mt-0.5" />
-              <span><span className="block text-sm font-medium">{src.name}</span><span className="text-xs text-muted-foreground">{src.text}</span></span>
-            </label>
-          ))}
-        </div>
-      </Field>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Field label="Results per source"><NumberField value={d.max_results_per_source} onChange={(v) => s.set({ max_results_per_source: v })} min={1} max={20} /></Field>
-        <Field label="Cache freshness" hint="Reuse identical searches"><NumberField value={d.cache_hours} onChange={(v) => s.set({ cache_hours: v })} min={0} suffix="hours" /></Field>
-        <Field label="Timeout"><NumberField value={d.timeout_seconds} onChange={(v) => s.set({ timeout_seconds: v })} min={3} suffix="sec" /></Field>
-      </div>
-      <Field label="NCBI API key" hint="Optional — raises PubMed's rate limit from 3 to 10 requests/s."><SecretField has={d.has_pubmed_api_key} preview={d.pubmed_api_key_preview} value={s.secrets.pubmed_api_key} onChange={(v) => s.setSecret("pubmed_api_key", v)} /></Field>
     </SettingsCard>
   );
 }
@@ -202,7 +168,6 @@ export function SystemSection() {
             <KeyValue label="Embeddings" value={`${info.embeddings.model}${info.embeddings.dimension ? ` · ${info.embeddings.dimension}-d` : ""}`} />
             <KeyValue label="Reranker" value={info.reranker.provider === "none" ? "Off" : info.reranker.model || info.reranker.provider} />
             <KeyValue label="Vector store" value={info.vector_store} />
-            <KeyValue label="Research mode" value={info.research_enabled ? "Enabled" : "Local-only"} />
             <KeyValue label="Patients · documents · users" value={`${info.counts.patients} · ${info.counts.documents} · ${info.counts.users}`} />
             <KeyValue label="Python" value={info.python} />
             <KeyValue label="API reference" value={<a href="/api/docs" target="_blank" rel="noreferrer" className="text-primary hover:underline">/api/docs</a>} />

@@ -1,7 +1,7 @@
 # Configuring AI providers
 
 Everything below is done in the UI as an administrator: **Settings → AI models**,
-**Embeddings & reranking**, **Retrieval tuning**, **Vector store**, **Research sources**.
+**Embeddings & reranking**, **Retrieval tuning**, **Vector store**.
 Use **Test** before **Save** — tests run against the unsaved values. Saved changes apply
 to the next request; no restart is needed. API keys are encrypted with `APP_SECRET_KEY`
 and never returned to the browser.
@@ -94,10 +94,3 @@ pipeline and shows every stage.
   process — stop the API before running `python -m app.seed`.
 - **Server**: a Qdrant server (`docker compose --profile qdrant up -d`, URL
   `http://localhost:6333` or `http://qdrant:6333` inside compose). After switching, re-index.
-
-## Research sources
-
-Off by default (fully local). When enabled, clinicians can opt in per conversation or use
-the Research page. Sources: PubMed (optional NCBI key raises the rate limit), openFDA drug
-labels, ClinicalTrials.gov. Queries are de-identified first (patient name/MRN/phone/email,
-plus emails, phone numbers, dates, addresses) and every search is audited.

@@ -22,7 +22,6 @@ const PatientAssistantTab = lazy(() => import("@/features/workspace/AssistantTab
 const PatientToolsTab = lazy(() => import("@/features/workspace/ToolsTab"));
 const AssistantPage = lazy(() => import("@/features/assistant/AssistantPage"));
 const ToolsPage = lazy(() => import("@/features/tools/ToolsPage"));
-const ResearchPage = lazy(() => import("@/features/research/ResearchPage"));
 const LibraryPage = lazy(() => import("@/features/library/LibraryPage"));
 const AuditPage = lazy(() => import("@/features/audit/AuditPage"));
 const SettingsPage = lazy(() => import("@/features/settings/SettingsPage"));
@@ -81,7 +80,6 @@ export const router = createBrowserRouter([
       { path: "assistant", element: clinical(<AssistantPage />) },
       { path: "assistant/:conversationId", element: clinical(<AssistantPage />) },
       { path: "tools", element: clinical(<ToolsPage />) },
-      { path: "research", element: clinical(<ResearchPage />) },
       { path: "library", element: clinical(<LibraryPage />) },
       { path: "audit", element: page(<AuditPage />) },
       { path: "settings", element: <Navigate to="/settings/profile" replace /> },
