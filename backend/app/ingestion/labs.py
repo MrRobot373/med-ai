@@ -1,25 +1,11 @@
-"""Structured lab/observation extraction from ingested report text — spec §33
-"Laboratory Trend Engine".
+"""Lab / measurement extraction from report text.
 
-Two complementary strategies, tried per table block / text line:
+Recognises a registry of common tests (aliases → canonical code) in table rows
+("HbA1c | 8.1 | % | 4.0-5.6") and inline text ("Creatinine: 1.6 mg/dL (0.6-1.2) H").
 
-1. **Table, long format** — a header row naming Test/Result/Unit/Reference-Range-style
-   columns (the layout our own PDF/DOCX/XLSX table extractors already produce for a
-   genuine lab panel, and the shape spec §33's own example uses).
-2. **Table, wide format** — no such header, but a column header itself names a known
-   test (optionally with a unit in parentheses, e.g. "IOP (mmHg)"), with each row
-   representing one measurement dimension (e.g. per-eye: OD/OS). Generic support for
-   "vitals-style" tables, not hardcoded to any one test.
-3. **Inline** — a single free-text mention, e.g. an OCT report's "Central subfield
-   thickness: 340 microns (elevated)".
-
-`_REGISTRY` below provides canonical names / aliases / a *typical* unit for grouping
-and display only — it is deliberately NOT a source of reference ranges. Real reference
-intervals vary by lab, sex, age, and method; baking one in as a "default" would be
-exactly the kind of invented clinical fact spec §2 prohibits. `abnormal_flag` is set
-only when the source document itself states a range (a Reference Range/Target column)
-or an explicit qualitative annotation ("(elevated)", "(low)", ...) — never inferred
-from a hardcoded threshold.
+Flags are only set from what the document itself states — its reference range or an
+explicit H/L/abnormal marker. No built-in reference ranges are ever applied: real
+intervals vary by laboratory, method, age and sex.
 """
 
 from __future__ import annotations
@@ -27,319 +13,282 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from app.ingestion._tabular import TableBlock, find_header_column, find_table_blocks
+# code, display, aliases, typical unit (display grouping only)
+REGISTRY: list[tuple[str, str, tuple[str, ...], str | None]] = [
+    ("hba1c", "HbA1c", ("hba1c", "hemoglobin a1c", "haemoglobin a1c", "hgb a1c", "glycated hemoglobin", "a1c"), "%"),
+    ("glucose_fasting", "Fasting glucose", ("fasting glucose", "fasting blood glucose", "fbg", "fbs"), "mg/dL"),
+    ("glucose", "Glucose", ("random glucose", "blood glucose", "glucose"), "mg/dL"),
+    ("creatinine", "Creatinine", ("serum creatinine", "creatinine"), "mg/dL"),
+    ("egfr", "eGFR", ("egfr", "estimated gfr", "gfr"), "mL/min/1.73m²"),
+    ("bun", "BUN", ("blood urea nitrogen", "bun", "urea"), "mg/dL"),
+    ("uacr", "Urine albumin/creatinine", ("uacr", "albumin/creatinine ratio", "urine acr", "acr"), "mg/g"),
+    ("sodium", "Sodium", ("sodium", "na+", "na"), "mmol/L"),
+    ("potassium", "Potassium", ("potassium", "k+"), "mmol/L"),
+    ("chloride", "Chloride", ("chloride", "cl-"), "mmol/L"),
+    ("bicarbonate", "Bicarbonate", ("bicarbonate", "hco3", "total co2"), "mmol/L"),
+    ("calcium", "Calcium", ("calcium", "ca2+"), "mg/dL"),
+    ("hemoglobin", "Hemoglobin", ("hemoglobin", "haemoglobin", "hgb", "hb"), "g/dL"),
+    ("hematocrit", "Hematocrit", ("hematocrit", "haematocrit", "hct"), "%"),
+    ("wbc", "WBC", ("white blood cell count", "white blood cells", "wbc", "total leucocyte count", "tlc"), "10⁹/L"),
+    ("platelets", "Platelets", ("platelet count", "platelets", "plt"), "10⁹/L"),
+    ("mcv", "MCV", ("mean corpuscular volume", "mcv"), "fL"),
+    ("ldl", "LDL cholesterol", ("ldl cholesterol", "ldl-c", "ldl"), "mg/dL"),
+    ("hdl", "HDL cholesterol", ("hdl cholesterol", "hdl-c", "hdl"), "mg/dL"),
+    ("total_cholesterol", "Total cholesterol", ("total cholesterol", "cholesterol, total", "cholesterol"), "mg/dL"),
+    ("triglycerides", "Triglycerides", ("triglycerides", "tg"), "mg/dL"),
+    ("alt", "ALT", ("alanine aminotransferase", "alt", "sgpt"), "U/L"),
+    ("ast", "AST", ("aspartate aminotransferase", "ast", "sgot"), "U/L"),
+    ("alp", "ALP", ("alkaline phosphatase", "alp"), "U/L"),
+    ("bilirubin_total", "Total bilirubin", ("total bilirubin", "bilirubin, total", "bilirubin"), "mg/dL"),
+    ("albumin", "Albumin", ("serum albumin", "albumin"), "g/dL"),
+    ("tsh", "TSH", ("thyroid stimulating hormone", "tsh"), "mIU/L"),
+    ("ft4", "Free T4", ("free t4", "ft4"), "ng/dL"),
+    ("crp", "CRP", ("c-reactive protein", "crp", "hs-crp"), "mg/L"),
+    ("esr", "ESR", ("erythrocyte sedimentation rate", "esr"), "mm/hr"),
+    ("inr", "INR", ("inr",), None),
+    ("bnp", "BNP", ("nt-probnp", "bnp"), "pg/mL"),
+    ("troponin", "Troponin", ("high-sensitivity troponin", "troponin i", "troponin t", "troponin"), "ng/L"),
+    ("ferritin", "Ferritin", ("ferritin",), "ng/mL"),
+    ("vitamin_d", "Vitamin D (25-OH)", ("25-oh vitamin d", "vitamin d", "25(oh)d"), "ng/mL"),
+    ("b12", "Vitamin B12", ("vitamin b12", "b12", "cobalamin"), "pg/mL"),
+    ("uric_acid", "Uric acid", ("uric acid",), "mg/dL"),
+    ("psa", "PSA", ("prostate specific antigen", "psa"), "ng/mL"),
+    ("systolic_bp", "Systolic BP", ("systolic blood pressure", "systolic bp", "sbp"), "mmHg"),
+    ("diastolic_bp", "Diastolic BP", ("diastolic blood pressure", "diastolic bp", "dbp"), "mmHg"),
+    ("heart_rate", "Heart rate", ("heart rate", "pulse"), "bpm"),
+    ("spo2", "SpO₂", ("oxygen saturation", "spo2", "sao2"), "%"),
+    ("weight", "Weight", ("body weight", "weight"), "kg"),
+    ("bmi", "BMI", ("body mass index", "bmi"), "kg/m²"),
+    ("lvef", "LVEF", ("left ventricular ejection fraction", "ejection fraction", "lvef"), "%"),
+    ("fev1", "FEV1", ("fev1",), "L"),
+    ("iop", "IOP", ("intraocular pressure", "iop"), "mmHg"),
+    ("cst", "Central subfield thickness", ("central subfield thickness", "cst"), "µm"),
+]
 
 
-@dataclass(frozen=True)
-class _TestDef:
-    canonical: str  # stored as normalized_name, e.g. "hba1c"
-    display: str  # human label, e.g. "HbA1c"
-    aliases: tuple[str, ...]
-    canonical_unit: str | None
+def _pattern(alias: str) -> re.Pattern[str]:
+    left = r"(?<![A-Za-z0-9])"
+    right = r"(?![A-Za-z0-9])"
+    return re.compile(left + re.escape(alias) + right, re.IGNORECASE)
 
 
-# The spec §33 explicit generic list, plus a few ophthalmology measurements relevant
-# to this deployment's domain (see docs/architecture.md "Domain note") — the registry
-# is intentionally extensible rather than limited to the spec's illustrative examples.
-_REGISTRY: tuple[_TestDef, ...] = (
-    _TestDef("hba1c", "HbA1c", ("hba1c", "hemoglobin a1c", "hgb a1c", "a1c"), "%"),
-    _TestDef("glucose", "Glucose", ("fasting glucose", "glucose"), "mg/dL"),
-    _TestDef("creatinine", "Creatinine", ("creatinine",), "mg/dL"),
-    _TestDef("egfr", "eGFR", ("egfr", "gfr"), "mL/min/1.73m2"),
-    _TestDef("sodium", "Sodium", ("sodium", "na+"), "mmol/L"),
-    _TestDef("potassium", "Potassium", ("potassium", "k+"), "mmol/L"),
-    _TestDef("bun", "BUN", ("bun", "blood urea nitrogen"), "mg/dL"),
-    _TestDef("hemoglobin", "Hemoglobin", ("hemoglobin", "haemoglobin", "hgb"), "g/dL"),
-    _TestDef("platelets", "Platelets", ("platelets", "platelet count"), "10^9/L"),
-    _TestDef("ldl_cholesterol", "LDL Cholesterol", ("ldl cholesterol", "ldl"), "mg/dL"),
-    _TestDef("hdl_cholesterol", "HDL Cholesterol", ("hdl cholesterol", "hdl"), "mg/dL"),
-    _TestDef("total_cholesterol", "Total Cholesterol", ("total cholesterol",), "mg/dL"),
-    _TestDef("iop", "IOP", ("intraocular pressure", "iop"), "mmHg"),
-    _TestDef(
-        "central_subfield_thickness",
-        "Central Subfield Thickness",
-        ("central subfield thickness", "cst"),
-        "microns",
-    ),
+_ALIASES = sorted(
+    ((alias, _pattern(alias), code, display, unit) for code, display, aliases, unit in REGISTRY for alias in aliases),
+    key=lambda e: len(e[0]),
+    reverse=True,
 )
 
-
-def _alias_pattern(alias: str) -> re.Pattern[str]:
-    # A trailing/leading `\b` only makes sense next to a word character — aliases like
-    # "na+"/"k+" end in a symbol, where a strict `\b` would fail to match "Na+ " at a
-    # word/space boundary (both sides non-word).
-    left = r"\b" if alias[0].isalnum() else ""
-    right = r"\b" if alias[-1].isalnum() else ""
-    return re.compile(left + re.escape(alias) + right)
-
-
-# Longest alias first, so e.g. "central subfield thickness" is tried before the
-# shorter "cst", and "fasting glucose" before bare "glucose".
-_ALIAS_ENTRIES: tuple[tuple[re.Pattern[str], _TestDef], ...] = tuple(
-    sorted(
-        ((alias, _alias_pattern(alias), test_def) for test_def in _REGISTRY for alias in test_def.aliases),
-        key=lambda entry: len(entry[0]),
-        reverse=True,
-    )
+_NUM = r"-?\d+(?:[.,]\d+)?"
+_VALUE_AFTER = re.compile(
+    rf"^[\s:=|\-–]*(?P<cmp>[<>≤≥]=?)?\s*(?P<value>{_NUM})\s*(?P<unit>[a-zA-Zµμ%/^0-9.²³⁹\-]*(?:/[a-zA-Z0-9.²³]+)*)?"
+    rf"(?P<rest>.*)$"
 )
-_ALIAS_ENTRIES = tuple((pattern, test_def) for _alias, pattern, test_def in _ALIAS_ENTRIES)
-
-_HEADER_NAME_KEYWORDS = ("test", "name", "parameter", "analyte")
-_HEADER_VALUE_KEYWORDS = ("result", "value")
-_HEADER_UNIT_KEYWORDS = ("unit",)
-_HEADER_RANGE_KEYWORDS = ("reference", "range", "normal", "target")
-
-_QUALIFIER_WORDS = ("od", "os", "ou", "right eye", "left eye", "both eyes", "right", "left")
-
-_NUMERIC_PATTERN = re.compile(r"-?\d+(?:\.\d+)?")
-_RANGE_PATTERN = re.compile(r"^(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)$")
-_RANGE_LT_PATTERN = re.compile(r"^<\s*(-?\d+(?:\.\d+)?)$")
-_RANGE_GT_PATTERN = re.compile(r"^>\s*(-?\d+(?:\.\d+)?)$")
-_QUALITATIVE_PATTERN = re.compile(r"\((elevated|high|low|decreased|increased|abnormal|normal)\)", re.IGNORECASE)
-_PAREN_UNIT_PATTERN = re.compile(r"\(([^)]+)\)")
-_INLINE_VALUE_PATTERN = re.compile(r"[:\s]+(-?\d+(?:\.\d+)?)\s*([a-zA-Z%/^0-9.]*)")
+_RANGE = re.compile(rf"(?P<low>{_NUM})\s*(?:-|–|to)\s*(?P<high>{_NUM})")
+_RANGE_LT = re.compile(rf"(?:<|≤|up to)\s*(?P<high>{_NUM})")
+_RANGE_GT = re.compile(rf"(?:>|≥)\s*(?P<low>{_NUM})")
+_FLAG = re.compile(r"(?<![A-Za-z])(H|L|HIGH|LOW|ABNORMAL|CRITICAL|\*)(?![A-Za-z])", re.IGNORECASE)
+_QUAL = re.compile(r"\b(elevated|raised|increased|decreased|reduced)\b", re.IGNORECASE)
 
 
 @dataclass
 class ExtractedObservation:
-    observation_name: str
-    normalized_name: str
-    value_numeric: float | None
+    code: str
+    name: str
+    value_num: float | None
     value_text: str | None
     unit: str | None
-    reference_low: float | None
-    reference_high: float | None
-    abnormal_flag: bool | None
-    source_page: int
-    extraction_method: str  # "table" | "inline"
-    source_excerpt: str
+    ref_low: float | None
+    ref_high: float | None
+    ref_text: str | None
+    flag: str | None
+    page: int
+    excerpt: str
 
 
-def extract_observations(pages: list[dict]) -> list[ExtractedObservation]:
-    results: list[ExtractedObservation] = []
-    for page_dict in pages:
-        page_num = page_dict["page"]
-        text = page_dict["text"]
-
-        already: set[str] = set()
-        for block in find_table_blocks(text, _is_lab_table_header):
-            long_format = _extract_long_format(block, page_num)
-            if long_format:
-                results.extend(long_format)
-                already.update(o.normalized_name.split(":")[0] for o in long_format)
-                continue
-            wide_format = _extract_wide_format(block, page_num)
-            results.extend(wide_format)
-            already.update(o.normalized_name.split(":")[0] for o in wide_format)
-
-        results.extend(_extract_inline(text, page_num, already))
-    return results
+def _num(s: str) -> float:
+    return float(s.replace(",", "."))
 
 
-_PLAIN_NUMBER_PATTERN = re.compile(r"^-?\d+(?:\.\d+)?$")
+def _parse_table_row(cells: list[str], page: int, line: str) -> ExtractedObservation | None:
+    """`Name | Value | Unit | Range | Flag` style rows (any column order after the name)."""
+    name = cells[0]
+    match = next(
+        (
+            (code, display, header_unit_hint)
+            for alias, pat, code, display, header_unit_hint in _ALIASES
+            if pat.search(name) and len(name[: pat.search(name).start()].strip(" -•*")) <= 3
+        ),
+        None,
+    )
+    if match is None:
+        return None
+    code, display, _ = match
+    hu = re.search(r"\(([^)]{1,15})\)", name)
+    unit = hu.group(1) if hu else None
+    value = None
+    ref_low = ref_high = None
+    ref_text = flag_cell = None
+    for cell in cells[1:]:
+        c = cell.strip()
+        if not c:
+            continue
+        if value is None and re.fullmatch(rf"[<>]?\s*{_NUM}", c):
+            value = _num(re.search(_NUM, c).group())
+            continue
+        rm = _RANGE.fullmatch(c) or None
+        if rm:
+            ref_low, ref_high, ref_text = _num(rm.group("low")), _num(rm.group("high")), c
+            continue
+        lt, gt = _RANGE_LT.fullmatch(c), _RANGE_GT.fullmatch(c)
+        if lt or gt:
+            ref_text = c
+            if lt:
+                ref_high = _num(lt.group("high"))
+            else:
+                ref_low = _num(gt.group("low"))
+            continue
+        if _FLAG.fullmatch(c):
+            flag_cell = c.lower()
+            continue
+        if value is not None and unit is None and len(c) <= 15:
+            unit = c
+    if value is None:
+        return None
+    flag = _flag_from(value, ref_low, ref_high)
+    if flag_cell and flag in (None, "normal"):
+        flag = {"h": "high", "high": "high", "l": "low", "low": "low"}.get(flag_cell, "abnormal")
+    return _with_side(
+        ExtractedObservation(
+            code=code,
+            name=display,
+            value_num=value,
+            value_text=None,
+            unit=unit,
+            ref_low=ref_low,
+            ref_high=ref_high,
+            ref_text=ref_text,
+            flag=flag,
+            page=page,
+            excerpt=line.strip()[:300],
+        ),
+        name,
+    )
 
 
-def _is_lab_table_header(cells: list[str]) -> bool:
-    name_col = find_header_column(cells, _HEADER_NAME_KEYWORDS)
-    value_col = find_header_column(cells, _HEADER_VALUE_KEYWORDS)
-    if name_col is not None and value_col is not None:
-        return True  # long format: "Test | Result | Unit | Reference Range"
-    if any(_PLAIN_NUMBER_PATTERN.match(cell) for cell in cells):
-        # A row holding an actual measured value ("HbA1c | 8.1 | % | 4.0-5.6") is data,
-        # not a header — even though its own name cell ("HbA1c") matches the registry
-        # just as readily as a genuine wide-format header column name would.
-        return False
-    if name_col is None and value_col is None:
-        return any(_match_registry(cell) for cell in cells)  # wide format: "IOP (mmHg)"
-    return False
+_SIDE = re.compile(r"(?<![A-Za-z])(OD|OS|OU|right eye|left eye|left|right)(?![A-Za-z])", re.IGNORECASE)
+_SIDE_NAMES = {"od": "OD", "right eye": "OD", "right": "OD", "os": "OS", "left eye": "OS", "left": "OS", "ou": "OU"}
 
 
-def _match_registry(text: str) -> _TestDef | None:
-    for pattern, test_def in _ALIAS_ENTRIES:
-        if pattern.search(text.lower()):
-            return test_def
+def _with_side(obs: ExtractedObservation, label: str) -> ExtractedObservation:
+    """Per-eye / per-side measurements become separate series (IOP OD vs IOP OS)."""
+    m = _SIDE.search(label)
+    if m:
+        side = _SIDE_NAMES[m.group(1).lower()]
+        obs.code = f"{obs.code}_{side.lower()}"
+        obs.name = f"{obs.name} {side}"
+    return obs
+
+
+def _flag_from(value: float, low: float | None, high: float | None) -> str | None:
+    if low is not None and value < low:
+        return "low"
+    if high is not None and value > high:
+        return "high"
+    if low is not None or high is not None:
+        return "normal"
     return None
 
 
-def _to_float(text: str) -> float | None:
-    match = _NUMERIC_PATTERN.search(text)
-    return float(match.group()) if match else None
-
-
-def _parse_range(text: str) -> tuple[float | None, float | None]:
-    stripped = text.strip()
-    if not stripped:
-        return None, None
-    match = _RANGE_PATTERN.match(stripped)
-    if match:
-        return float(match.group(1)), float(match.group(2))
-    match = _RANGE_LT_PATTERN.match(stripped)
-    if match:
-        return None, float(match.group(1))
-    match = _RANGE_GT_PATTERN.match(stripped)
-    if match:
-        return float(match.group(1)), None
-    return None, None
-
-
-def _compute_abnormal(value: float | None, low: float | None, high: float | None) -> bool | None:
-    if value is None or (low is None and high is None):
-        return None
-    return bool((low is not None and value < low) or (high is not None and value > high))
-
-
-def _slugify(name: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_") or "unknown"
-
-
-def _extract_long_format(block: TableBlock, page: int) -> list[ExtractedObservation]:
-    name_col = find_header_column(block.header, _HEADER_NAME_KEYWORDS)
-    value_col = find_header_column(block.header, _HEADER_VALUE_KEYWORDS)
-    if name_col is None or value_col is None:
-        return []
-
-    unit_col = find_header_column(block.header, _HEADER_UNIT_KEYWORDS)
-    range_col = find_header_column(block.header, _HEADER_RANGE_KEYWORDS)
-
-    results: list[ExtractedObservation] = []
-    for row in block.rows:
-        if name_col >= len(row) or value_col >= len(row):
+def _parse_line(line: str, page: int) -> ExtractedObservation | None:
+    if line.count("|") >= 1:
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) >= 2:
+            return _parse_table_row(cells, page, line)
+    lowered = line.lower()
+    for _alias, pat, code, display, typical_unit in _ALIASES:
+        m = pat.search(line)
+        if not m:
             continue
-        raw_name = row[name_col].strip()
-        raw_value = row[value_col].strip()
-        if not raw_name or not raw_value:
+        # only match when the test name starts the line/cell (avoids prose mentions)
+        prefix = line[: m.start()].strip(" |:-•*\t")
+        if prefix and len(prefix) > 3:
             continue
-
-        test_def = _match_registry(raw_name)
-        canonical = test_def.canonical if test_def else _slugify(raw_name)
-        unit = None
-        if unit_col is not None and unit_col < len(row):
-            unit = row[unit_col].strip() or None
-        if unit is None and test_def:
-            unit = test_def.canonical_unit
-
-        low = high = None
-        if range_col is not None and range_col < len(row):
-            low, high = _parse_range(row[range_col])
-
-        value_numeric = _to_float(raw_value)
-        results.append(
+        after = line[m.end() :]
+        # skip "(units)" right after the name, e.g. "Creatinine (mg/dL) | 1.2"
+        header_unit = None
+        hu = re.match(r"\s*\(([^)]{1,15})\)", after)
+        if hu and not re.match(rf"\s*\(\s*{_NUM}", after):
+            header_unit = hu.group(1)
+            after = after[hu.end() :]
+        vm = _VALUE_AFTER.match(after)
+        if not vm:
+            return None
+        value = _num(vm.group("value"))
+        unit = (vm.group("unit") or "").strip(" |") or header_unit or None
+        if unit and re.fullmatch(_NUM, unit):
+            unit = header_unit
+        rest = vm.group("rest") or ""
+        ref_low = ref_high = None
+        ref_text = None
+        rm = _RANGE.search(rest)
+        if rm:
+            ref_low, ref_high = _num(rm.group("low")), _num(rm.group("high"))
+            ref_text = rm.group(0)
+        else:
+            lt = _RANGE_LT.search(rest)
+            gt = _RANGE_GT.search(rest)
+            if lt:
+                ref_high, ref_text = _num(lt.group("high")), lt.group(0)
+            elif gt:
+                ref_low, ref_text = _num(gt.group("low")), gt.group(0)
+        flag = None
+        if ref_low is not None and value < ref_low:
+            flag = "low"
+        elif ref_high is not None and value > ref_high:
+            flag = "high"
+        elif ref_low is not None or ref_high is not None:
+            flag = "normal"
+        fm = _FLAG.search(rest.replace(ref_text, " ") if ref_text else rest)
+        if fm and flag in (None, "normal"):
+            token = fm.group(1).lower()
+            flag = {"h": "high", "high": "high", "l": "low", "low": "low"}.get(token, "abnormal")
+        elif flag is None and _QUAL.search(rest):
+            q = _QUAL.search(rest).group(1).lower()
+            flag = "high" if q in ("elevated", "raised", "increased") else "low"
+        _ = lowered, typical_unit
+        return _with_side(
             ExtractedObservation(
-                observation_name=raw_name,
-                normalized_name=canonical,
-                value_numeric=value_numeric,
-                value_text=None if value_numeric is not None else raw_value,
-                unit=unit,
-                reference_low=low,
-                reference_high=high,
-                abnormal_flag=_compute_abnormal(value_numeric, low, high),
-                source_page=page,
-                extraction_method="table",
-                source_excerpt=" | ".join(row),
-            )
-        )
-    return results
-
-
-def _extract_wide_format(block: TableBlock, page: int) -> list[ExtractedObservation]:
-    name_col = find_header_column(block.header, _HEADER_NAME_KEYWORDS)
-    value_col = find_header_column(block.header, _HEADER_VALUE_KEYWORDS)
-    if name_col is not None or value_col is not None:
-        return []  # already handled by long-format
-
-    matches: dict[int, tuple[_TestDef, str | None]] = {}
-    for idx, cell in enumerate(block.header):
-        test_def = _match_registry(cell)
-        if test_def:
-            paren = _PAREN_UNIT_PATTERN.search(cell)
-            unit = paren.group(1).strip() if paren else test_def.canonical_unit
-            matches[idx] = (test_def, unit)
-    if not matches:
-        return []
-
-    range_col = find_header_column(block.header, _HEADER_RANGE_KEYWORDS)
-    qualifier_col = 0 if 0 not in matches else None
-
-    results: list[ExtractedObservation] = []
-    for row in block.rows:
-        qualifier = None
-        if qualifier_col is not None and qualifier_col < len(row):
-            candidate = row[qualifier_col].strip()
-            if candidate.lower() in _QUALIFIER_WORDS:
-                qualifier = candidate
-
-        for idx, (test_def, unit) in matches.items():
-            if idx >= len(row):
-                continue
-            raw_value = row[idx].strip()
-            if not raw_value:
-                continue
-
-            low = high = None
-            if range_col is not None and range_col < len(row):
-                low, high = _parse_range(row[range_col])
-
-            value_numeric = _to_float(raw_value)
-            name = f"{test_def.display} ({qualifier})" if qualifier else test_def.display
-            normalized = f"{test_def.canonical}:{_slugify(qualifier)}" if qualifier else test_def.canonical
-            results.append(
-                ExtractedObservation(
-                    observation_name=name,
-                    normalized_name=normalized,
-                    value_numeric=value_numeric,
-                    value_text=None if value_numeric is not None else raw_value,
-                    unit=unit,
-                    reference_low=low,
-                    reference_high=high,
-                    abnormal_flag=_compute_abnormal(value_numeric, low, high),
-                    source_page=page,
-                    extraction_method="table",
-                    source_excerpt=" | ".join(row),
-                )
-            )
-    return results
-
-
-def _extract_inline(text: str, page: int, already: set[str]) -> list[ExtractedObservation]:
-    results: list[ExtractedObservation] = []
-    for raw_line in text.splitlines():
-        stripped = raw_line.strip()
-        if not stripped or " | " in stripped:
-            continue  # table lines are handled by the table pass
-
-        test_def = _match_registry(stripped)
-        if test_def is None or test_def.canonical in already:
-            continue
-
-        pattern = next(p for p, d in _ALIAS_ENTRIES if d is test_def and p.search(stripped.lower()))
-        match = pattern.search(stripped.lower())
-        rest = stripped[match.end() :]
-        value_match = _INLINE_VALUE_PATTERN.search(rest)
-        if not value_match:
-            continue
-
-        value_numeric = float(value_match.group(1))
-        unit = value_match.group(2).strip() or test_def.canonical_unit
-
-        qualitative = _QUALITATIVE_PATTERN.search(stripped)
-        abnormal = None
-        if qualitative:
-            abnormal = qualitative.group(1).lower() != "normal"
-
-        results.append(
-            ExtractedObservation(
-                observation_name=test_def.display,
-                normalized_name=test_def.canonical,
-                value_numeric=value_numeric,
+                code=code,
+                name=display,
+                value_num=value,
                 value_text=None,
                 unit=unit,
-                reference_low=None,
-                reference_high=None,
-                abnormal_flag=abnormal,
-                source_page=page,
-                extraction_method="inline",
-                source_excerpt=stripped,
-            )
+                ref_low=ref_low,
+                ref_high=ref_high,
+                ref_text=ref_text,
+                flag=flag,
+                page=page,
+                excerpt=line.strip()[:300],
+            ),
+            line[: m.end() + 12],
         )
-        already.add(test_def.canonical)
-    return results
+    return None
+
+
+def extract(pages: list[dict]) -> list[ExtractedObservation]:
+    out: list[ExtractedObservation] = []
+    seen: set[tuple[str, float | None, int]] = set()
+    for page in pages:
+        for raw in page["text"].splitlines():
+            line = raw.strip()
+            if not line or len(line) > 220:
+                continue
+            obs = _parse_line(line, page["page"])
+            if obs is None:
+                continue
+            key = (obs.code, obs.value_num, obs.page)
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(obs)
+    return out

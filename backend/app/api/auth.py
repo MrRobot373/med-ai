@@ -1,92 +1,197 @@
-"""Auth endpoints — spec §104: POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me.
-
-Session token travels only as an HttpOnly cookie — never in the response body, a URL
-parameter, or a header the frontend JS could read (spec §17 "no tokens in URL
-parameters"). The frontend learns who's logged in solely via GET /api/auth/me.
-"""
-
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Request, Response, status
+from datetime import UTC, datetime, timedelta
 
-from app.api.deps import DbDep, SettingsDep
-from app.audit.service import record as record_audit
-from app.auth.dependencies import CurrentUser
-from app.auth.rate_limit import login_rate_limiter
-from app.auth.service import (
-    authenticate_user,
-    create_session,
-    get_user_by_session_token,
-    revoke_session,
-)
-from app.logging import get_logger
-from app.models.audit_log import AuditAction, AuditOutcome
-from app.schemas.auth import LoginRequest, UserOut
+from fastapi import APIRouter, HTTPException, Request, Response
+from sqlalchemy import func, select
 
-router = APIRouter(prefix="/api/auth", tags=["auth"])
-logger = get_logger(__name__)
+from app.api.deps import DB, AdminUser, CurrentUser, client_ip
+from app.core.config import get_settings
+from app.core.security import hash_password, hash_token, new_session_token, verify_password
+from app.models import User, UserSession
+from app.schemas.common import LoginIn, PasswordIn, ProfileIn, ResetPasswordIn, UserCreate, UserOut, UserUpdate
+from app.services import audit, runtime_config
+from app.services.rate_limit import login_limiter
+
+router = APIRouter(prefix="/api", tags=["auth"])
+
+PREFERENCE_KEYS = {
+    "theme",
+    "accent",
+    "density",
+    "radius",
+    "font_scale",
+    "sidebar_collapsed",
+    "reduce_motion",
+    "chat_show_trace",
+    "default_landing",
+    "font_family",
+    "contrast",
+}
 
 
-@router.post("/login", response_model=UserOut)
-def login(payload: LoginRequest, request: Request, response: Response, db: DbDep, settings: SettingsDep) -> UserOut:
-    client_ip = request.client.host if request.client else "unknown"
-    rate_limit_key = f"{client_ip}:{payload.email.lower()}"
-
-    if login_rate_limiter.is_blocked(rate_limit_key, settings):
-        # Never logged with the password; email is logged so a real lockout is
-        # diagnosable without exposing what the attempted password was (spec §94).
-        logger.warning("Login rate limit exceeded for %s", rate_limit_key)
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Too many login attempts. Please wait a few minutes and try again.",
+@router.post("/auth/login", response_model=UserOut)
+def login(body: LoginIn, request: Request, response: Response, db: DB):
+    s = get_settings()
+    email = body.email.strip().lower()
+    key = f"{email}|{client_ip(request)}"
+    if not login_limiter.hit(key, s.login_rate_limit_attempts, s.login_rate_limit_window_seconds):
+        raise HTTPException(429, "Too many sign-in attempts. Please wait a few minutes and try again.")
+    user = db.scalars(select(User).where(func.lower(User.email) == email)).first()
+    if user is None or not verify_password(body.password, user.password_hash):
+        audit.record(
+            db, None, "auth.login_failed", f"Failed sign-in for {email}", ip=client_ip(request), outcome="failure"
         )
-
-    user = authenticate_user(db, payload.email, payload.password)
-    if user is None:
-        login_rate_limiter.record_attempt(rate_limit_key)
-        # Logged with the attempted email (not a real user_id — the email may not
-        # belong to any account) so an admin reviewing the audit log can still spot a
-        # brute-force pattern, without the login response itself revealing anything
-        # more than spec §17/§92's identical error message already does.
-        record_audit(
-            db, AuditAction.LOGIN, user_email=payload.email.strip().lower(), outcome=AuditOutcome.FAILURE
+        raise HTTPException(401, "Incorrect email or password.")
+    if not user.is_active:
+        raise HTTPException(403, "This account has been deactivated. Contact your administrator.")
+    login_limiter.reset(key)
+    token = new_session_token()
+    timeout = runtime_config.load(db).security.session_timeout_minutes
+    now = datetime.now(UTC)
+    db.add(
+        UserSession(
+            user_id=user.id,
+            token_hash=hash_token(token),
+            expires_at=now + timedelta(minutes=timeout),
+            user_agent=(request.headers.get("user-agent") or "")[:300],
+            ip=client_ip(request),
         )
-        # Deliberately identical message whether the email doesn't exist, the account
-        # is inactive, or the password is wrong — distinguishing them lets an attacker
-        # enumerate valid accounts (spec §17/§92).
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-
-    login_rate_limiter.reset(rate_limit_key)
-    issued = create_session(db, user, settings, user_agent=request.headers.get("user-agent"))
-    record_audit(db, AuditAction.LOGIN, user=user, outcome=AuditOutcome.SUCCESS)
-
+    )
+    user.last_login_at = now
+    db.commit()
     response.set_cookie(
-        key=settings.session_cookie_name,
-        value=issued.raw_token,
+        s.session_cookie_name,
+        token,
         httponly=True,
-        secure=settings.cookie_secure,
         samesite="lax",
-        max_age=settings.session_timeout_minutes * 60,
+        secure=s.cookie_secure,
+        max_age=timeout * 60,
         path="/",
     )
-
-    return UserOut.model_validate(user)
-
-
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def logout(request: Request, response: Response, db: DbDep, settings: SettingsDep) -> None:
-    raw_token = request.cookies.get(settings.session_cookie_name)
-    if raw_token:
-        # Resolved before revoking (a revoked session no longer resolves to a user) —
-        # best-effort only: an already-expired/invalid token still 204s (logout is
-        # never an error), it just has no identifiable user left to log.
-        user = get_user_by_session_token(db, raw_token)
-        revoke_session(db, raw_token)
-        if user is not None:
-            record_audit(db, AuditAction.LOGOUT, user=user, outcome=AuditOutcome.SUCCESS)
-    response.delete_cookie(key=settings.session_cookie_name, path="/")
+    audit.record(db, user, "auth.login", "Signed in", ip=client_ip(request))
+    return user
 
 
-@router.get("/me", response_model=UserOut)
-def me(current_user: CurrentUser) -> UserOut:
-    return UserOut.model_validate(current_user)
+@router.post("/auth/logout", status_code=204)
+def logout(request: Request, response: Response, db: DB):
+    s = get_settings()
+    token = request.cookies.get(s.session_cookie_name)
+    if token:
+        sess = db.scalars(select(UserSession).where(UserSession.token_hash == hash_token(token))).first()
+        if sess:
+            user = sess.user
+            db.delete(sess)
+            db.commit()
+            audit.record(db, user, "auth.logout", "Signed out", ip=client_ip(request))
+    response.delete_cookie(s.session_cookie_name, path="/")
+
+
+@router.get("/auth/me", response_model=UserOut)
+def me(user: CurrentUser):
+    return user
+
+
+@router.patch("/auth/me", response_model=UserOut)
+def update_me(body: ProfileIn, user: CurrentUser, db: DB):
+    for k, v in body.model_dump(exclude_unset=True).items():
+        setattr(user, k, v)
+    db.commit()
+    return user
+
+
+@router.put("/auth/me/preferences", response_model=UserOut)
+def update_preferences(body: dict, user: CurrentUser, db: DB):
+    prefs = dict(user.preferences or {})
+    for k, v in body.items():
+        if k in PREFERENCE_KEYS:
+            prefs[k] = v
+    user.preferences = prefs
+    db.commit()
+    return user
+
+
+@router.post("/auth/me/password", status_code=204)
+def change_password(body: PasswordIn, user: CurrentUser, db: DB, request: Request):
+    if not verify_password(body.current_password, user.password_hash):
+        raise HTTPException(400, "Current password is incorrect.")
+    user.password_hash = hash_password(body.new_password)
+    db.commit()
+    audit.record(db, user, "auth.password_change", "Changed own password", ip=client_ip(request))
+
+
+@router.get("/auth/sessions")
+def my_sessions(user: CurrentUser, db: DB):
+    rows = db.scalars(
+        select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.last_seen_at.desc())
+    )
+    return [
+        {"id": s.id, "created_at": s.created_at, "last_seen_at": s.last_seen_at, "user_agent": s.user_agent, "ip": s.ip}
+        for s in rows
+    ]
+
+
+# ---- User administration ----------------------------------------------------
+@router.get("/users", response_model=list[UserOut])
+def list_users(_: AdminUser, db: DB):
+    return db.scalars(select(User).order_by(User.full_name)).all()
+
+
+@router.post("/users", response_model=UserOut, status_code=201)
+def create_user(body: UserCreate, admin: AdminUser, db: DB):
+    email = body.email.strip().lower()
+    if db.scalars(select(User).where(func.lower(User.email) == email)).first():
+        raise HTTPException(409, "A user with this email already exists.")
+    user = User(
+        email=email,
+        full_name=body.full_name,
+        title=body.title,
+        specialty=body.specialty,
+        role=body.role,
+        password_hash=hash_password(body.password),
+    )
+    db.add(user)
+    db.commit()
+    audit.record(db, admin, "user.create", f"Created user {email} ({body.role})", entity_type="user", entity_id=user.id)
+    return user
+
+
+@router.patch("/users/{user_id}", response_model=UserOut)
+def update_user(user_id: str, body: UserUpdate, admin: AdminUser, db: DB):
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(404, "User not found")
+    changes = body.model_dump(exclude_unset=True)
+    if user.id == admin.id and (changes.get("role", "admin") != "admin" or changes.get("is_active") is False):
+        raise HTTPException(400, "You can't remove your own administrator access.")
+    for k, v in changes.items():
+        setattr(user, k, v)
+    if changes.get("is_active") is False:
+        for s in list(user.sessions):
+            db.delete(s)
+    db.commit()
+    audit.record(
+        db, admin, "user.update", f"Updated user {user.email}", entity_type="user", entity_id=user.id, details=changes
+    )
+    return user
+
+
+@router.post("/users/{user_id}/reset-password", status_code=204)
+def reset_password(user_id: str, body: ResetPasswordIn, admin: AdminUser, db: DB):
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(404, "User not found")
+    user.password_hash = hash_password(body.new_password)
+    for s in list(user.sessions):
+        db.delete(s)
+    db.commit()
+    audit.record(
+        db, admin, "user.password_reset", f"Reset password for {user.email}", entity_type="user", entity_id=user.id
+    )
+
+
+@router.get("/branding")
+def branding(db: DB):
+    """Public: the sign-in page needs the product name, logo and default theme."""
+    b = runtime_config.load(db).branding
+    return b.model_dump()

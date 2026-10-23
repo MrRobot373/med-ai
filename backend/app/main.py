@@ -1,72 +1,123 @@
-"""FastAPI application entrypoint.
-
-Routers are added incrementally per phase (see docs/architecture.md for the build
-sequence) and registered the same way: `app.include_router(...)`.
-"""
-
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import func, select
 
-from app.api.audit import router as audit_router
-from app.api.auth import router as auth_router
-from app.api.chat import router as chat_router
-from app.api.clinical_modules import router as clinical_modules_router
-from app.api.dashboard import router as dashboard_router
-from app.api.feedback import router as feedback_router
-from app.api.health import router as health_router
-from app.api.knowledge import router as knowledge_router
-from app.api.patients import router as patients_router
-from app.api.reports import router as reports_router
-from app.api.research import router as research_router
-from app.api.vision import router as vision_router
-from app.config.settings import get_settings
-from app.logging import configure_logging, get_logger
+from app.api import ai, audit, auth, documents, knowledge, patients, settings, system
+from app.core.config import PROJECT_ROOT, get_settings
+from app.core.errors import AppError
+from app.core.logging import configure_logging, get_logger
+from app.core.security import hash_password
+from app.db import SessionLocal
+from app.models import User
+from app.services import runtime_config
 
-settings = get_settings()
-configure_logging(settings.log_level)
 logger = get_logger(__name__)
+
+
+def run_migrations() -> None:
+    from alembic import command
+    from alembic.config import Config
+
+    cfg = Config(str(Path(__file__).resolve().parents[1] / "alembic.ini"))
+    cfg.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "migrations"))
+    cfg.set_main_option("sqlalchemy.url", get_settings().resolved_database_url)
+    command.upgrade(cfg, "head")
+
+
+def bootstrap() -> None:
+    s = get_settings()
+    db = SessionLocal()
+    try:
+        if not db.scalar(select(func.count()).select_from(User)):
+            db.add(
+                User(
+                    email=s.bootstrap_admin_email.lower(),
+                    full_name="Administrator",
+                    role="admin",
+                    password_hash=hash_password(s.bootstrap_admin_password),
+                )
+            )
+            db.commit()
+            logger.warning(
+                "Created first administrator %s — change the password after signing in.", s.bootstrap_admin_email
+            )
+        runtime_config.load(db)
+    finally:
+        db.close()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("GMS Clinical AI backend starting (env=%s)", settings.app_env)
+    s = get_settings()
+    configure_logging(s.log_level)
+    s.data_dir.mkdir(parents=True, exist_ok=True)
+    s.uploads_dir.mkdir(parents=True, exist_ok=True)
+    if getattr(app.state, "skip_migrations", False) is False:
+        run_migrations()
+    bootstrap()
     yield
-    logger.info("GMS Clinical AI backend shutting down")
 
 
-app = FastAPI(
-    title="GMS Clinical AI",
-    description="Local-first multimodal clinical RAG & decision-support platform.",
-    version="0.1.0",
-    lifespan=lifespan,
-)
+def create_app(*, skip_migrations: bool = False) -> FastAPI:
+    app = FastAPI(
+        title="GMS Clinical AI",
+        version=system.APP_VERSION,
+        lifespan=lifespan,
+        docs_url="/api/docs",
+        openapi_url="/api/openapi.json",
+        redoc_url=None,
+    )
+    app.state.skip_migrations = skip_migrations
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=get_settings().cors_origin_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[settings.frontend_origin],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    @app.exception_handler(AppError)
+    async def app_error(_: Request, exc: AppError):
+        return JSONResponse({"detail": exc.message, "code": exc.code}, status_code=exc.status_code)
 
-app.include_router(health_router)
-app.include_router(auth_router)
-app.include_router(patients_router)
-app.include_router(reports_router)
-app.include_router(chat_router)
-app.include_router(vision_router)
-app.include_router(clinical_modules_router)
-app.include_router(research_router)
-app.include_router(knowledge_router)
-app.include_router(audit_router)
-app.include_router(feedback_router)
-app.include_router(dashboard_router)
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(_: Request, exc: RequestValidationError):
+        msgs = []
+        for e in exc.errors():
+            loc = ".".join(str(x) for x in e["loc"] if x not in ("body", "query", "path"))
+            msgs.append(f"{loc}: {e['msg']}" if loc else e["msg"])
+        return JSONResponse({"detail": "; ".join(msgs), "code": "validation_error"}, status_code=422)
+
+    for r in (auth, patients, documents, knowledge, ai, settings, system, audit):
+        app.include_router(r.router)
+
+    @app.get("/api/health", tags=["system"])
+    def liveness():
+        return {"status": "ok", "version": system.APP_VERSION}
+
+    # Production: serve the built frontend from the same origin.
+    dist = PROJECT_ROOT / "frontend" / "dist"
+    if dist.exists():
+        app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+
+        @app.get("/{path:path}", include_in_schema=False)
+        def spa(path: str):
+            if path.startswith("api/"):
+                return JSONResponse({"detail": "Not found"}, status_code=404)
+            target = dist / path
+            if path and target.is_file() and dist in target.resolve().parents:
+                return FileResponse(target)
+            return FileResponse(dist / "index.html")
+
+    return app
 
 
-@app.get("/", include_in_schema=False)
-async def root() -> dict[str, str]:
-    return {"name": "GMS Clinical AI", "status": "running", "docs": "/docs"}
+app = create_app()

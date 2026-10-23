@@ -1,251 +1,666 @@
-"""Patient system endpoints (spec §104): patients, encounters, conditions, allergies,
-medications, and the derived timeline.
+from datetime import UTC, datetime
 
-Read access (GET) is open to any authenticated role (admin/doctor/viewer). Every write
-(create/update/archive) requires admin or doctor — spec §18 "Viewer: read-only demo
-access, cannot modify patient information."
-"""
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import PlainTextResponse
+from sqlalchemy import func, or_, select
 
-from __future__ import annotations
+from app.api.deps import DB, AdminUser, CurrentUser, WriteUser
+from app.clinical.context import age, latest_observations
+from app.models import AIRun, Allergy, Condition, Document, Encounter, Medication, Observation, Patient
+from app.schemas.common import (
+    AllergyIn,
+    AllergyOut,
+    ConditionIn,
+    ConditionOut,
+    EncounterIn,
+    EncounterOut,
+    MedicationIn,
+    MedicationOut,
+    ObservationIn,
+    ObservationOut,
+    PatientIn,
+    PatientListItem,
+    PatientOut,
+    PatientUpdate,
+)
+from app.services import audit
 
-from datetime import date
-
-from fastapi import APIRouter, HTTPException, status
-
-from app.api.common import get_patient_or_404 as _get_patient_or_404
-from app.api.deps import DbDep
-from app.audit.service import record as record_audit
-from app.auth.dependencies import CurrentUser, WriteUser
-from app.models.allergy import Allergy
-from app.models.audit_log import AuditAction
-from app.models.condition import Condition
-from app.models.encounter import Encounter
-from app.models.medication import Medication
-from app.schemas.allergy import AllergyCreate, AllergyOut, AllergyUpdate
-from app.schemas.changes import ChangesSummary
-from app.schemas.condition import ConditionCreate, ConditionOut, ConditionUpdate
-from app.schemas.encounter import EncounterCreate, EncounterOut, EncounterUpdate
-from app.schemas.medication import MedicationCreate, MedicationOut, MedicationStop
-from app.schemas.observation import ObservationOut, ObservationTrend
-from app.schemas.patient import PatientCreate, PatientListItem, PatientOut, PatientUpdate
-from app.schemas.timeline import TimelineEvent
-from app.services import change_engine as change_engine_service
-from app.services import clinical
-from app.services import encounters as encounter_service
-from app.services import observations as observation_service
-from app.services import patients as patient_service
-from app.services import timeline as timeline_service
-
-router = APIRouter(prefix="/api", tags=["patients"])
+router = APIRouter(prefix="/api/patients", tags=["patients"])
 
 
-def _get_encounter_or_404(db: DbDep, encounter_id: str) -> Encounter:
-    encounter = encounter_service.get_encounter(db, encounter_id)
-    if encounter is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Encounter not found")
-    return encounter
+def get_patient(db, patient_id: str) -> Patient:
+    p = db.get(Patient, patient_id)
+    if p is None:
+        raise HTTPException(404, "Patient not found")
+    return p
 
 
-def _get_condition_or_404(db: DbDep, condition_id: str) -> Condition:
-    condition = clinical.get_condition(db, condition_id)
-    if condition is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Condition not found")
-    return condition
+def patient_out(p: Patient) -> dict:
+    data = PatientOut.model_validate(p).model_dump()
+    data["age"] = age(p.date_of_birth)
+    return data
 
 
-def _get_allergy_or_404(db: DbDep, allergy_id: str) -> Allergy:
-    allergy = clinical.get_allergy(db, allergy_id)
-    if allergy is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Allergy not found")
-    return allergy
-
-
-def _get_medication_or_404(db: DbDep, medication_id: str) -> Medication:
-    medication = clinical.get_medication(db, medication_id)
-    if medication is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Medication not found")
-    return medication
-
-
-# --- Patients --------------------------------------------------------------------
-
-
-@router.get("/patients", response_model=list[PatientListItem])
+@router.get("", response_model=list[PatientListItem])
 def list_patients(
-    db: DbDep,
-    _current_user: CurrentUser,
+    db: DB,
+    _: CurrentUser,
     q: str | None = None,
-    include_archived: bool = False,
-) -> list[PatientListItem]:
-    return patient_service.search_patients(db, query=q, include_archived=include_archived)
+    status: str = "active",
+    tag: str | None = None,
+    sort: str = Query("recent", pattern="^(recent|name|mrn|created)$"),
+    limit: int = Query(200, le=500),
+):
+    stmt = select(Patient)
+    if status != "all":
+        stmt = stmt.where(Patient.status == status)
+    if q:
+        like = f"%{q.strip()}%"
+        stmt = stmt.where(
+            or_(
+                Patient.first_name.ilike(like),
+                Patient.last_name.ilike(like),
+                Patient.mrn.ilike(like),
+                (Patient.first_name + " " + Patient.last_name).ilike(like),
+            )
+        )
+    patients = list(db.scalars(stmt.limit(limit)))
+    if tag:
+        patients = [p for p in patients if tag in (p.tags or [])]
+    ids = [p.id for p in patients]
+    last_enc = (
+        dict(
+            db.execute(
+                select(Encounter.patient_id, func.max(Encounter.started_at))
+                .where(Encounter.patient_id.in_(ids))
+                .group_by(Encounter.patient_id)
+            ).all()
+        )
+        if ids
+        else {}
+    )
+    doc_counts = (
+        dict(
+            db.execute(
+                select(Document.patient_id, func.count())
+                .where(Document.patient_id.in_(ids))
+                .group_by(Document.patient_id)
+            ).all()
+        )
+        if ids
+        else {}
+    )
+    alerts = (
+        dict(
+            db.execute(
+                select(Observation.patient_id, func.count())
+                .where(
+                    Observation.patient_id.in_(ids),
+                    Observation.flag.in_(["high", "low", "abnormal"]),
+                    Observation.acknowledged.is_(False),
+                )
+                .group_by(Observation.patient_id)
+            ).all()
+        )
+        if ids
+        else {}
+    )
+    mismatches = (
+        dict(
+            db.execute(
+                select(Document.patient_id, func.count())
+                .where(Document.patient_id.in_(ids), Document.identity_status == "mismatch")
+                .group_by(Document.patient_id)
+            ).all()
+        )
+        if ids
+        else {}
+    )
+    conds: dict[str, list[str]] = {}
+    if ids:
+        for pid, name in db.execute(
+            select(Condition.patient_id, Condition.name).where(
+                Condition.patient_id.in_(ids), Condition.status == "active"
+            )
+        ):
+            conds.setdefault(pid, []).append(name)
+    out = []
+    for p in patients:
+        item = patient_out(p)
+        item.update(
+            active_conditions=conds.get(p.id, []),
+            last_encounter_at=last_enc.get(p.id),
+            document_count=doc_counts.get(p.id, 0),
+            open_alerts=alerts.get(p.id, 0) + mismatches.get(p.id, 0),
+        )
+        out.append(item)
+
+    def _ts(v):
+        if v is None:
+            return datetime.min.replace(tzinfo=UTC)
+        return v if v.tzinfo else v.replace(tzinfo=UTC)
+
+    if sort == "name":
+        out.sort(key=lambda x: (x["last_name"].lower(), x["first_name"].lower()))
+    elif sort == "mrn":
+        out.sort(key=lambda x: x["mrn"])
+    elif sort == "created":
+        out.sort(key=lambda x: _ts(x["created_at"]), reverse=True)
+    else:
+        out.sort(key=lambda x: max(_ts(x["last_encounter_at"]), _ts(x["updated_at"])), reverse=True)
+    return out
 
 
-@router.post("/patients", response_model=PatientOut, status_code=status.HTTP_201_CREATED)
-def create_patient(payload: PatientCreate, db: DbDep, current_user: WriteUser) -> PatientOut:
-    patient = patient_service.create_patient(db, payload)
-    record_audit(db, AuditAction.PATIENT_CREATED, user=current_user, object_type="patient", object_id=patient.id)
-    return PatientOut.model_validate(patient)
+@router.post("", response_model=PatientOut, status_code=201)
+def create_patient(body: PatientIn, db: DB, user: WriteUser):
+    if db.scalars(select(Patient).where(func.lower(Patient.mrn) == body.mrn.strip().lower())).first():
+        raise HTTPException(409, f"A patient with MRN {body.mrn} already exists.")
+    p = Patient(**body.model_dump(), created_by=user.id)
+    p.mrn = p.mrn.strip()
+    db.add(p)
+    db.commit()
+    audit.record(
+        db,
+        user,
+        "patient.create",
+        f"Registered patient {p.full_name} ({p.mrn})",
+        entity_type="patient",
+        entity_id=p.id,
+        patient_id=p.id,
+    )
+    return patient_out(p)
 
 
-@router.get("/patients/{patient_id}", response_model=PatientOut)
-def get_patient(patient_id: str, db: DbDep, _current_user: CurrentUser) -> PatientOut:
-    return PatientOut.model_validate(_get_patient_or_404(db, patient_id))
+@router.get("/tags")
+def list_tags(db: DB, _: CurrentUser):
+    tags: dict[str, int] = {}
+    for (t,) in db.execute(select(Patient.tags)):
+        for tag in t or []:
+            tags[tag] = tags.get(tag, 0) + 1
+    return sorted(({"tag": k, "count": v} for k, v in tags.items()), key=lambda x: -x["count"])
 
 
-@router.patch("/patients/{patient_id}", response_model=PatientOut)
-def update_patient(patient_id: str, payload: PatientUpdate, db: DbDep, current_user: WriteUser) -> PatientOut:
-    patient = _get_patient_or_404(db, patient_id)
-    updated = patient_service.update_patient(db, patient, payload)
-    record_audit(db, AuditAction.PATIENT_MODIFIED, user=current_user, object_type="patient", object_id=patient_id, detail={"action": "updated"})
-    return PatientOut.model_validate(updated)
+@router.get("/{patient_id}", response_model=PatientOut)
+def read_patient(patient_id: str, db: DB, user: CurrentUser):
+    p = get_patient(db, patient_id)
+    audit.record(
+        db,
+        user,
+        "patient.view",
+        f"Opened chart of {p.full_name}",
+        entity_type="patient",
+        entity_id=p.id,
+        patient_id=p.id,
+    )
+    return patient_out(p)
 
 
-@router.post("/patients/{patient_id}/archive", response_model=PatientOut)
-def archive_patient(patient_id: str, db: DbDep, current_user: WriteUser) -> PatientOut:
-    patient = _get_patient_or_404(db, patient_id)
-    updated = patient_service.archive_patient(db, patient)
-    record_audit(db, AuditAction.PATIENT_MODIFIED, user=current_user, object_type="patient", object_id=patient_id, detail={"action": "archived"})
-    return PatientOut.model_validate(updated)
+@router.patch("/{patient_id}", response_model=PatientOut)
+def update_patient(patient_id: str, body: PatientUpdate, db: DB, user: WriteUser):
+    p = get_patient(db, patient_id)
+    changes = body.model_dump(exclude_unset=True)
+    if (
+        "mrn" in changes
+        and changes["mrn"].lower() != p.mrn.lower()
+        and db.scalars(select(Patient).where(func.lower(Patient.mrn) == changes["mrn"].lower())).first()
+    ):
+        raise HTTPException(409, "Another patient already has this MRN.")
+    for k, v in changes.items():
+        setattr(p, k, v)
+    db.commit()
+    audit.record(
+        db,
+        user,
+        "patient.update",
+        f"Updated {p.full_name}",
+        entity_type="patient",
+        entity_id=p.id,
+        patient_id=p.id,
+        details={"fields": list(changes)},
+    )
+    return patient_out(p)
 
 
-@router.post("/patients/{patient_id}/unarchive", response_model=PatientOut)
-def unarchive_patient(patient_id: str, db: DbDep, current_user: WriteUser) -> PatientOut:
-    patient = _get_patient_or_404(db, patient_id)
-    updated = patient_service.unarchive_patient(db, patient)
-    record_audit(db, AuditAction.PATIENT_MODIFIED, user=current_user, object_type="patient", object_id=patient_id, detail={"action": "unarchived"})
-    return PatientOut.model_validate(updated)
+@router.delete("/{patient_id}", status_code=204)
+async def delete_patient(patient_id: str, db: DB, admin: AdminUser):
+    from app.rag import indexing
+
+    p = get_patient(db, patient_id)
+    for doc in db.scalars(select(Document).where(Document.patient_id == p.id)):
+        await indexing.remove_document(db, doc)
+    name = p.full_name
+    db.delete(p)
+    db.commit()
+    audit.record(
+        db, admin, "patient.delete", f"Permanently deleted patient {name}", entity_type="patient", entity_id=patient_id
+    )
 
 
-# --- Timeline ----------------------------------------------------------------------
+@router.get("/{patient_id}/overview")
+def overview(patient_id: str, db: DB, _: CurrentUser):
+    p = get_patient(db, patient_id)
+    conditions = db.scalars(
+        select(Condition).where(Condition.patient_id == p.id).order_by(Condition.status, Condition.name)
+    ).all()
+    allergies = db.scalars(select(Allergy).where(Allergy.patient_id == p.id)).all()
+    meds = db.scalars(
+        select(Medication).where(Medication.patient_id == p.id).order_by(Medication.status, Medication.name)
+    ).all()
+    encounters = db.scalars(
+        select(Encounter).where(Encounter.patient_id == p.id).order_by(Encounter.started_at.desc()).limit(5)
+    ).all()
+    docs = db.scalars(
+        select(Document).where(Document.patient_id == p.id).order_by(Document.created_at.desc()).limit(6)
+    ).all()
+    latest = latest_observations(db, p.id, limit_codes=12)
+    last_summary = db.scalars(
+        select(AIRun)
+        .where(AIRun.patient_id == p.id, AIRun.tool == "summary", AIRun.status.in_(["draft", "accepted"]))
+        .order_by(AIRun.created_at.desc())
+    ).first()
+    alerts = []
+    for o in latest:
+        if o.flag in ("high", "low", "abnormal") and not o.acknowledged:
+            alerts.append(
+                {
+                    "type": "lab",
+                    "severity": "warning",
+                    "title": f"{o.name} {o.flag}",
+                    "detail": f"{o.value_num:g} {o.unit or ''} on {o.observed_at.date().isoformat()}",
+                    "id": o.id,
+                }
+            )
+    for d in db.scalars(select(Document).where(Document.patient_id == p.id, Document.identity_status == "mismatch")):
+        alerts.append(
+            {
+                "type": "identity",
+                "severity": "danger",
+                "title": "Possible wrong-patient document",
+                "detail": f"{d.title}: {d.identity_detail}",
+                "id": d.id,
+            }
+        )
+    for d in db.scalars(select(Document).where(Document.patient_id == p.id, Document.status == "failed")):
+        alerts.append(
+            {
+                "type": "ingestion",
+                "severity": "danger",
+                "title": "Document could not be processed",
+                "detail": f"{d.title}: {d.error}",
+                "id": d.id,
+            }
+        )
+    if not allergies:
+        alerts.append(
+            {
+                "type": "gap",
+                "severity": "info",
+                "title": "Allergies not documented",
+                "detail": "No allergy entries — absence is not confirmation of none.",
+                "id": None,
+            }
+        )
+    from app.api.documents import doc_out
+
+    return {
+        "patient": patient_out(p),
+        "conditions": [ConditionOut.model_validate(c).model_dump() for c in conditions],
+        "allergies": [AllergyOut.model_validate(a).model_dump() for a in allergies],
+        "medications": [MedicationOut.model_validate(m).model_dump() for m in meds],
+        "encounters": [EncounterOut.model_validate(e).model_dump() for e in encounters],
+        "documents": [doc_out(d) for d in docs],
+        "latest_observations": [ObservationOut.model_validate(o).model_dump() for o in latest],
+        "alerts": alerts,
+        "summary": {
+            "id": last_summary.id,
+            "output": last_summary.output,
+            "created_at": last_summary.created_at,
+            "status": last_summary.status,
+        }
+        if last_summary
+        else None,
+        "counts": {
+            "documents": db.scalar(select(func.count()).select_from(Document).where(Document.patient_id == p.id)),
+            "encounters": db.scalar(select(func.count()).select_from(Encounter).where(Encounter.patient_id == p.id)),
+            "observations": db.scalar(
+                select(func.count()).select_from(Observation).where(Observation.patient_id == p.id)
+            ),
+        },
+    }
 
 
-@router.get("/patients/{patient_id}/timeline", response_model=list[TimelineEvent])
-def get_patient_timeline(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[TimelineEvent]:
-    _get_patient_or_404(db, patient_id)
-    return timeline_service.build_timeline(db, patient_id)
+# ---- Generic sub-resource CRUD ----------------------------------------------
+def _crud(name: str, model, schema_in, schema_out, label_attr: str):
+    path = f"/{{patient_id}}/{name}"
+
+    @router.get(path, response_model=list[schema_out], name=f"list_{name}")
+    def list_items(patient_id: str, db: DB, _: CurrentUser):
+        get_patient(db, patient_id)
+        order = getattr(model, "started_at", None) or model.created_at
+        return db.scalars(select(model).where(model.patient_id == patient_id).order_by(order.desc())).all()
+
+    @router.post(path, response_model=schema_out, status_code=201, name=f"create_{name}")
+    def create_item(patient_id: str, body: schema_in, db: DB, user: WriteUser):
+        get_patient(db, patient_id)
+        data = body.model_dump()
+        if model is Encounter:
+            data["started_at"] = data.get("started_at") or datetime.now(UTC)
+            data["clinician_id"] = user.id
+        item = model(patient_id=patient_id, **data)
+        db.add(item)
+        db.commit()
+        audit.record(
+            db,
+            user,
+            f"{name}.create",
+            f"Added {name[:-1] if name.endswith('s') else name}: {getattr(item, label_attr) or ''}",
+            entity_type=name,
+            entity_id=item.id,
+            patient_id=patient_id,
+        )
+        return item
+
+    @router.patch(f"{path}/{{item_id}}", response_model=schema_out, name=f"update_{name}")
+    def update_item(patient_id: str, item_id: str, body: dict, db: DB, user: WriteUser):
+        item = db.get(model, item_id)
+        if item is None or item.patient_id != patient_id:
+            raise HTTPException(404, "Not found")
+        merged = schema_out.model_validate(item).model_dump()
+        merged.update({k: v for k, v in body.items() if k in schema_in.model_fields})
+        validated = schema_in.model_validate({k: merged.get(k) for k in schema_in.model_fields if k in merged})
+        for k in body:
+            if k in schema_in.model_fields:
+                setattr(item, k, getattr(validated, k))
+        db.commit()
+        audit.record(
+            db,
+            user,
+            f"{name}.update",
+            f"Updated {name[:-1]}: {getattr(item, label_attr) or ''}",
+            entity_type=name,
+            entity_id=item.id,
+            patient_id=patient_id,
+        )
+        return item
+
+    @router.delete(f"{path}/{{item_id}}", status_code=204, name=f"delete_{name}")
+    def delete_item(patient_id: str, item_id: str, db: DB, user: WriteUser):
+        item = db.get(model, item_id)
+        if item is None or item.patient_id != patient_id:
+            raise HTTPException(404, "Not found")
+        label = getattr(item, label_attr)
+        db.delete(item)
+        db.commit()
+        audit.record(
+            db,
+            user,
+            f"{name}.delete",
+            f"Removed {name[:-1]}: {label or ''}",
+            entity_type=name,
+            entity_id=item_id,
+            patient_id=patient_id,
+        )
 
 
-# --- Encounters ----------------------------------------------------------------------
+_crud("conditions", Condition, ConditionIn, ConditionOut, "name")
+_crud("allergies", Allergy, AllergyIn, AllergyOut, "substance")
+_crud("medications", Medication, MedicationIn, MedicationOut, "name")
+_crud("encounters", Encounter, EncounterIn, EncounterOut, "reason")
 
 
-@router.get("/patients/{patient_id}/encounters", response_model=list[EncounterOut])
-def list_patient_encounters(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[EncounterOut]:
-    _get_patient_or_404(db, patient_id)
-    return [EncounterOut.model_validate(e) for e in encounter_service.list_encounters(db, patient_id)]
+# ---- Observations -----------------------------------------------------------
+@router.get("/{patient_id}/observations", response_model=list[ObservationOut])
+def list_observations(patient_id: str, db: DB, _: CurrentUser, code: str | None = None):
+    get_patient(db, patient_id)
+    stmt = select(Observation).where(Observation.patient_id == patient_id)
+    if code:
+        stmt = stmt.where(Observation.code == code)
+    return db.scalars(stmt.order_by(Observation.observed_at.desc())).all()
 
 
-@router.post("/patients/{patient_id}/encounters", response_model=EncounterOut, status_code=status.HTTP_201_CREATED)
-def create_patient_encounter(
-    patient_id: str, payload: EncounterCreate, db: DbDep, current_user: WriteUser
-) -> EncounterOut:
-    patient = _get_patient_or_404(db, patient_id)
-    encounter = encounter_service.create_encounter(db, patient, payload, created_by=current_user.id)
-    record_audit(db, AuditAction.ENCOUNTER_CREATED, user=current_user, object_type="encounter", object_id=encounter.id, detail={"patient_id": patient_id})
-    return EncounterOut.model_validate(encounter)
+@router.get("/{patient_id}/trends")
+def trends(patient_id: str, db: DB, _: CurrentUser):
+    get_patient(db, patient_id)
+    rows = db.scalars(
+        select(Observation).where(Observation.patient_id == patient_id).order_by(Observation.observed_at)
+    ).all()
+    series: dict[str, dict] = {}
+    for o in rows:
+        s = series.setdefault(o.code, {"code": o.code, "name": o.name, "unit": o.unit, "points": []})
+        s["unit"] = s["unit"] or o.unit
+        s["points"].append(
+            {
+                "id": o.id,
+                "at": o.observed_at,
+                "value": o.value_num,
+                "text": o.value_text,
+                "flag": o.flag,
+                "ref_low": o.ref_low,
+                "ref_high": o.ref_high,
+                "document_id": o.document_id,
+                "page": o.source_page,
+                "excerpt": o.source_excerpt,
+                "acknowledged": o.acknowledged,
+            }
+        )
+    out = []
+    for s in series.values():
+        nums = [p for p in s["points"] if p["value"] is not None]
+        latest = s["points"][-1]
+        prev = nums[-2] if len(nums) >= 2 else None
+        s["latest"] = latest
+        s["change"] = round(latest["value"] - prev["value"], 3) if prev and latest["value"] is not None else None
+        s["trend"] = (
+            None if s["change"] is None else ("up" if s["change"] > 0 else "down" if s["change"] < 0 else "flat")
+        )
+        s["abnormal"] = latest["flag"] in ("high", "low", "abnormal")
+        out.append(s)
+    out.sort(key=lambda s: (not s["abnormal"], s["name"]))
+    return out
 
 
-@router.get("/encounters/{encounter_id}", response_model=EncounterOut)
-def get_encounter(encounter_id: str, db: DbDep, _current_user: CurrentUser) -> EncounterOut:
-    return EncounterOut.model_validate(_get_encounter_or_404(db, encounter_id))
+@router.post("/{patient_id}/observations", response_model=ObservationOut, status_code=201)
+def add_observation(patient_id: str, body: ObservationIn, db: DB, user: WriteUser):
+    get_patient(db, patient_id)
+    flag = None
+    if body.value_num is not None and (body.ref_low is not None or body.ref_high is not None):
+        flag = (
+            "low"
+            if body.ref_low is not None and body.value_num < body.ref_low
+            else "high"
+            if body.ref_high is not None and body.value_num > body.ref_high
+            else "normal"
+        )
+    code = body.code or "_".join(body.name.lower().split())
+    ref_text = f"{body.ref_low:g}-{body.ref_high:g}" if body.ref_low is not None and body.ref_high is not None else None
+    o = Observation(
+        patient_id=patient_id,
+        name=body.name,
+        code=code,
+        value_num=body.value_num,
+        value_text=body.value_text,
+        unit=body.unit,
+        ref_low=body.ref_low,
+        ref_high=body.ref_high,
+        ref_text=ref_text,
+        flag=flag,
+        observed_at=body.observed_at or datetime.now(UTC),
+        method="manual",
+    )
+    db.add(o)
+    db.commit()
+    audit.record(
+        db,
+        user,
+        "observation.create",
+        f"Recorded {o.name}",
+        entity_type="observation",
+        entity_id=o.id,
+        patient_id=patient_id,
+    )
+    return o
 
 
-@router.patch("/encounters/{encounter_id}", response_model=EncounterOut)
-def update_encounter(encounter_id: str, payload: EncounterUpdate, db: DbDep, _current_user: WriteUser) -> EncounterOut:
-    encounter = _get_encounter_or_404(db, encounter_id)
-    return EncounterOut.model_validate(encounter_service.update_encounter(db, encounter, payload))
+@router.post("/{patient_id}/observations/{obs_id}/acknowledge", response_model=ObservationOut)
+def acknowledge(patient_id: str, obs_id: str, db: DB, user: WriteUser):
+    o = db.get(Observation, obs_id)
+    if o is None or o.patient_id != patient_id:
+        raise HTTPException(404, "Not found")
+    o.acknowledged = True
+    db.commit()
+    audit.record(
+        db,
+        user,
+        "observation.acknowledge",
+        f"Acknowledged {o.name} ({o.flag})",
+        entity_type="observation",
+        entity_id=o.id,
+        patient_id=patient_id,
+    )
+    return o
 
 
-# --- Conditions ----------------------------------------------------------------------
+@router.delete("/{patient_id}/observations/{obs_id}", status_code=204)
+def delete_observation(patient_id: str, obs_id: str, db: DB, user: WriteUser):
+    o = db.get(Observation, obs_id)
+    if o is None or o.patient_id != patient_id:
+        raise HTTPException(404, "Not found")
+    db.delete(o)
+    db.commit()
 
 
-@router.get("/patients/{patient_id}/conditions", response_model=list[ConditionOut])
-def list_patient_conditions(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[ConditionOut]:
-    _get_patient_or_404(db, patient_id)
-    return [ConditionOut.model_validate(c) for c in clinical.list_conditions(db, patient_id)]
+# ---- Timeline & export ------------------------------------------------------
+@router.get("/{patient_id}/timeline")
+def timeline(patient_id: str, db: DB, _: CurrentUser):
+    p = get_patient(db, patient_id)
+    events = []
+
+    def add(at, kind, title, detail=None, ref=None, tone="neutral"):
+        if at is None:
+            return
+        if not isinstance(at, datetime):
+            at = datetime.combine(at, datetime.min.time(), tzinfo=UTC)
+        events.append(
+            {
+                "at": at if at.tzinfo else at.replace(tzinfo=UTC),
+                "kind": kind,
+                "title": title,
+                "detail": detail,
+                "ref": ref,
+                "tone": tone,
+            }
+        )
+
+    for e in db.scalars(select(Encounter).where(Encounter.patient_id == p.id)):
+        add(
+            e.started_at,
+            "encounter",
+            f"{e.type.replace('_', ' ').title()} visit",
+            e.reason,
+            {"encounter_id": e.id},
+            "primary",
+        )
+    for d in db.scalars(select(Document).where(Document.patient_id == p.id)):
+        add(
+            d.document_date or d.created_at,
+            "document",
+            d.title,
+            d.kind.replace("_", " "),
+            {"document_id": d.id},
+            "danger" if d.identity_status == "mismatch" else "info",
+        )
+    for c in db.scalars(select(Condition).where(Condition.patient_id == p.id)):
+        add(
+            c.onset_date or c.created_at,
+            "condition",
+            f"Diagnosis: {c.name}",
+            c.status,
+            {"condition_id": c.id},
+            "warning" if c.status == "active" else "neutral",
+        )
+    for m in db.scalars(select(Medication).where(Medication.patient_id == p.id)):
+        add(
+            m.start_date or m.created_at,
+            "medication",
+            f"Started {m.name}",
+            " ".join(filter(None, [m.dose, m.frequency])),
+            {"medication_id": m.id},
+            "success",
+        )
+        if m.end_date:
+            add(m.end_date, "medication", f"Stopped {m.name}", m.notes, {"medication_id": m.id}, "neutral")
+    obs_by_day: dict = {}
+    for o in db.scalars(select(Observation).where(Observation.patient_id == p.id)):
+        obs_by_day.setdefault((o.observed_at.date(), o.document_id), []).append(o)
+    for (day, doc_id), items in obs_by_day.items():
+        abnormal = [o for o in items if o.flag in ("high", "low", "abnormal")]
+        add(
+            day,
+            "labs",
+            f"{len(items)} results recorded",
+            f"{len(abnormal)} outside reference range" if abnormal else "all within stated ranges",
+            {"document_id": doc_id},
+            "warning" if abnormal else "success",
+        )
+    for r in db.scalars(select(AIRun).where(AIRun.patient_id == p.id, AIRun.status == "accepted")):
+        add(
+            r.reviewed_at or r.created_at,
+            "ai",
+            f"Accepted AI {r.tool.replace('_', ' ')}",
+            None,
+            {"run_id": r.id},
+            "primary",
+        )
+    events.sort(key=lambda e: e["at"], reverse=True)
+    return events
 
 
-@router.post("/patients/{patient_id}/conditions", response_model=ConditionOut, status_code=status.HTTP_201_CREATED)
-def create_patient_condition(
-    patient_id: str, payload: ConditionCreate, db: DbDep, _current_user: WriteUser
-) -> ConditionOut:
-    _get_patient_or_404(db, patient_id)
-    return ConditionOut.model_validate(clinical.create_condition(db, patient_id, payload))
+@router.get("/{patient_id}/export", response_class=PlainTextResponse)
+def export_summary(patient_id: str, db: DB, user: CurrentUser):
+    from app.clinical.context import patient_record_text
 
-
-@router.patch("/conditions/{condition_id}", response_model=ConditionOut)
-def update_condition(condition_id: str, payload: ConditionUpdate, db: DbDep, _current_user: WriteUser) -> ConditionOut:
-    condition = _get_condition_or_404(db, condition_id)
-    return ConditionOut.model_validate(clinical.update_condition(db, condition, payload))
-
-
-# --- Allergies ----------------------------------------------------------------------
-
-
-@router.get("/patients/{patient_id}/allergies", response_model=list[AllergyOut])
-def list_patient_allergies(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[AllergyOut]:
-    _get_patient_or_404(db, patient_id)
-    return [AllergyOut.model_validate(a) for a in clinical.list_allergies(db, patient_id)]
-
-
-@router.post("/patients/{patient_id}/allergies", response_model=AllergyOut, status_code=status.HTTP_201_CREATED)
-def create_patient_allergy(patient_id: str, payload: AllergyCreate, db: DbDep, _current_user: WriteUser) -> AllergyOut:
-    _get_patient_or_404(db, patient_id)
-    return AllergyOut.model_validate(clinical.create_allergy(db, patient_id, payload))
-
-
-@router.patch("/allergies/{allergy_id}", response_model=AllergyOut)
-def update_allergy(allergy_id: str, payload: AllergyUpdate, db: DbDep, _current_user: WriteUser) -> AllergyOut:
-    allergy = _get_allergy_or_404(db, allergy_id)
-    return AllergyOut.model_validate(clinical.update_allergy(db, allergy, payload))
-
-
-# --- Medications ----------------------------------------------------------------------
-
-
-@router.get("/patients/{patient_id}/medications", response_model=list[MedicationOut])
-def list_patient_medications(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[MedicationOut]:
-    _get_patient_or_404(db, patient_id)
-    return [MedicationOut.model_validate(m) for m in clinical.list_medications(db, patient_id)]
-
-
-@router.post("/patients/{patient_id}/medications", response_model=MedicationOut, status_code=status.HTTP_201_CREATED)
-def create_patient_medication(
-    patient_id: str, payload: MedicationCreate, db: DbDep, _current_user: WriteUser
-) -> MedicationOut:
-    _get_patient_or_404(db, patient_id)
-    return MedicationOut.model_validate(clinical.create_medication(db, patient_id, payload))
-
-
-@router.post("/medications/{medication_id}/stop", response_model=MedicationOut)
-def stop_medication(medication_id: str, payload: MedicationStop, db: DbDep, _current_user: WriteUser) -> MedicationOut:
-    medication = _get_medication_or_404(db, medication_id)
-    return MedicationOut.model_validate(clinical.stop_medication(db, medication, payload))
-
-
-# --- Observations / Labs (spec §33) ------------------------------------------------
-
-
-@router.get("/patients/{patient_id}/observations", response_model=list[ObservationOut])
-def list_patient_observations(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[ObservationOut]:
-    _get_patient_or_404(db, patient_id)
-    return [ObservationOut.model_validate(o) for o in observation_service.list_observations(db, patient_id)]
-
-
-@router.get("/patients/{patient_id}/observations/trends", response_model=list[ObservationTrend])
-def get_patient_observation_trends(patient_id: str, db: DbDep, _current_user: CurrentUser) -> list[ObservationTrend]:
-    _get_patient_or_404(db, patient_id)
-    observations = observation_service.list_observations(db, patient_id)
-    return observation_service.build_trends(observations)
-
-
-# --- Change Engine (spec §35) --------------------------------------------------------
-
-
-@router.get("/patients/{patient_id}/changes", response_model=ChangesSummary)
-def get_patient_changes(patient_id: str, since: date, db: DbDep, _current_user: CurrentUser) -> ChangesSummary:
-    """`since` is a required query param rather than a silently-guessed default window
-    (e.g. "last 90 days") — spec §2 "never invent" applies to the comparison window
-    itself, not just the data inside it. The frontend supplies a real reference point
-    (typically the patient's previous encounter date)."""
-    _get_patient_or_404(db, patient_id)
-    return change_engine_service.build_changes_summary(db, patient_id, since)
+    p = get_patient(db, patient_id)
+    last = db.scalars(
+        select(AIRun)
+        .where(AIRun.patient_id == p.id, AIRun.tool == "summary", AIRun.status == "accepted")
+        .order_by(AIRun.created_at.desc())
+    ).first()
+    lines = [
+        f"# Patient summary — {p.full_name}",
+        "",
+        f"_Exported {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')} by {user.full_name}_",
+        "",
+        "## Structured record",
+        "",
+    ]
+    lines += [
+        f"- {line}" if not line.startswith("- ") else f"  {line}"
+        for line in patient_record_text(db, p, max_encounters=10).splitlines()
+    ]
+    if last and last.output:
+        o = last.output
+        lines += ["", "## Clinician-accepted AI summary", "", o.get("one_liner", "")]
+        for key, title in (
+            ("key_findings", "Key findings"),
+            ("recent_changes", "Recent changes"),
+            ("missing_information", "Missing information"),
+            ("follow_up_considerations", "Follow-up considerations"),
+        ):
+            items = o.get(key) or []
+            if items:
+                lines += ["", f"### {title}"] + [
+                    f"- {i['finding'] if isinstance(i, dict) and 'finding' in i else i}" for i in items
+                ]
+    lines += ["", "---", "Clinical decision support output. Verify against the source record before use."]
+    audit.record(
+        db,
+        user,
+        "patient.export",
+        f"Exported summary of {p.full_name}",
+        entity_type="patient",
+        entity_id=p.id,
+        patient_id=p.id,
+    )
+    return PlainTextResponse(
+        "\n".join(lines), headers={"Content-Disposition": f'attachment; filename="{p.mrn}-summary.md"'}
+    )

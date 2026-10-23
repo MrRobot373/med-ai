@@ -1,53 +1,134 @@
-"""`patients` table — spec §15 Patients.
-
-Per spec §88: bundled demo patients must be clearly marked as synthetic. `synthetic`
-defaults False so anything created through the real UI is never mistaken for demo data;
-scripts/seed_demo_patients.py explicitly sets it True.
-"""
-
 from __future__ import annotations
 
-import uuid
 from datetime import date, datetime
-from enum import Enum
 
-from sqlalchemy import Boolean, Date, DateTime, String, Text, func
-from sqlalchemy import Enum as SAEnum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import JSON, Boolean, Date, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base
-
-
-class Sex(str, Enum):
-    MALE = "male"
-    FEMALE = "female"
-    OTHER = "other"
-    UNKNOWN = "unknown"
+from app.db import Base, TimestampMixin, UTCDateTime, utcnow
+from app.models._ids import new_id
 
 
-class Patient(Base):
+class Patient(TimestampMixin, Base):
     __tablename__ = "patients"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    mrn: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    mrn: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    first_name: Mapped[str] = mapped_column(String(120))
+    last_name: Mapped[str] = mapped_column(String(120), index=True)
+    date_of_birth: Mapped[date | None] = mapped_column(Date)
+    sex: Mapped[str] = mapped_column(String(16), default="unknown")
+    phone: Mapped[str | None] = mapped_column(String(40))
+    email: Mapped[str | None] = mapped_column(String(255))
+    address: Mapped[str | None] = mapped_column(String(300))
+    blood_group: Mapped[str | None] = mapped_column(String(8))
+    notes: Mapped[str | None] = mapped_column(Text)
+    tags: Mapped[list] = mapped_column(JSON, default=list)
+    status: Mapped[str] = mapped_column(String(16), default="active", index=True)
+    synthetic: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 
-    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    preferred_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    date_of_birth: Mapped[date] = mapped_column(Date, nullable=False)
-    sex: Mapped[Sex] = mapped_column(SAEnum(Sex, native_enum=False), nullable=False)
+    encounters: Mapped[list[Encounter]] = relationship(back_populates="patient", cascade="all, delete-orphan")
+    conditions: Mapped[list[Condition]] = relationship(back_populates="patient", cascade="all, delete-orphan")
+    allergies: Mapped[list[Allergy]] = relationship(back_populates="patient", cascade="all, delete-orphan")
+    medications: Mapped[list[Medication]] = relationship(back_populates="patient", cascade="all, delete-orphan")
+    observations: Mapped[list[Observation]] = relationship(back_populates="patient", cascade="all, delete-orphan")
 
-    phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
-    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}".strip()
 
-    synthetic: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
+class Encounter(TimestampMixin, Base):
+    __tablename__ = "encounters"
 
-    def __repr__(self) -> str:  # pragma: no cover - debug convenience only
-        return f"<Patient {self.mrn} {self.last_name}>"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    patient_id: Mapped[str] = mapped_column(ForeignKey("patients.id", ondelete="CASCADE"), index=True)
+    type: Mapped[str] = mapped_column(String(24), default="outpatient")
+    status: Mapped[str] = mapped_column(String(24), default="in_progress")
+    started_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, index=True)
+    ended_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    reason: Mapped[str | None] = mapped_column(String(500))
+    notes: Mapped[str | None] = mapped_column(Text)
+    vitals: Mapped[dict] = mapped_column(JSON, default=dict)
+    clinician_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+
+    patient: Mapped[Patient] = relationship(back_populates="encounters")
+
+
+class Condition(TimestampMixin, Base):
+    __tablename__ = "conditions"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    patient_id: Mapped[str] = mapped_column(ForeignKey("patients.id", ondelete="CASCADE"), index=True)
+    encounter_id: Mapped[str | None] = mapped_column(ForeignKey("encounters.id", ondelete="SET NULL"))
+    name: Mapped[str] = mapped_column(String(300))
+    code: Mapped[str | None] = mapped_column(String(32))
+    status: Mapped[str] = mapped_column(String(16), default="active")
+    onset_date: Mapped[date | None] = mapped_column(Date)
+    notes: Mapped[str | None] = mapped_column(Text)
+
+    patient: Mapped[Patient] = relationship(back_populates="conditions")
+
+
+class Allergy(TimestampMixin, Base):
+    __tablename__ = "allergies"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    patient_id: Mapped[str] = mapped_column(ForeignKey("patients.id", ondelete="CASCADE"), index=True)
+    substance: Mapped[str] = mapped_column(String(200))
+    reaction: Mapped[str | None] = mapped_column(String(300))
+    severity: Mapped[str] = mapped_column(String(16), default="unknown")
+    status: Mapped[str] = mapped_column(String(16), default="active")
+    notes: Mapped[str | None] = mapped_column(Text)
+
+    patient: Mapped[Patient] = relationship(back_populates="allergies")
+
+
+class Medication(TimestampMixin, Base):
+    __tablename__ = "medications"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    patient_id: Mapped[str] = mapped_column(ForeignKey("patients.id", ondelete="CASCADE"), index=True)
+    encounter_id: Mapped[str | None] = mapped_column(ForeignKey("encounters.id", ondelete="SET NULL"))
+    name: Mapped[str] = mapped_column(String(200))
+    dose: Mapped[str | None] = mapped_column(String(100))
+    route: Mapped[str | None] = mapped_column(String(60))
+    frequency: Mapped[str | None] = mapped_column(String(100))
+    indication: Mapped[str | None] = mapped_column(String(200))
+    start_date: Mapped[date | None] = mapped_column(Date)
+    end_date: Mapped[date | None] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(String(16), default="active")
+    notes: Mapped[str | None] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(24), default="manual")
+    source_document_id: Mapped[str | None] = mapped_column(ForeignKey("documents.id", ondelete="SET NULL"))
+
+    patient: Mapped[Patient] = relationship(back_populates="medications")
+
+
+class Observation(Base):
+    """A single measured value (lab result, vital sign, measurement). Extracted values
+    always keep a pointer to the document/page/excerpt they came from."""
+
+    __tablename__ = "observations"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    patient_id: Mapped[str] = mapped_column(ForeignKey("patients.id", ondelete="CASCADE"), index=True)
+    document_id: Mapped[str | None] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(160))
+    code: Mapped[str] = mapped_column(String(80), index=True)
+    value_num: Mapped[float | None] = mapped_column(Float)
+    value_text: Mapped[str | None] = mapped_column(String(200))
+    unit: Mapped[str | None] = mapped_column(String(40))
+    ref_low: Mapped[float | None] = mapped_column(Float)
+    ref_high: Mapped[float | None] = mapped_column(Float)
+    ref_text: Mapped[str | None] = mapped_column(String(80))
+    flag: Mapped[str | None] = mapped_column(String(16))
+    observed_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, index=True)
+    source_page: Mapped[int | None] = mapped_column(Integer)
+    source_excerpt: Mapped[str | None] = mapped_column(String(500))
+    method: Mapped[str] = mapped_column(String(16), default="manual")
+    acknowledged: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+    patient: Mapped[Patient] = relationship(back_populates="observations")

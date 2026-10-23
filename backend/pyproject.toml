@@ -1,71 +1,49 @@
 [project]
-name = "gms-clinical-ai-backend"
-version = "0.1.0"
-description = "GMS Clinical AI — local-first multimodal clinical RAG & decision-support backend"
+name = "gms-clinical-ai"
+version = "2.0.0"
+description = "Local-first clinical intelligence platform: patient records, hybrid RAG, evidence-grounded AI."
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.32",
-    "pydantic>=2.9",
-    "pydantic-settings>=2.6",
-    "sqlalchemy>=2.0",
-    "alembic>=1.14",
-    "httpx>=0.27",
-    "argon2-cffi>=23.1",
-    "python-multipart>=0.0.12",
-    "email-validator>=2.2",
-    "pymupdf>=1.24",
-    "python-docx>=1.1",
-    "openpyxl>=3.1",
-    "Pillow>=10.4",
-    "pydicom>=2.4",
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.8",
+  "pydantic-settings>=2.4",
+  "sqlalchemy>=2.0.30",
+  "alembic>=1.13",
+  "httpx>=0.27",
+  "argon2-cffi>=23.1",
+  "cryptography>=43",
+  "python-multipart>=0.0.9",
+  "qdrant-client>=1.11",
+  "pymupdf>=1.24",
+  "python-docx>=1.1",
+  "openpyxl>=3.1",
+  "pillow>=10.4",
 ]
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=8.3",
-    "pytest-asyncio>=0.24",
-    "ruff>=0.7",
-]
-# RAG-stage dependencies, used for real starting Phase 07 (declared early, back in
-# Phase 01, per §11, so the embedding/reranker health checks could optionally exercise
-# them if already installed).
-#
-# GPU acceleration (optional): `sentence-transformers`/`transformers` pull in `torch`
-# as a transitive dependency, and this resolves to a CPU-only wheel by default — the
-# correct default (spec §12: keep GPU VRAM free for the main LLM). To run embedding/
-# reranker on a GPU with real spare headroom instead (Phase 14 measured a real ~1,500x
-# embedding throughput improvement — see docs/architecture.md), install a CUDA-enabled
-# torch build separately (matching your driver's CUDA version, e.g. `pip install
-# --index-url https://download.pytorch.org/whl/cu130 torch==2.13.0+cu130`) and set
-# EMBEDDING_DEVICE=cuda / RERANKER_DEVICE=cuda in .env — see README.md's "GPU
-# acceleration" section.
-rag = [
-    "qdrant-client>=1.12",
-    "sentence-transformers>=3.2",
-    "transformers>=4.46",
-    # Sparse/lexical retrieval (spec §43 Stage 6, §44 hybrid retrieval) — a small,
-    # permissively-licensed (Apache-2.0), pure-Python BM25 implementation. Computed
-    # in-process over the SQLite chunk corpus at query time rather than stored inside
-    # Qdrant's sparse-vector API: at this deployment's scale (one demo instance, a
-    # handful of patients/knowledge documents) that's simpler and avoids the extra
-    # IDF-fitting infrastructure a persistent sparse index would need, per spec §135
-    # "avoid unnecessary infrastructure" — and it never goes stale against the corpus.
-    "rank-bm25>=0.2.2",
-]
-# OCR is optional/degradable, same pattern as embedding/reranker in Phase 01: ingestion
-# reports an honest "OCR unavailable" status rather than failing hard if this isn't
-# installed. easyocr substitutes for the spec's suggested PaddleOCR (spec §11 "PaddleOCR
-# or another appropriate local open-source OCR engine") — PaddlePaddle's Windows wheel
-# support has been unreliable, while easyocr is pip-only and reuses the torch install
-# already required for the rag extra.
-ocr = [
-    "easyocr>=1.7",
-]
-
-[tool.ruff]
-line-length = 100
-target-version = "py311"
+# In-process embedding / reranking models (sentence-transformers + torch). Optional:
+# the same roles can be served by Ollama or any OpenAI-compatible endpoint instead.
+local-models = ["sentence-transformers>=3.0"]
+dicom = ["pydicom>=2.4"]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.6"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["B008", "E501", "SIM105"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]

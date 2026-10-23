@@ -1,132 +1,95 @@
-"""Indexes a document's already-extracted text into both Qdrant (vectors) and SQLite
-(`chunks` — the canonical text store BM25 and citations read from). Shared by report
-ingestion (`patient_documents`, patient-scoped) and `scripts/ingest_knowledge.py`
-(`medical_knowledge`, unscoped) — same function either way, just a different
-collection/patient_id, matching spec's own ingestion pipeline diagram (§29: "RAG
-chunking -> Embedding -> Qdrant indexing" as the pipeline's final stages).
-"""
+"""Writes chunks into both indexes (vectors + BM25) and keeps them consistent."""
 
 from __future__ import annotations
 
-import uuid
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from qdrant_client.http import models as qmodels
-from sqlalchemy.orm import Session as DbSession
-
-from app.config.settings import Settings
-from app.ingestion.chunking import chunk_pages
-from app.logging import get_logger
-from app.models.chunk import Chunk, ChunkCollection
-from app.rag.embeddings import embed_documents
-from app.rag.qdrant_setup import ensure_collection, get_qdrant_client
+from app.ai import registry
+from app.core.logging import get_logger
+from app.models import Chunk, Document
+from app.rag import lexical
+from app.services import runtime_config
 
 logger = get_logger(__name__)
 
 
-def index_document(
-    db: DbSession,
-    settings: Settings,
-    pages: list[dict],
-    collection: ChunkCollection,
-    source_title: str,
-    source_filename: str | None = None,
-    file_hash: str | None = None,
-    patient_id: str | None = None,
-    report_id: str | None = None,
-) -> list[Chunk]:
-    """Idempotent per source: deletes any chunks previously indexed for this exact
-    source (by `report_id`, or by `file_hash` for knowledge documents) first, so
-    re-running ingestion never accumulates duplicate/stale vector points — spec §31's
-    "do not create duplicate [] unnecessarily" applies to the vector index too, not
-    just the file upload it was originally written for."""
-    delete_indexed_source(db, settings, collection, report_id=report_id, file_hash=file_hash)
+async def index_chunks(db: Session, document: Document, chunks: list[Chunk]) -> None:
+    cfg = runtime_config.load(db)
+    status = runtime_config.index_status(cfg)
+    if status["reindex_required"]:
+        _reindex_needed()
+    embedder = registry.embedder(cfg)
+    vectors = await embedder.embed_documents([c.text for c in chunks]) if chunks else []
+    if vectors and cfg.index_signature is None:
+        cfg = cfg.model_copy(
+            update={"index_signature": runtime_config.embedding_signature(cfg), "index_dimension": len(vectors[0])}
+        )
+        runtime_config.save(db, cfg)
+    payloads = [
+        {
+            "document_id": document.id,
+            "patient_id": document.patient_id,
+            "scope": document.scope,
+            "domain": document.domain,
+            "kind": document.kind,
+        }
+        for _ in chunks
+    ]
+    await registry.vector_store(cfg).upsert(document.scope, [c.id for c in chunks], vectors, payloads)
+    lexical.index_chunks(db, [(c.id, c.text) for c in chunks])
 
-    chunk_results = chunk_pages(
-        pages,
-        document_title=source_title,
-        target_tokens=settings.rag_chunk_target_tokens,
-        overlap_tokens=settings.rag_chunk_overlap_tokens,
+
+def _reindex_needed():
+    from app.core.errors import ServiceUnavailable
+
+    raise ServiceUnavailable(
+        "The embedding model changed since the library was indexed. Re-index from Settings → Retrieval first.",
+        code="reindex_required",
     )
-    if not chunk_results:
-        return []
-
-    embeddings = embed_documents([c.text for c in chunk_results], settings)
-
-    client = get_qdrant_client(settings)
-    ensure_collection(client, collection.value, embeddings.dimension)
-
-    rows: list[Chunk] = []
-    points: list[qmodels.PointStruct] = []
-    for chunk_result, vector in zip(chunk_results, embeddings.vectors, strict=True):
-        chunk_id = str(uuid.uuid4())
-        row = Chunk(
-            id=chunk_id,
-            collection=collection,
-            patient_id=patient_id,
-            report_id=report_id,
-            source_title=source_title,
-            source_filename=source_filename,
-            file_hash=file_hash,
-            page=chunk_result.page,
-            section=chunk_result.section,
-            chunk_index=chunk_result.chunk_index,
-            text=chunk_result.raw_text,
-            token_count=chunk_result.token_count,
-        )
-        db.add(row)
-        rows.append(row)
-        points.append(
-            qmodels.PointStruct(
-                id=chunk_id,
-                vector=vector,
-                # Payload mirrors the filterable metadata (spec §45) — patient_id is
-                # the mandatory one (spec §16); the rest just avoid a SQLite round
-                # trip for display-only fields a caller may want straight off the hit.
-                payload={
-                    "patient_id": patient_id,
-                    "report_id": report_id,
-                    "collection": collection.value,
-                    "source_title": source_title,
-                    "page": chunk_result.page,
-                    "section": chunk_result.section,
-                },
-            )
-        )
-
-    db.commit()
-    client.upsert(collection_name=collection.value, points=points)
-    return rows
 
 
-def delete_indexed_source(
-    db: DbSession,
-    settings: Settings,
-    collection: ChunkCollection,
-    report_id: str | None = None,
-    file_hash: str | None = None,
-) -> None:
-    """Public so callers outside indexing itself (archiving/deleting a report) can
-    deindex it too — a report a clinician archived as wrong/duplicate should stop
-    being retrievable, not linger searchable forever."""
-    query = db.query(Chunk).filter(Chunk.collection == collection)
-    if report_id:
-        query = query.filter(Chunk.report_id == report_id)
-    elif file_hash:
-        query = query.filter(Chunk.file_hash == file_hash)
-    else:
-        return  # nothing to scope the delete to — never delete indiscriminately
-
-    existing_ids = [row.id for row in query.all()]
-    if not existing_ids:
-        return
-    query.delete(synchronize_session=False)
-    db.commit()
-
-    client = get_qdrant_client(settings)
+async def remove_document(db: Session, document: Document) -> None:
+    cfg = runtime_config.load(db)
+    chunk_ids = list(db.scalars(select(Chunk.id).where(Chunk.document_id == document.id)))
+    lexical.delete_chunks(db, chunk_ids)
     try:
-        client.delete(collection_name=collection.value, points_selector=qmodels.PointIdsList(points=existing_ids))
+        await registry.vector_store(cfg).delete_document(document.scope, document.id)
     except Exception:
-        # The collection may not exist yet on a first-ever index — nothing to delete
-        # from it. Logged (not silently swallowed) since any other cause here would
-        # leave stale Qdrant points behind a deleted SQLite row.
-        logger.warning("Failed to delete Qdrant points for collection=%s", collection.value, exc_info=True)
+        logger.warning("Vector deletion failed for document %s", document.id, exc_info=True)
+
+
+async def reindex_all(db: Session, progress=None) -> dict:
+    """Drop and rebuild every vector from the stored chunk text (after changing the
+    embedding model). BM25 rows are untouched — they don't depend on the embedder."""
+    cfg = runtime_config.load(db)
+    store = registry.vector_store(cfg)
+    embedder = registry.embedder(cfg)
+    dimension = await embedder.dimension()
+    await store.drop_all()
+    docs = list(db.scalars(select(Document).where(Document.status == "ready")))
+    total = 0
+    for i, doc in enumerate(docs):
+        chunks = list(db.scalars(select(Chunk).where(Chunk.document_id == doc.id).order_by(Chunk.ordinal)))
+        if not chunks:
+            continue
+        vectors = await embedder.embed_documents([c.text for c in chunks])
+        payloads = [
+            {
+                "document_id": doc.id,
+                "patient_id": doc.patient_id,
+                "scope": doc.scope,
+                "domain": doc.domain,
+                "kind": doc.kind,
+            }
+            for _ in chunks
+        ]
+        await store.upsert(doc.scope, [c.id for c in chunks], vectors, payloads)
+        total += len(chunks)
+        if progress:
+            progress(i + 1, len(docs))
+    cfg = runtime_config.load(db).model_copy(
+        update={"index_signature": runtime_config.embedding_signature(cfg), "index_dimension": dimension}
+    )
+    runtime_config.save(db, cfg)
+    return {"documents": len(docs), "chunks": total, "dimension": dimension}

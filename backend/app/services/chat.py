@@ -1,240 +1,245 @@
-"""Chat conversation service — DB persistence + turn orchestration glue.
-`app/api/chat.py` calls into this; `app/chat/orchestrator.py` has the actual
-retrieval/context-assembly logic and knows nothing about SQLAlchemy or HTTP.
+"""Evidence-grounded chat. One turn:
+
+  question → retrieval (patient + knowledge) → optional de-identified web research →
+  abstain if nothing relevant → prompt with labelled evidence → stream tokens →
+  validate citations → persist answer + provenance trace.
+
+Yields event dicts; the API layer frames them as Server-Sent Events.
 """
 
 from __future__ import annotations
 
-import json
+import time
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime
-from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session as DbSession
+from sqlalchemy.orm import Session
 
-from app.chat.orchestrator import ABSTENTION_TEXT, finalize_turn, prepare_turn
-from app.config.settings import Settings
-from app.llm.generation import ChatMessage, GenerationError, generate_stream
-from app.logging import get_logger
-from app.models.citation import Citation, CitationSourceType
-from app.models.conversation import Conversation, ConversationScope
-from app.models.message import Message, MessageRole
-from app.rag.dense_retriever import RetrievalError
+from app.ai import registry
+from app.ai.llm import ChatMessage
+from app.clinical import citations
+from app.clinical.context import patient_record_text
+from app.clinical.prompts import CHAT_SYSTEM, INSUFFICIENT, evidence_block, web_block
+from app.core.errors import ServiceUnavailable
+from app.core.logging import get_logger
+from app.db import utcnow
+from app.models import Conversation, Message, Patient, User
+from app.rag.retrieve import retrieve
+from app.research import providers as research
+from app.research.deidentify import deidentify
+from app.services import audit, runtime_config
 
 logger = get_logger(__name__)
 
-# Report comparison (Phase 10) and web research (Phase 11) don't exist yet — reject
-# these scopes explicitly at creation time rather than silently mishandling them.
-_UNIMPLEMENTED_SCOPES = {ConversationScope.SELECTED_REPORTS_COMPARISON, ConversationScope.RESEARCH_MODE}
 
-_SOURCE_TYPE_BY_COLLECTION = {
-    "patient_documents": CitationSourceType.PATIENT_REPORT,
-    "patient_vision": CitationSourceType.PATIENT_VISION,
-}
+def _title_from(question: str) -> str:
+    t = " ".join(question.split())
+    return (t[:60] + "…") if len(t) > 60 else t
 
 
-class UnsupportedScopeError(Exception):
-    pass
+def _history(conv: Conversation, turns: int, exclude_id: str) -> list[ChatMessage]:
+    msgs = [m for m in conv.messages if m.id != exclude_id and m.status in ("complete", "abstained")]
+    msgs = msgs[-turns * 2 :] if turns else []
+    return [ChatMessage(m.role, m.content) for m in msgs]
 
 
-def create_conversation(
-    db: DbSession,
-    user_id: str,
-    scope: ConversationScope,
-    patient_id: str | None = None,
-    encounter_id: str | None = None,
-    selected_report_id: str | None = None,
-) -> Conversation:
-    if scope in _UNIMPLEMENTED_SCOPES:
-        raise UnsupportedScopeError(f"Scope '{scope.value}' is not implemented yet")
-    conversation = Conversation(
-        user_id=user_id,
-        scope=scope,
-        patient_id=patient_id,
-        encounter_id=encounter_id,
-        selected_report_id=selected_report_id,
-    )
-    db.add(conversation)
+async def answer(db: Session, user: User, conv: Conversation, question: str) -> AsyncIterator[dict]:
+    cfg = runtime_config.load(db)
+    started = time.perf_counter()
+    patient = db.get(Patient, conv.patient_id) if conv.patient_id else None
+
+    user_msg = Message(conversation_id=conv.id, role="user", content=question)
+    db.add(user_msg)
+    if conv.title == "New conversation":
+        conv.title = _title_from(question)
     db.commit()
-    db.refresh(conversation)
-    return conversation
+    db.refresh(conv)
+    yield {"event": "user_message", "data": {"id": user_msg.id, "content": question, "title": conv.title}}
 
-
-def list_conversations(db: DbSession, user_id: str, patient_id: str | None = None) -> list[Conversation]:
-    stmt = select(Conversation).where(Conversation.user_id == user_id)
-    stmt = stmt.where(Conversation.patient_id == patient_id) if patient_id else stmt
-    stmt = stmt.order_by(Conversation.updated_at.desc())
-    return list(db.scalars(stmt))
-
-
-def get_conversation(db: DbSession, conversation_id: str) -> Conversation | None:
-    return db.get(Conversation, conversation_id)
-
-
-def list_messages(db: DbSession, conversation_id: str) -> list[Message]:
-    stmt = select(Message).where(Message.conversation_id == conversation_id).order_by(Message.created_at)
-    return list(db.scalars(stmt))
-
-
-def list_citations(db: DbSession, message_id: str) -> list[Citation]:
-    stmt = select(Citation).where(Citation.message_id == message_id).order_by(Citation.label)
-    return list(db.scalars(stmt))
-
-
-def _recent_history(db: DbSession, conversation_id: str, max_turns: int) -> list[ChatMessage]:
-    if max_turns <= 0:
-        return []
-    messages = list_messages(db, conversation_id)
-    recent = messages[-(max_turns * 2) :]
-    return [ChatMessage(role=m.role.value, content=m.content) for m in recent if m.role != MessageRole.SYSTEM]
-
-
-def _derive_title(text: str) -> str:
-    stripped = " ".join(text.strip().split())
-    return stripped[:80] + ("…" if len(stripped) > 80 else "")
-
-
-def _citation_payload(citation: Citation) -> dict[str, Any]:
-    return {
-        "label": citation.label,
-        "source_type": citation.source_type.value,
-        "source_title": citation.source_title,
-        "page": citation.page,
-        "section": citation.section,
-        "source_excerpt": citation.source_excerpt,
-        "relevance_score": citation.relevance_score,
-    }
-
-
-async def run_turn(
-    db: DbSession, settings: Settings, conversation: Conversation, user_text: str
-) -> AsyncIterator[dict[str, Any]]:
-    """Yields plain-dict, SSE-ready events — `{"type": "token", ...}`,
-    `{"type": "final", ...}`, `{"type": "error", ...}`. HTTP/SSE framing is the API
-    layer's job, not this function's."""
-    history = _recent_history(db, conversation.id, settings.chat_history_turns)
-
-    db.add(Message(conversation_id=conversation.id, role=MessageRole.USER, content=user_text))
-    if conversation.title is None:
-        conversation.title = _derive_title(user_text)
-    conversation.updated_at = datetime.now(UTC)
-    db.commit()
-
+    # 1. Retrieval
+    yield {"event": "status", "data": {"stage": "retrieving", "label": "Searching records and knowledge"}}
     try:
-        prepared = prepare_turn(db, settings, conversation, user_text, history)
-    except RetrievalError as exc:
-        # Same graceful-degradation shape as a GenerationError below (spec §99: Qdrant
-        # unavailable must fail like this, not crash the SSE stream mid-response) — an
-        # honest "couldn't retrieve" error, never silently reinterpreted as "no
-        # evidence exists" (which would look like a normal abstention).
-        db.add(
-            Message(
-                conversation_id=conversation.id,
-                role=MessageRole.ASSISTANT,
-                content="",
-                generation_error=str(exc),
-                model=settings.ollama_model,
-            )
+        result = await retrieve(
+            db,
+            cfg,
+            question,
+            patient_id=patient.id if patient else None,
+            include_knowledge=conv.scope != "patient" or cfg.retrieval.include_knowledge_in_patient_chat,
         )
-        db.commit()
-        yield {"type": "error", "message": "Retrieval is temporarily unavailable. Please try again shortly."}
+    except ServiceUnavailable as exc:
+        yield _error(db, conv, exc.message, started)
         return
+    passages = result.passages
+    trace = result.trace
 
-    if prepared.abstain:
-        assistant_message = Message(
-            conversation_id=conversation.id,
-            role=MessageRole.ASSISTANT,
-            content=ABSTENTION_TEXT,
-            model=settings.ollama_model,
-            structured_payload=json.dumps(
-                {
-                    "task_classification": prepared.task_classification,
-                    "evidence_quality": "insufficient",
-                    "provenance": prepared.provenance,
-                }
-            ),
-        )
-        db.add(assistant_message)
-        db.commit()
-        yield {"type": "token", "content": ABSTENTION_TEXT}
-        yield {
-            "type": "final",
-            "message_id": assistant_message.id,
-            "citations": [],
-            "evidence_quality": "insufficient",
-            "grounding": None,
-        }
-        return
-
-    accumulated = ""
-    try:
-        async for delta in generate_stream(prepared.messages, settings):
-            accumulated += delta
-            yield {"type": "token", "content": delta}
-    except GenerationError as exc:
-        db.add(
-            Message(
-                conversation_id=conversation.id,
-                role=MessageRole.ASSISTANT,
-                content="",
-                generation_error=str(exc),
-                model=settings.ollama_model,
-            )
-        )
-        db.commit()
-        yield {"type": "error", "message": str(exc)}
-        return
-
-    result = await finalize_turn(accumulated, prepared.labeled_evidence, settings)
-
-    assistant_message = Message(
-        conversation_id=conversation.id,
-        role=MessageRole.ASSISTANT,
-        content=result.answer_text,
-        model=settings.ollama_model,
-        generation_settings=json.dumps({"temperature": settings.chat_temperature, "profile": settings.rag_profile.value}),
-        structured_payload=json.dumps(
-            {
-                "task_classification": prepared.task_classification,
-                "evidence_quality": result.evidence_quality.value,
-                "grounding": [c.model_dump() for c in result.grounding.claims] if result.grounding else None,
-                "provenance": prepared.provenance,
+    # 2. Optional web research (explicit opt-in per conversation + enabled by admin)
+    web_results: list[dict] = []
+    if conv.use_web:
+        if not cfg.research.enabled:
+            trace["web"] = {"status": "disabled", "note": "Research Mode is disabled by the administrator."}
+        else:
+            yield {"event": "status", "data": {"stage": "web", "label": "Searching trusted medical sources"}}
+            clean = deidentify(question, patient)
+            rows, statuses = await research.search(db, cfg.research, clean.text)
+            for i, r in enumerate(rows[:8], start=1):
+                web_results.append({**r, "label": f"W{i}"})
+            trace["web"] = {
+                "status": "searched",
+                "outbound_query": clean.text,
+                "identifiers_removed": clean.removed,
+                "categories": clean.categories,
+                "providers": statuses,
             }
-        ),
-    )
-    db.add(assistant_message)
-    db.flush()  # populate assistant_message.id before Citation rows reference it
 
-    citation_rows: list[Citation] = []
-    for item in result.citations:
-        passage = item.passage
-        source_type = _SOURCE_TYPE_BY_COLLECTION.get(passage.collection, CitationSourceType.KNOWLEDGE_DOCUMENT)
-        # Both patient_documents and patient_vision chunks carry a report_id
-        # (patient_vision's is the image report the analysis was run against) — only
-        # medical_knowledge chunks have no report to link back to.
-        has_report = passage.collection in _SOURCE_TYPE_BY_COLLECTION
-        citation = Citation(
-            message_id=assistant_message.id,
-            label=item.label,
-            source_type=source_type,
-            chunk_id=passage.chunk_ids[0] if passage.chunk_ids else None,
-            report_id=passage.source_id if has_report else None,
-            source_title=passage.source_title,
-            page=passage.page,
-            section=passage.section,
-            source_excerpt=passage.text[:1000],
-            relevance_score=passage.score,
+    sources = [p.public() for p in passages] + [
+        {
+            "label": w["label"],
+            "scope": "web",
+            "document_title": w["title"],
+            "source_org": w["source"],
+            "url": w["url"],
+            "excerpt": (w.get("snippet") or "")[:600],
+            "document_date": w.get("date"),
+            "evidence_type": w.get("evidence_type"),
+        }
+        for w in web_results
+    ]
+    if patient:
+        sources.insert(
+            0,
+            {
+                "label": "R",
+                "scope": "record",
+                "document_title": f"Structured record — {patient.full_name}",
+                "excerpt": "Conditions, allergies, medications, latest results and recent encounters from the chart.",
+            },
         )
-        db.add(citation)
-        citation_rows.append(citation)
+    yield {"event": "sources", "data": {"sources": sources, "trace": trace}}
 
-    db.commit()
+    # 3. Abstain when nothing relevant was found (never fall back to ungrounded answering)
+    if not passages and not web_results and not patient:
+        content = f"{INSUFFICIENT}\n\nNo passages in the knowledge library matched this question." + (
+            " You can enable **web evidence** for this conversation to search trusted sources."
+            if cfg.research.enabled
+            else ""
+        )
+        yield {"event": "token", "data": {"text": content}}
+        msg = _save(db, conv, content, "abstained", sources, trace, None, started, [])
+        yield {"event": "done", "data": _message_out(msg)}
+        return
 
-    yield {
-        "type": "final",
-        "message_id": assistant_message.id,
-        "citations": [_citation_payload(c) for c in citation_rows],
-        "evidence_quality": result.evidence_quality.value,
-        "grounding": [c.model_dump() for c in result.grounding.claims] if result.grounding else None,
+    # 4. Prompt
+    system = CHAT_SYSTEM.format(product=cfg.branding.product_name, insufficient=INSUFFICIENT)
+    blocks = []
+    if patient:
+        blocks.append("PATIENT RECORD [R]\n" + patient_record_text(db, patient))
+    if passages:
+        blocks.append("EVIDENCE\n" + evidence_block(passages))
+    if web_results:
+        blocks.append("WEB EVIDENCE (external, de-identified search)\n" + web_block(web_results))
+    if not passages and not web_results:
+        blocks.append("EVIDENCE\n(no matching passages were found in documents or the knowledge library)")
+    context = "\n\n=====\n\n".join(blocks)
+    messages = [ChatMessage("system", system)]
+    messages += _history(conv, cfg.retrieval.history_turns, user_msg.id)
+    messages.append(ChatMessage("user", f"{context}\n\n=====\n\nQUESTION: {question}"))
+
+    # 5. Generate
+    yield {"event": "status", "data": {"stage": "generating", "label": "Writing answer"}}
+    llm = registry.llm(cfg)
+    parts: list[str] = []
+    gen_started = time.perf_counter()
+    first_token_ms = None
+    try:
+        async for piece in llm.stream(messages):
+            if first_token_ms is None:
+                first_token_ms = int((time.perf_counter() - gen_started) * 1000)
+            parts.append(piece)
+            yield {"event": "token", "data": {"text": piece}}
+    except ServiceUnavailable as exc:
+        yield _error(db, conv, exc.message, started, partial="".join(parts))
+        return
+
+    raw = "".join(parts).strip()
+    allowed = {s["label"] for s in sources}
+    cleaned, used, invalid = citations.validate(raw, allowed)
+    trace["generation"] = {
+        "model": llm.model,
+        "first_token_ms": first_token_ms,
+        "generation_ms": int((time.perf_counter() - gen_started) * 1000),
+        "citations_used": used,
+        "invalid_citations_removed": invalid,
+        "citation_coverage": citations.coverage(cleaned),
     }
+    status = "abstained" if INSUFFICIENT.lower()[:60] in cleaned.lower() else "complete"
+    for s in sources:
+        s["cited"] = s["label"] in used
+    msg = _save(db, conv, cleaned, status, sources, trace, llm.model, started, used)
+    audit.record(
+        db,
+        user,
+        "ai.chat",
+        f"Asked: {_title_from(question)}",
+        entity_type="conversation",
+        entity_id=conv.id,
+        patient_id=conv.patient_id,
+        details={"sources": len(sources), "cited": used, "web": bool(web_results)},
+    )
+    yield {"event": "done", "data": _message_out(msg)}
+
+
+def _save(db, conv, content, status, sources, trace, model, started, used) -> Message:
+    msg = Message(
+        conversation_id=conv.id,
+        role="assistant",
+        content=content,
+        status=status,
+        citations=sources,
+        trace=trace,
+        model=model,
+        latency_ms=int((time.perf_counter() - started) * 1000),
+    )
+    db.add(msg)
+    conv.updated_at = utcnow()
+    db.commit()
+    return msg
+
+
+def _error(db: Session, conv: Conversation, message: str, started: float, partial: str = "") -> dict:
+    msg = Message(
+        conversation_id=conv.id,
+        role="assistant",
+        content=partial,
+        status="error",
+        trace={"error": message},
+        latency_ms=int((time.perf_counter() - started) * 1000),
+    )
+    db.add(msg)
+    db.commit()
+    return {"event": "error", "data": {"message": message, "id": msg.id}}
+
+
+def _message_out(m: Message) -> dict:
+    return {
+        "id": m.id,
+        "role": m.role,
+        "content": m.content,
+        "status": m.status,
+        "citations": m.citations,
+        "trace": m.trace,
+        "model": m.model,
+        "latency_ms": m.latency_ms,
+        "feedback": m.feedback,
+        "created_at": m.created_at.isoformat(),
+    }
+
+
+def message_out(m: Message) -> dict:
+    return _message_out(m)
+
+
+def conversations_for(db: Session, user: User, patient_id: str | None = None) -> list[Conversation]:
+    q = select(Conversation).where(Conversation.user_id == user.id)
+    if patient_id:
+        q = q.where(Conversation.patient_id == patient_id)
+    return list(db.scalars(q.order_by(Conversation.pinned.desc(), Conversation.updated_at.desc())))
