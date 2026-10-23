@@ -1,0 +1,110 @@
+{
+  "uhid": "LCM-10237",
+  "honorific": "Mrs.",
+  "first_name": "Meenakshi",
+  "last_name": "Iyer",
+  "date_of_birth": "1979-11-23",
+  "sex": "female",
+  "phone": "+91 98903 55120",
+  "email": null,
+  "address": "17, Shree Krupa, Tilak Road, Sadashiv Peth, Pune 411030",
+  "blood_group": "B-",
+  "tags": [
+    "breast"
+  ],
+  "summary": "46-year-old bank manager with hypertension who found a lump in the left breast; ultrasound BI-RADS 3. Referred to a breast surgeon.",
+  "conditions": [
+    {
+      "name": "Essential hypertension",
+      "code": "I10",
+      "since": "2021-04-01",
+      "status": "active"
+    },
+    {
+      "name": "Left breast lump — BI-RADS 3",
+      "code": "N63.20",
+      "since": "2026-09-26",
+      "status": "active"
+    }
+  ],
+  "allergies": [
+    {
+      "substance": "Codeine",
+      "reaction": "Severe vomiting",
+      "severity": "mild"
+    }
+  ],
+  "medications": [],
+  "visits": [
+    {
+      "reason": "Lump in the left breast",
+      "history": "Noticed a painless lump in the left breast 2 weeks ago while bathing. No nipple discharge. Mother had breast cancer at 62.",
+      "examination": "2 x 2 cm firm, mobile, non-tender lump, left upper outer quadrant. No skin change. No axillary nodes.",
+      "vitals": {
+        "bp": "142/88",
+        "hr": 78,
+        "weight_kg": 68
+      },
+      "diagnoses": [
+        "Left breast lump"
+      ],
+      "assessment": "Likely benign (fibroadenoma) but family history — needs imaging.",
+      "plan": "Ultrasound breasts. Mammography. Surgical opinion.",
+      "date": "2026-09-26",
+      "prescription": {
+        "items": [
+          {
+            "drug": "Amlong 5",
+            "dose": "1 tab",
+            "frequency": "OD",
+            "duration_days": 90,
+            "instructions": "Morning"
+          }
+        ],
+        "advice": "Continue BP medicine. Reduce salt.",
+        "follow_up_days": 7,
+        "long_term": true
+      }
+    }
+  ],
+  "orders": [
+    {
+      "date": "2026-09-26",
+      "test": "USG both breasts",
+      "category": "radiology",
+      "reason": "Left breast lump, family history of breast cancer — characterise",
+      "visit": 0
+    }
+  ],
+  "today": null,
+  "documents": [
+    {
+      "file": "Lab reports/2026-09-26 CBC, kidney function and TSH - Sanvita.pdf",
+      "title": "CBC, kidney function and TSH",
+      "kind": "lab_report",
+      "date": "2026-09-26",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-09-28 USG Both Breasts report - Medisight.pdf",
+      "title": "USG Both Breasts report",
+      "kind": "imaging",
+      "date": "2026-09-28",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-09-28 USG left breast - lesion image.jpg",
+      "title": "USG left breast — lesion image",
+      "kind": "imaging",
+      "date": "2026-09-28",
+      "load": true
+    },
+    {
+      "file": "Letters & referrals/2026-09-30 Breast surgery opinion - Vedant.pdf",
+      "title": "Breast surgery opinion",
+      "kind": "referral",
+      "date": "2026-09-30",
+      "load": true
+    }
+  ]
+}

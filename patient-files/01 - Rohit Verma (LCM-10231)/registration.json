@@ -1,0 +1,211 @@
+{
+  "uhid": "LCM-10231",
+  "honorific": "Mr.",
+  "first_name": "Rohit",
+  "last_name": "Verma",
+  "date_of_birth": "1957-05-10",
+  "sex": "male",
+  "phone": "+91 98450 12345",
+  "email": null,
+  "address": "Flat 12, Shubham Co-op Society, Karve Nagar, Pune 411052",
+  "blood_group": "B+",
+  "tags": [
+    "diabetes",
+    "hypertension",
+    "regular"
+  ],
+  "summary": "69-year-old retired bank officer with diabetes, hypertension and BPH; sulfa allergy. Seen in September for fever and weight gain; thyroid and sugar tests since. Today: stomach pain for 2 days.",
+  "conditions": [
+    {
+      "name": "Type 2 diabetes mellitus",
+      "code": "E11.9",
+      "since": "2014-03-01",
+      "status": "active"
+    },
+    {
+      "name": "Essential hypertension",
+      "code": "I10",
+      "since": "2016-08-01",
+      "status": "active"
+    },
+    {
+      "name": "Benign prostatic hyperplasia",
+      "code": "N40.0",
+      "since": "2022-01-01",
+      "status": "active"
+    },
+    {
+      "name": "Dyslipidaemia",
+      "code": "E78.5",
+      "since": "2020-06-01",
+      "status": "active"
+    }
+  ],
+  "allergies": [
+    {
+      "substance": "Sulfa drugs",
+      "reaction": "Itchy rash (2019, after Septran)",
+      "severity": "moderate"
+    }
+  ],
+  "medications": [
+    {
+      "name": "Urimax 0.4",
+      "dose": "1 cap",
+      "frequency": "HS",
+      "indication": "Benign prostatic hyperplasia",
+      "since": "2025-11-08"
+    }
+  ],
+  "visits": [
+    {
+      "reason": "Diabetes and BP review",
+      "history": "Regular follow-up. No hypoglycaemia. Nocturia once, stable since starting Urimax.",
+      "examination": "Comfortable. Pedal pulses felt. Monofilament sensation intact. No oedema.",
+      "vitals": {
+        "bp": "138/84",
+        "hr": 76,
+        "weight_kg": 75
+      },
+      "diagnoses": [
+        "Type 2 diabetes mellitus",
+        "Essential hypertension"
+      ],
+      "assessment": "HbA1c 7.6 % — slightly above target. BP acceptable. LDL 118 on atorvastatin 10.",
+      "plan": "Continue medicines for 3 months. HbA1c, kidney function and lipids before the next visit.",
+      "date": "2026-06-17",
+      "prescription": {
+        "items": [
+          {
+            "drug": "Glycomet-GP 1",
+            "dose": "1 tab",
+            "frequency": "BD",
+            "duration_days": 90,
+            "instructions": "Before breakfast and dinner"
+          },
+          {
+            "drug": "Telma 40",
+            "dose": "1 tab",
+            "frequency": "OD",
+            "duration_days": 90,
+            "instructions": "Morning"
+          },
+          {
+            "drug": "Atorva 10",
+            "dose": "1 tab",
+            "frequency": "HS",
+            "duration_days": 90,
+            "instructions": null
+          },
+          {
+            "drug": "Ecosprin 75",
+            "dose": "1 tab",
+            "frequency": "OD",
+            "duration_days": 90,
+            "instructions": "After lunch"
+          }
+        ],
+        "advice": "Low-salt, low-sugar diet. Walk 30 minutes daily.",
+        "follow_up_days": 90,
+        "long_term": true
+      }
+    },
+    {
+      "reason": "Fever and body ache for 3 days",
+      "history": "Fever up to 101°F for 3 days with body ache and mild sore throat. No cough, no urinary symptoms. Also reports weight gain of about 3 kg over 3 months and feeling tired.",
+      "examination": "Temp 100.4°F. Throat mildly congested. Chest clear. No rash. No lymphadenopathy.",
+      "vitals": {
+        "bp": "134/82",
+        "hr": 92,
+        "weight_kg": 78,
+        "temp_f": 100.4
+      },
+      "diagnoses": [
+        "Acute viral fever",
+        "Weight gain — under evaluation"
+      ],
+      "assessment": "Likely viral fever. Weight gain with fatigue: check thyroid; review diabetes control.",
+      "plan": "Paracetamol for fever, fluids. HbA1c, kidney function and TSH. Review in 4 weeks with reports.",
+      "date": "2026-09-17",
+      "prescription": {
+        "items": [
+          {
+            "drug": "Dolo 650",
+            "dose": "1 tab",
+            "frequency": "TDS",
+            "duration_days": 5,
+            "instructions": "After food; for fever"
+          },
+          {
+            "drug": "Pan 40",
+            "dose": "1 tab",
+            "frequency": "OD",
+            "duration_days": 5,
+            "instructions": "Before breakfast"
+          }
+        ],
+        "advice": "Plenty of fluids. Return if fever lasts more than 3 more days.",
+        "follow_up_days": 28,
+        "long_term": false
+      }
+    }
+  ],
+  "orders": [
+    {
+      "date": "2026-09-17",
+      "test": "HbA1c, KFT and TSH",
+      "category": "lab",
+      "reason": "Diabetes control, kidney function; weight gain and fatigue — rule out hypothyroidism",
+      "visit": 1
+    }
+  ],
+  "today": {
+    "time": "10:15",
+    "reason": "Stomach pain since 2 days",
+    "status": "expected"
+  },
+  "documents": [
+    {
+      "file": "Prescriptions/2025-11-08 Prescription - Dr. Sameer Joshi.pdf",
+      "title": "Prescription - Dr. Sameer Joshi",
+      "kind": "prescription",
+      "date": "2025-11-08",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-02-14 Chest X-Ray Pa.jpg",
+      "title": "Chest X-Ray Pa",
+      "kind": "imaging",
+      "date": "2026-02-14",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-02-14 X-ray Chest PA View report - Medisight.pdf",
+      "title": "X-ray Chest PA View report",
+      "kind": "imaging",
+      "date": "2026-02-14",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-06-12 HbA1c and lipid profile - Sanvita.pdf",
+      "title": "HbA1c and lipid profile",
+      "kind": "lab_report",
+      "date": "2026-06-12",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-09-22 Diabetes, kidney and thyroid panel - Sanvita.pdf",
+      "title": "Diabetes, kidney and thyroid panel",
+      "kind": "lab_report",
+      "date": "2026-09-22",
+      "load": true
+    },
+    {
+      "file": "To upload/2026-10-23 USG Abdomen and Pelvis report - Medisight.pdf",
+      "title": "USG Abdomen and Pelvis report",
+      "kind": "imaging",
+      "date": "2026-10-23",
+      "load": false
+    }
+  ]
+}

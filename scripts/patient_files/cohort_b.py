@@ -28,7 +28,7 @@ D = date
 def aarav() -> Patient:
     p = Patient(
         6,
-        "GMS-10236",
+        "LCM-10236",
         "Master",
         "Aarav",
         "Kulkarni",
@@ -127,7 +127,7 @@ def aarav() -> Patient:
 def meenakshi() -> Patient:
     p = Patient(
         7,
-        "GMS-10237",
+        "LCM-10237",
         "Mrs.",
         "Meenakshi",
         "Iyer",
@@ -241,7 +241,7 @@ def meenakshi() -> Patient:
 def kavita() -> Patient:
     p = Patient(
         8,
-        "GMS-10238",
+        "LCM-10238",
         "Mrs.",
         "Kavita",
         "Joshi",
@@ -369,7 +369,7 @@ def kavita() -> Patient:
 def imran() -> Patient:
     p = Patient(
         9,
-        "GMS-10239",
+        "LCM-10239",
         "Mr.",
         "Imran",
         "Qureshi",
@@ -438,7 +438,7 @@ def imran() -> Patient:
 def lakshmi() -> Patient:
     p = Patient(
         10,
-        "GMS-10240",
+        "LCM-10240",
         "Mrs.",
         "Lakshmi",
         "Venkatesh",

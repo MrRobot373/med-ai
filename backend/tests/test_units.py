@@ -80,7 +80,7 @@ def test_identity_flags_namesake_in_table_layout():
     from app.ingestion import identity
     from app.models import Patient
 
-    p = Patient(mrn="GMS-10232", first_name="Harish Chandra", last_name="Gupta")
+    p = Patient(mrn="LCM-10232", first_name="Harish Chandra", last_name="Gupta")
     other = "LABORATORY REPORT\nPatient Name | : Mr. Hemant Gupta | Lab No. | : AP/2610/44871\nPatient ID | : AP-778812"
     assert identity.check(p, other).status == "mismatch"
     own = "Patient Name | : Mr. Harish Chandra Gupta | Lab No. | : SV/1\nPatient ID | : SV-99812"

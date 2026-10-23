@@ -9,7 +9,7 @@ def _one(pattern: str) -> bytes:
 
 
 def test_dicom_ingestion_identity_and_preview(clinician):
-    p = create_patient(clinician, mrn="GMS-10245", first="Suresh Babu", last="Reddy")
+    p = create_patient(clinician, mrn="LCM-10245", first="Suresh Babu", last="Reddy")
     data = _one("15 */Radiology/*.dcm")
     r = clinician.post(
         f"/api/patients/{p['id']}/documents", files={"file": ("ct-brain.dcm", data, "application/dicom")}

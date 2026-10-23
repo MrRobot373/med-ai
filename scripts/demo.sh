@@ -14,5 +14,5 @@ if [[ "${1:-}" == "--mock" ]]; then
   .venv/bin/python -m app.seed use-mock-ai http://127.0.0.1:9100/v1
 fi
 .venv/bin/python -m app.seed demo
-echo "Open http://localhost:8000  (doctor: ananya.rao@gmsclinic.local / Clinic@2026, front desk: meera.pillai@gmsclinic.local / Desk@2026)"
+echo "Open http://localhost:8000  (doctor: ananya.rao@lifecaremedico.in / Clinic@2026, front desk: meera.pillai@lifecaremedico.in / Desk@2026)"
 .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000

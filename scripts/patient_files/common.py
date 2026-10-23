@@ -91,14 +91,14 @@ VEDANT = R.Org(
     "discharge@vedanthospital.example",
     "VH",
 )
-GMS = R.Org(
-    "GMS Health Clinic",
+LIFE_CARE = R.Org(
+    "Life Care Medico",
     "Internal medicine · Diabetes · Hypertension",
     "Office 3, Siddhi Towers, Paud Road, Pune 411038",
     "+91 20 2543 7788",
     (0.14, 0.42, 0.99),
-    "clinic@gmshealth.example",
-    "GMS",
+    "care@lifecaremedico.example",
+    "LCM",
 )
 
 CLINIC_SHRAVANI = R.Org(

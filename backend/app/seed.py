@@ -50,11 +50,12 @@ PATIENT_FILES = PROJECT_ROOT / "patient-files"
 
 STAFF = [
     # email, name, title, specialty, role, password
-    ("ananya.rao@gmsclinic.local", "Dr. Ananya Rao", "Dr.", "Internal Medicine", "clinician", "Clinic@2026"),
-    ("meera.pillai@gmsclinic.local", "Meera Pillai", None, "Front desk", "front_desk", "Desk@2026"),
-    ("rahul.menon@gmsclinic.local", "Rahul Menon", None, "Quality & audit", "viewer", "Audit@2026"),
+    ("ananya.rao@lifecaremedico.in", "Dr. Ananya Rao", "Dr.", "Internal Medicine", "clinician", "Clinic@2026"),
+    ("meera.pillai@lifecaremedico.in", "Meera Pillai", None, "Front desk", "front_desk", "Desk@2026"),
+    ("rahul.menon@lifecaremedico.in", "Rahul Menon", None, "Quality & audit", "viewer", "Audit@2026"),
 ]
 CLINICIAN_EMAIL = STAFF[0][0]
+CLINIC = {"organization": "Life Care Medico", "login_message": "Sign in with your Life Care Medico account."}
 MIME = {
     ".pdf": "application/pdf",
     ".jpg": "image/jpeg",
@@ -352,6 +353,9 @@ def main(argv: list[str]) -> int:
         admin = db.scalars(select(User).where(User.role == "admin")).first()
         ids: list[str] = []
         if cmd == "demo":
+            from app.services import runtime_config
+
+            runtime_config.save(db, runtime_config.apply_section_update(runtime_config.load(db), "branding", CLINIC))
             clinician = seed_users(db)
             ids += seed_knowledge(db, admin)
             ids += seed_patients(db, clinician)

@@ -36,7 +36,7 @@ D = date
 def gurpreet() -> Patient:
     p = Patient(
         11,
-        "GMS-10241",
+        "LCM-10241",
         "Mr.",
         "Gurpreet Singh",
         "Bains",
@@ -172,7 +172,7 @@ def gurpreet() -> Patient:
 def ananya() -> Patient:
     p = Patient(
         12,
-        "GMS-10242",
+        "LCM-10242",
         "Ms.",
         "Ananya",
         "Bose",
@@ -275,7 +275,7 @@ def ananya() -> Patient:
 def ramesh() -> Patient:
     p = Patient(
         13,
-        "GMS-10243",
+        "LCM-10243",
         "Mr.",
         "Ramesh",
         "Patil",
@@ -421,7 +421,7 @@ def ramesh() -> Patient:
 def fatima() -> Patient:
     p = Patient(
         14,
-        "GMS-10244",
+        "LCM-10244",
         "Mrs.",
         "Fatima",
         "Sayyed",
@@ -530,7 +530,7 @@ def fatima() -> Patient:
 def suresh() -> Patient:
     p = Patient(
         15,
-        "GMS-10245",
+        "LCM-10245",
         "Mr.",
         "Suresh Babu",
         "Reddy",

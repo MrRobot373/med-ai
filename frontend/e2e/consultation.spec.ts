@@ -9,7 +9,7 @@ async function signIn(page: Page, email: string, password: string) {
 }
 
 test("doctor's prescription is checked live against the patient's allergies", async ({ page }) => {
-  await signIn(page, "ananya.rao@gmsclinic.local", "Clinic@2026");
+  await signIn(page, "ananya.rao@lifecaremedico.in", "Clinic@2026");
   await expect(page.getByText("Today's patients")).toBeVisible();
   await page.getByRole("link", { name: "Rohit Verma" }).first().click();
   await page.getByRole("link", { name: "Consultation", exact: true }).click();
@@ -35,7 +35,7 @@ test("doctor's prescription is checked live against the patient's allergies", as
 });
 
 test("front desk sees the day list and paperwork, never clinical content", async ({ page }) => {
-  await signIn(page, "meera.pillai@gmsclinic.local", "Desk@2026");
+  await signIn(page, "meera.pillai@lifecaremedico.in", "Desk@2026");
   await expect(page.getByRole("heading", { name: "Today's list", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Assistant" })).toHaveCount(0);
   await page.getByRole("link", { name: "Rohit Verma" }).first().click();
