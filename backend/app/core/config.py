@@ -13,7 +13,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -46,6 +46,13 @@ class Settings(BaseSettings):
     default_embedding_base_url: str = Field(default="http://localhost:11434", alias="DEFAULT_EMBEDDING_BASE_URL")
     default_embedding_model: str = Field(default="qwen3-embedding:0.6b", alias="DEFAULT_EMBEDDING_MODEL")
     default_vector_store_url: str = Field(default="", alias="DEFAULT_VECTOR_STORE_URL")
+
+    @field_validator("data_dir")
+    @classmethod
+    def _anchor_data_dir(cls, v: Path) -> Path:
+        # Relative paths in .env are relative to the project root, not to whichever
+        # directory a command happens to be run from.
+        return v if v.is_absolute() or str(v) == ":memory:" else (PROJECT_ROOT / v).resolve()
 
     @property
     def resolved_database_url(self) -> str:

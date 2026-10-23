@@ -1,0 +1,45 @@
+# GMS Clinical AI
+#
+#   docker compose up -d                      app only (uses Ollama on the host)
+#   docker compose --profile qdrant up -d     + Qdrant server (then Settings → Vector store → Server, http://qdrant:6333)
+#   docker compose --profile ollama up -d     + Ollama in a container (GPU passthrough below)
+#
+# Seed demo data once:   docker compose run --rm app python -m app.seed demo
+
+services:
+  app:
+    build: .
+    image: gms-clinical-ai:latest
+    ports: ["8000:8000"]
+    env_file: [.env]
+    environment:
+      DATA_DIR: /data
+      # Reach an Ollama running on the host machine:
+      DEFAULT_LLM_BASE_URL: ${DEFAULT_LLM_BASE_URL:-http://host.docker.internal:11434}
+      DEFAULT_EMBEDDING_BASE_URL: ${DEFAULT_EMBEDDING_BASE_URL:-http://host.docker.internal:11434}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes: [gms-data:/data]
+    restart: unless-stopped
+
+  qdrant:
+    profiles: [qdrant]
+    image: qdrant/qdrant:v1.20.0
+    ports: ["6333:6333"]
+    volumes: [qdrant-data:/qdrant/storage]
+    restart: unless-stopped
+
+  ollama:
+    profiles: [ollama]
+    image: ollama/ollama:0.12.6
+    ports: ["11434:11434"]
+    volumes: [ollama-data:/root/.ollama]
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+volumes:
+  gms-data:
+  qdrant-data:
+  ollama-data:

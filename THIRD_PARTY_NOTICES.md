@@ -1,97 +1,69 @@
-# Third-Party Notices
+# Third-party notices
 
-GMS Clinical AI is built entirely on open-source / locally-runnable components. This
-file is updated as each build phase introduces new dependencies — see the version
-pinned in `backend/requirements.txt` / `frontend/package.json` for the exact version in
-use at any time.
+Runtime dependencies and their licences. Versions are those resolved in the lockfile / environment at the time of writing.
 
-## Backend (Phase 01)
+## Backend (Python)
 
-| Package | Project | License |
+| Package | Licence |
+|---|---|
+| fastapi | MIT |
+| uvicorn | BSD-3-Clause |
+| pydantic | MIT |
+| pydantic-settings | MIT |
+| SQLAlchemy | MIT |
+| alembic | MIT |
+| httpx | BSD-3-Clause |
+| argon2-cffi | MIT |
+| cryptography | Apache-2.0 / BSD |
+| python-multipart | Apache-2.0 |
+| qdrant-client | Apache-2.0 |
+| PyMuPDF | AGPL-3.0 (or Artifex commercial licence) |
+| python-docx | MIT |
+| openpyxl | MIT |
+| Pillow | MIT-CMU |
+| sentence-transformers (optional) | Apache-2.0 |
+
+> **PyMuPDF is AGPL-3.0.** Distributing this application (or offering it as a network service) under terms incompatible with the AGPL requires an Artifex commercial licence, or replacing PDF parsing with a permissively-licensed library (e.g. `pypdf` + `pdfplumber`).
+
+## Frontend (npm)
+
+| Package | Version | Licence |
 |---|---|---|
-| FastAPI | https://github.com/fastapi/fastapi | MIT |
-| Uvicorn | https://github.com/encode/uvicorn | BSD-3-Clause |
-| Pydantic / pydantic-settings | https://github.com/pydantic/pydantic | MIT |
-| SQLAlchemy | https://github.com/sqlalchemy/sqlalchemy | MIT |
-| Alembic | https://github.com/sqlalchemy/alembic | MIT |
-| httpx | https://github.com/encode/httpx | BSD-3-Clause |
-| argon2-cffi | https://github.com/hynek/argon2-cffi | MIT |
-| python-multipart | https://github.com/Kludex/python-multipart | Apache-2.0 |
-| pytest / pytest-asyncio | https://github.com/pytest-dev/pytest | MIT |
-| Ruff | https://github.com/astral-sh/ruff | MIT |
+| @fontsource-variable/inter | 5.3.0 | OFL-1.1 |
+| @radix-ui/react-checkbox | 1.4.1 | MIT |
+| @radix-ui/react-collapsible | 1.2.1 | MIT |
+| @radix-ui/react-dialog | 1.3.1 | MIT |
+| @radix-ui/react-dropdown-menu | 2.2.1 | MIT |
+| @radix-ui/react-label | 2.1.17 | MIT |
+| @radix-ui/react-popover | 1.3.1 | MIT |
+| @radix-ui/react-scroll-area | 1.4.0 | MIT |
+| @radix-ui/react-select | 2.4.1 | MIT |
+| @radix-ui/react-separator | 1.2.0 | MIT |
+| @radix-ui/react-slider | 1.6.1 | MIT |
+| @radix-ui/react-slot | 1.5.0 | MIT |
+| @radix-ui/react-switch | 1.4.1 | MIT |
+| @radix-ui/react-tabs | 1.2.1 | MIT |
+| @radix-ui/react-tooltip | 1.4.1 | MIT |
+| @tanstack/react-query | 5.104.5 | MIT |
+| class-variance-authority | 0.7.1 | Apache-2.0 |
+| clsx | 2.1.1 | MIT |
+| cmdk | 1.1.1 | MIT |
+| date-fns | 4.4.0 | MIT |
+| lucide-react | 0.577.0 | ISC |
+| react | 18.3.1 | MIT |
+| react-dom | 18.3.1 | MIT |
+| react-markdown | 10.1.0 | MIT |
+| react-router | 7.18.4 | MIT |
+| recharts | 3.10.1 | MIT |
+| remark-gfm | 4.0.1 | MIT |
+| sonner | 2.0.8 | MIT |
+| tailwind-merge | 2.6.1 | MIT |
 
-## Backend (Phase 03 — auth)
+## Services and data
 
-| Package | Project | License |
-|---|---|---|
-| email-validator | https://github.com/JoshData/python-email-validator | CC0-1.0 |
-
-## Backend (Phase 05 — report ingestion)
-
-| Package | Project | License |
-|---|---|---|
-| PyMuPDF | https://github.com/pymupdf/PyMuPDF | AGPL-3.0 (also offers a commercial license; used here as a local, non-distributed tool — see note below) |
-| python-docx | https://github.com/python-openxml/python-docx | MIT |
-| openpyxl | https://foss.heptapod.net/openpyxl/openpyxl | MIT |
-| Pillow | https://github.com/python-pillow/Pillow | MIT-CMU |
-| pydicom | https://github.com/pydicom/pydicom | MIT |
-| EasyOCR | https://github.com/JaidedAI/EasyOCR | Apache-2.0 |
-
-PyMuPDF's AGPL-3.0 obliges anyone who *distributes* a modified or unmodified copy (or
-runs it as a network service reachable by others) to make the corresponding source
-available under the same terms. This project runs it purely as a local, offline
-processing tool on the operator's own machine (spec §136) and is not distributed as a
-hosted service to third parties; re-verify this before any SaaS/hosted deployment, or
-switch to PyMuPDF's commercial license for that use case.
-
-EasyOCR is used here as an open-source, Windows-reliable substitute for the Master Build
-Prompt's suggested PaddleOCR (spec §51) — both are CPU-capable, license-compatible OCR
-engines; the choice is purely an installation-reliability decision, not a capability
-downgrade.
-
-## Backend (Phase 07 — RAG core)
-
-| Package | Project | License |
-|---|---|---|
-| qdrant-client | https://github.com/qdrant/qdrant-client | Apache-2.0 |
-| sentence-transformers | https://github.com/UKPLab/sentence-transformers | Apache-2.0 |
-| transformers | https://github.com/huggingface/transformers | Apache-2.0 |
-| rank-bm25 | https://github.com/dorianbrown/rank_bm25 | Apache-2.0 |
-| Qwen3-Embedding-0.6B | https://huggingface.co/Qwen/Qwen3-Embedding-0.6B | Apache-2.0 |
-| Qwen3-Reranker-0.6B | https://huggingface.co/Qwen/Qwen3-Reranker-0.6B | Apache-2.0 |
-| Qwen3.5 (via Ollama) | https://ollama.com/library/qwen3.5 | Qwen license (see model card) |
-
-## Infrastructure
-
-| Component | Project | License |
-|---|---|---|
-| Qdrant (Docker, pinned `v1.19.0`) | https://github.com/qdrant/qdrant | Apache-2.0 |
-| Ollama | https://github.com/ollama/ollama | MIT |
-| SearXNG (Research Mode, optional, Phase 11) | https://github.com/searxng/searxng | AGPL-3.0 |
-
-## Frontend (Phase 01)
-
-| Package | Project | License |
-|---|---|---|
-| React / React DOM | https://github.com/facebook/react | MIT |
-| React Router | https://github.com/remix-run/react-router | MIT |
-| TanStack Query | https://github.com/TanStack/query | MIT |
-| Vite | https://github.com/vitejs/vite | MIT |
-| Tailwind CSS | https://github.com/tailwindlabs/tailwindcss | MIT |
-| lucide-react | https://github.com/lucide-icons/lucide | ISC |
-| TypeScript | https://github.com/microsoft/TypeScript | Apache-2.0 |
-| Vitest / Testing Library | https://github.com/vitest-dev/vitest / https://github.com/testing-library/react-testing-library | MIT |
-| @testing-library/user-event | https://github.com/testing-library/user-event | MIT |
-
-## Domain reference data (not source code)
-
-The ophthalmology reference PDFs and `eye_conditions.json` under `data/` are
-user-supplied source material for the local knowledge base, not redistributed
-third-party software — confirm licensing/usage terms for each document independently
-before any redistribution beyond this local deployment.
-
-## Not bundled (by design)
-
-- **CPT** content is not bundled (AMA-licensed) — see spec §76. The coding module only
-  ever loads properly licensed, customer-supplied CPT data through an import adapter.
-- No proprietary/paid cloud SDKs are used anywhere in this project.
+| Component | Licence |
+|---|---|
+| Qdrant (server, optional) | Apache-2.0 |
+| Ollama (optional) | MIT |
+| Inter typeface (@fontsource-variable/inter) | SIL Open Font License 1.1 |
+| PubMed / openFDA / ClinicalTrials.gov APIs | Public US-government services; subject to their terms of use |
