@@ -10,7 +10,7 @@ async function signIn(page: Page, email: string, password: string) {
 
 test("clinician reviews a chart and asks an evidence-grounded question", async ({ page }) => {
   await signIn(page, "doctor@gms.local", "Doctor@12345");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Good (morning|afternoon|evening)/);
+  await expect(page.getByText(/Good (morning|afternoon|evening)/).first()).toBeVisible();
 
   await page.goto("/patients");
   await page.getByText("James Carter").first().click();

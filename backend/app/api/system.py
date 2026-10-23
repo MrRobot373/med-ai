@@ -368,3 +368,103 @@ def inbox(db: DB, _: CurrentUser):
 
     items.sort(key=lambda i: (order[i["priority"]], -ts(i["at"]).timestamp()))
     return items
+
+
+@router.get("/dashboard/review-queue")
+def review_queue(db: DB, _: CurrentUser, limit: int = 12):
+    """Patient documents awaiting clinician review (newest first), for the home viewer.
+    Quarantined documents come first so a suspected wrong-patient file is never missed."""
+    from app.api.documents import doc_out
+
+    rows = db.execute(
+        select(Document, Patient)
+        .join(Patient, Patient.id == Document.patient_id)
+        .where(
+            Document.scope == "patient",
+            Document.review_status == "pending",
+            Document.status.in_(["ready", "processing"]),
+        )
+        .order_by(Document.created_at.desc())
+        .limit(min(limit, 50))
+    ).all()
+    out = [{**doc_out(d), "patient_name": p.full_name, "patient_mrn": p.mrn} for d, p in rows]
+    out.sort(key=lambda d: d["identity_status"] != "mismatch")
+    return out
+
+
+@router.get("/dashboard/attention")
+def attention(db: DB, _: CurrentUser, limit: int = 6):
+    """Active patients ranked by what needs a clinician: unacknowledged abnormal results,
+    identity mismatches, pending documents and the most concerning applicable score."""
+    from app.clinical import scores as scores_mod
+    from app.clinical.context import age, latest_observations
+
+    ranked = []
+    for p in db.scalars(select(Patient).where(Patient.status == "active")):
+        latest = latest_observations(db, p.id, limit_codes=60)
+        abnormal = [o for o in latest if o.flag in ("high", "low", "abnormal") and not o.acknowledged]
+        mismatches = (
+            db.scalar(
+                select(func.count())
+                .select_from(Document)
+                .where(Document.patient_id == p.id, Document.identity_status == "mismatch")
+            )
+            or 0
+        )
+        pending = (
+            db.scalar(
+                select(func.count())
+                .select_from(Document)
+                .where(Document.patient_id == p.id, Document.review_status == "pending", Document.status == "ready")
+            )
+            or 0
+        )
+        scored = scores_mod.compute(db, p)
+        top_score = scored[0] if scored else None
+        severity = len(abnormal) + 5 * mismatches + pending + (3 * top_score["level"] if top_score else 0)
+        if not severity:
+            continue
+
+        def deviation(o):
+            if o.value_num is None:
+                return 0
+            span = (o.ref_high or 0) - (o.ref_low or 0) or abs(o.ref_high or o.ref_low or 1)
+            ref = (
+                o.ref_high
+                if o.flag == "high" and o.ref_high is not None
+                else o.ref_low
+                if o.ref_low is not None
+                else o.value_num
+            )
+            return abs(o.value_num - ref) / (span or 1)
+
+        marker = max(abnormal, key=deviation, default=None)
+        ranked.append(
+            {
+                "id": p.id,
+                "full_name": p.full_name,
+                "mrn": p.mrn,
+                "age": age(p.date_of_birth),
+                "sex": p.sex,
+                "abnormal": len(abnormal),
+                "mismatches": mismatches,
+                "pending_documents": pending,
+                "severity": severity,
+                "marker": {
+                    "name": marker.name,
+                    "value": marker.value_num,
+                    "unit": marker.unit,
+                    "ref_low": marker.ref_low,
+                    "ref_high": marker.ref_high,
+                    "flag": marker.flag,
+                    "observed_at": marker.observed_at,
+                }
+                if marker
+                else None,
+                "score": {k: top_score[k] for k in ("name", "value", "category", "level", "levels")}
+                if top_score
+                else None,
+            }
+        )
+    ranked.sort(key=lambda r: r["severity"], reverse=True)
+    return ranked[: min(limit, 50)]

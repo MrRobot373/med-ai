@@ -64,3 +64,17 @@ def test_export_is_markdown(clinician):
     pid = create_patient(clinician)["id"]
     r = clinician.get(f"/api/patients/{pid}/export")
     assert r.status_code == 200 and r.text.startswith("# Patient summary")
+
+
+def test_dashboard_attention_and_review_queue(clinician):
+    from tests.conftest import lab_pdf, upload
+
+    calm = create_patient(clinician, mrn="C-1", first="Calm")
+    busy = create_patient(clinician, mrn="B-1", first="Busy", last="Patient")
+    upload(clinician, busy["id"], lab_pdf("Busy Patient", "B-1", [("Potassium", "6.1", "mmol/L", "3.5-5.1")]))
+    ranked = clinician.get("/api/dashboard/attention").json()
+    assert [r["mrn"] for r in ranked] == ["B-1"]
+    assert ranked[0]["marker"]["name"] == "Potassium" and ranked[0]["pending_documents"] == 1
+    queue = clinician.get("/api/dashboard/review-queue").json()
+    assert queue[0]["patient_mrn"] == "B-1" and queue[0]["review_status"] == "pending"
+    assert calm["id"] not in {r["id"] for r in ranked}

@@ -30,10 +30,15 @@ function TextPage({ doc }: { doc: DocumentItem }) {
 }
 
 export function ReportViewer({
-  documents, selectedId, onSelect, onDetails, overlay, className, emptyAction,
+  documents, selectedId, onSelect, onDetails, overlay, className, emptyAction, subtitle, actions, emptyTitle, emptyText,
 }: {
   documents: DocumentItem[]; selectedId: string | null; onSelect: (id: string) => void; onDetails?: (id: string) => void;
   overlay?: ReactNode; className?: string; emptyAction?: ReactNode;
+  /** Extra line under the title (e.g. the patient on a cross-patient viewer). */
+  subtitle?: (doc: DocumentItem) => ReactNode;
+  /** Extra header buttons for the current document. */
+  actions?: (doc: DocumentItem) => ReactNode;
+  emptyTitle?: string; emptyText?: string;
 }) {
   const doc = documents.find((d) => d.id === selectedId) ?? documents[0] ?? null;
   const [page, setPage] = useState(1);
@@ -65,13 +70,14 @@ export function ReportViewer({
             <span className={cn("flex size-8 items-center justify-center rounded-full", dark ? "bg-white/10" : "bg-card shadow-xs")}>{dark ? <ScanLine className="size-4" /> : <FileText className="size-4 text-primary" />}</span>
             <div className="min-w-0">
               <div className="truncate text-[0.95rem] font-semibold tracking-tight">{doc?.title ?? "Reports & imaging"}</div>
-              {doc && <div className={cn("text-xs", dark ? "text-white/60" : "text-muted-foreground")}>{titleCase(doc.kind)} · {fmtDate(doc.document_date ?? doc.created_at)}{pages > 1 ? ` · page ${page} of ${pages}` : ""}</div>}
+              {doc && <div className={cn("text-xs", dark ? "text-white/60" : "text-muted-foreground")}>{subtitle && <>{subtitle(doc)} · </>}{titleCase(doc.kind)} · {fmtDate(doc.document_date ?? doc.created_at)}{pages > 1 ? ` · page ${page} of ${pages}` : ""}</div>}
             </div>
           </div>
         </div>
         {doc && (
           <div className="flex items-center gap-1.5">
             {doc.identity_status === "mismatch" && <Badge tone="danger">Quarantined</Badge>}
+            {actions?.(doc)}
             {pages > 1 && (
               <div className="flex items-center gap-1">
                 <button className={roundBtn} disabled={page <= 1} onClick={() => setPage((p) => p - 1)} aria-label="Previous page"><ChevronLeft className="size-4" /></button>
@@ -101,7 +107,7 @@ export function ReportViewer({
         {!doc ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground">
             <div className="flex size-14 items-center justify-center rounded-2xl bg-card shadow-card"><ScanLine className="size-6 text-primary" /></div>
-            <div><div className="font-medium text-foreground">No reports or imaging yet</div>Upload lab reports, radiology, ECGs or scans to view them here.</div>
+            <div><div className="font-medium text-foreground">{emptyTitle ?? "No reports or imaging yet"}</div>{emptyText ?? "Upload lab reports, radiology, ECGs or scans to view them here."}</div>
             {emptyAction}
           </div>
         ) : doc.status === "processing" ? (

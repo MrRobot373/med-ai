@@ -112,3 +112,11 @@ export interface ClinicalScore {
   id: string; kind: "score" | "check"; name: string; value: string; category: string; level: number; levels: string[];
   summary: string; reference: string; inputs: ScoreInput[]; missing: string[]; note: string | null;
 }
+
+export interface QueueDocument extends DocumentItem { patient_name: string; patient_mrn: string }
+export interface AttentionPatient {
+  id: string; full_name: string; mrn: string; age: number | null; sex: string; abnormal: number; mismatches: number;
+  pending_documents: number; severity: number;
+  marker: { name: string; value: number | null; unit: string | null; ref_low: number | null; ref_high: number | null; flag: string | null; observed_at: string } | null;
+  score: { name: string; value: string; category: string; level: number; levels: string[] } | null;
+}
