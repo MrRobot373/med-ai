@@ -34,6 +34,23 @@ gemma3, llava, gpt-4o…). Turn that off to point vision at a different endpoint
 Vision is used to transcribe scanned PDF pages and photos during ingestion, and for the
 Image analysis tool.
 
+## Clinical reasoning model
+
+Used by the consultation co-pilot: pre-visit brief, diagnosis second look, prescription
+dose review and reading returned reports against the question asked. The default is
+**MedGemma 27B** on Ollama (`ollama pull medgemma:27b`, ~17 GB GPU memory at 4-bit; on
+smaller GPUs it runs partly on the CPU and is slow — `medgemma:4b` is a lighter option).
+Switch on *Use the main language model* to send these requests to the main LLM instead.
+Give it a generous timeout (default 600 s).
+
+## Medicines & prescribing
+
+`formulary.region` selects the data file in `backend/app/formulary/data/` (`in.json` for
+India). The rule engine is deterministic and runs on every keystroke; the clinical model
+review is a separate, optional second opinion. `formulary.fetch_images` looks up a
+freely licensed reference photo on Wikimedia Commons by generic name only (never patient
+data) and caches it under `DATA_DIR/formulary-images`; turn it off for fully offline use.
+
 ## Embeddings
 
 | Setup | Provider | Base URL | Model |
