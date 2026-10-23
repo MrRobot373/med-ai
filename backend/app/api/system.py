@@ -190,7 +190,7 @@ def dashboard(db: DB, user: CurrentUser):
     seen = set()
     for log in db.scalars(
         select(AuditLog)
-        .where(AuditLog.user_id == user.id, AuditLog.patient_id.is_not(None))
+        .where(AuditLog.user_id == user.id, AuditLog.action == "patient.view")
         .order_by(AuditLog.at.desc())
         .limit(80)
     ):

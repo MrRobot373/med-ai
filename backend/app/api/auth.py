@@ -194,4 +194,4 @@ def reset_password(user_id: str, body: ResetPasswordIn, admin: AdminUser, db: DB
 def branding(db: DB):
     """Public: the sign-in page needs the product name, logo and default theme."""
     b = runtime_config.load(db).branding
-    return b.model_dump()
+    return {**b.model_dump(), "show_demo_accounts": get_settings().app_env in ("development", "demo")}

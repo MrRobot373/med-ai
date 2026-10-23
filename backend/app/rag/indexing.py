@@ -14,13 +14,23 @@ from app.services import runtime_config
 logger = get_logger(__name__)
 
 
+def index_text(document: Document, chunk: Chunk) -> str:
+    """Text actually embedded / BM25-indexed: the passage plus its document title and
+    section, so a passage that never repeats its topic is still findable by it. The
+    stored chunk text (what users and the model see) stays clean."""
+    section = chunk.section if chunk.section and chunk.section != document.title else None
+    context = " · ".join(filter(None, [document.title, section]))
+    return f"{context}\n{chunk.text}" if context else chunk.text
+
+
 async def index_chunks(db: Session, document: Document, chunks: list[Chunk]) -> None:
     cfg = runtime_config.load(db)
     status = runtime_config.index_status(cfg)
     if status["reindex_required"]:
         _reindex_needed()
     embedder = registry.embedder(cfg)
-    vectors = await embedder.embed_documents([c.text for c in chunks]) if chunks else []
+    texts = [index_text(document, c) for c in chunks]
+    vectors = await embedder.embed_documents(texts) if chunks else []
     if vectors and cfg.index_signature is None:
         cfg = cfg.model_copy(
             update={"index_signature": runtime_config.embedding_signature(cfg), "index_dimension": len(vectors[0])}
@@ -37,7 +47,7 @@ async def index_chunks(db: Session, document: Document, chunks: list[Chunk]) -> 
         for _ in chunks
     ]
     await registry.vector_store(cfg).upsert(document.scope, [c.id for c in chunks], vectors, payloads)
-    lexical.index_chunks(db, [(c.id, c.text) for c in chunks])
+    lexical.index_chunks(db, list(zip([c.id for c in chunks], texts, strict=True)))
 
 
 def _reindex_needed():
@@ -73,7 +83,7 @@ async def reindex_all(db: Session, progress=None) -> dict:
         chunks = list(db.scalars(select(Chunk).where(Chunk.document_id == doc.id).order_by(Chunk.ordinal)))
         if not chunks:
             continue
-        vectors = await embedder.embed_documents([c.text for c in chunks])
+        vectors = await embedder.embed_documents([index_text(doc, c) for c in chunks])
         payloads = [
             {
                 "document_id": doc.id,

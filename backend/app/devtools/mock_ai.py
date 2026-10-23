@@ -74,8 +74,9 @@ def _labels(text: str) -> list[tuple[str, str]]:
     """(label, first sentence) for each evidence block in the prompt."""
     out = []
     for m in re.finditer(r"^\[([PKW]\d+)\][^\n]*\n(.+?)(?=\n\n---|\n\n=====|\Z)", text, re.S | re.M):
-        body = " ".join(m.group(2).split())
-        sentence = re.split(r"(?<=[.!?])\s", body)[0][:220]
+        lines = [ln.strip() for ln in m.group(2).splitlines() if ln.strip() and not ln.strip().startswith("#") and not ln.strip().startswith("_")]
+        body = " ".join(" ".join(lines).split())
+        sentence = re.split(r"(?<=[.!?])\s", body)[0][:220] if body else "Relevant passage"
         out.append((m.group(1), sentence))
     return out
 

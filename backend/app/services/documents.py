@@ -268,7 +268,6 @@ async def _process(db: Session, doc: Document) -> None:
             db.delete(c)
         db.flush()
 
-    header = f"{doc.title}" + (f" ({doc.document_date.isoformat()})" if doc.document_date else "")
     drafts = chunking.chunk_pages(pages, cfg.retrieval.chunk_size_tokens, cfg.retrieval.chunk_overlap_tokens)
     chunks = [
         Chunk(
@@ -279,7 +278,7 @@ async def _process(db: Session, doc: Document) -> None:
             ordinal=i,
             page=d.page,
             section=d.section,
-            text=f"[{header}]\n{d.text}" if i == 0 else d.text,
+            text=d.text,
             token_count=d.tokens,
         )
         for i, d in enumerate(drafts)

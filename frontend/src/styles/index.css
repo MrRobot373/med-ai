@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Inter Variable", "Inter";
+    --shadow: 15 23 42;
+    --radius: 0.625rem;
+
+    --background: 216 33% 98%;
+    --foreground: 222 47% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 12%;
+    --popover: 0 0% 100%;
+    --muted: 216 28% 95.5%;
+    --muted-foreground: 216 14% 44%;
+    --subtle: 216 30% 97.5%;
+    --border: 216 22% 89%;
+    --input: 216 20% 86%;
+
+    /* accent — overwritten at runtime from the user's / organisation's choice */
+    --primary: 221 98% 57%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 221 90% 96%;
+    --primary-soft-foreground: 221 80% 42%;
+    --ring: 221 98% 57%;
+
+    --success: 152 69% 37%;
+    --success-soft: 150 60% 94%;
+    --success-foreground: 152 70% 26%;
+    --warning: 35 92% 48%;
+    --warning-soft: 42 100% 94%;
+    --warning-foreground: 28 85% 32%;
+    --danger: 0 74% 54%;
+    --danger-soft: 0 86% 96%;
+    --danger-foreground: 0 70% 40%;
+    --info: 199 89% 46%;
+    --info-soft: 199 90% 95%;
+    --info-foreground: 200 80% 32%;
+
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 222 30% 30%;
+    --sidebar-border: 216 22% 91%;
+    --sidebar-active: 216 30% 95%;
+
+    /* density */
+    --card-pad: 1.25rem;
+    --row-y: 0.75rem;
+    --gap: 1.25rem;
+  }
+
+  .dark {
+    --shadow: 0 0 0;
+    --background: 224 28% 7%;
+    --foreground: 214 32% 94%;
+    --card: 224 24% 10%;
+    --card-foreground: 214 32% 94%;
+    --popover: 224 24% 12%;
+    --muted: 224 20% 15%;
+    --muted-foreground: 216 14% 64%;
+    --subtle: 224 24% 9%;
+    --border: 224 17% 19%;
+    --input: 224 16% 24%;
+    --primary-soft: 221 45% 17%;
+    --primary-soft-foreground: 221 95% 76%;
+
+    --success: 152 60% 45%;
+    --success-soft: 152 40% 14%;
+    --success-foreground: 150 60% 70%;
+    --warning: 38 92% 55%;
+    --warning-soft: 35 50% 14%;
+    --warning-foreground: 40 90% 70%;
+    --danger: 0 80% 62%;
+    --danger-soft: 0 45% 16%;
+    --danger-foreground: 0 90% 76%;
+    --info: 199 85% 55%;
+    --info-soft: 200 50% 15%;
+    --info-foreground: 199 90% 74%;
+
+    --sidebar: 224 26% 8.5%;
+    --sidebar-foreground: 216 20% 76%;
+    --sidebar-border: 224 17% 15%;
+    --sidebar-active: 224 20% 15%;
+  }
+
+  [data-contrast="high"] {
+    --muted-foreground: 216 22% 30%;
+    --border: 216 20% 72%;
+    --input: 216 20% 62%;
+  }
+  .dark[data-contrast="high"] {
+    --muted-foreground: 216 20% 82%;
+    --border: 224 14% 36%;
+    --input: 224 14% 44%;
+  }
+
+  [data-density="compact"] {
+    --card-pad: 0.9rem;
+    --row-y: 0.45rem;
+    --gap: 0.85rem;
+  }
+
+  [data-reduce-motion="true"] *,
+  [data-reduce-motion="true"] *::before,
+  [data-reduce-motion="true"] *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    font-size: var(--root-size, 15px);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  /* slim, theme-aware scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+    background-clip: content-box;
+    border: 3px solid transparent;
+  }
+}
+
+@layer components {
+  .card-pad {
+    padding: var(--card-pad);
+  }
+  .row-pad {
+    padding-top: var(--row-y);
+    padding-bottom: var(--row-y);
+  }
+  .text-label {
+    @apply text-[0.72rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-muted;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, hsl(var(--card) / 0.6), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  .bg-grid {
+    background-image: linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}
+
+/* Clinical markdown */
+.prose-clinical {
+  @apply text-[0.95rem] leading-relaxed text-foreground;
+}
+.prose-clinical p {
+  @apply my-2;
+}
+.prose-clinical h1,
+.prose-clinical h2,
+.prose-clinical h3 {
+  @apply mb-1.5 mt-4 font-semibold tracking-tight first:mt-0;
+}
+.prose-clinical h1 { @apply text-lg; }
+.prose-clinical h2 { @apply text-base; }
+.prose-clinical h3 { @apply text-[0.95rem]; }
+.prose-clinical ul { @apply my-2 list-disc space-y-1 pl-5; }
+.prose-clinical ol { @apply my-2 list-decimal space-y-1 pl-5; }
+.prose-clinical li::marker { color: hsl(var(--muted-foreground)); }
+.prose-clinical strong { @apply font-semibold; }
+.prose-clinical code { @apply rounded bg-muted px-1 py-0.5 font-mono text-[0.85em]; }
+.prose-clinical table { @apply my-3 w-full border-collapse text-sm; }
+.prose-clinical th { @apply border-b bg-muted/60 px-2 py-1.5 text-left font-semibold; }
+.prose-clinical td { @apply border-b px-2 py-1.5; }
+.prose-clinical blockquote { @apply my-2 border-l-2 border-primary/40 pl-3 text-muted-foreground; }
+.prose-clinical a { @apply text-primary underline-offset-2 hover:underline; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
