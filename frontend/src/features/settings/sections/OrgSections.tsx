@@ -123,7 +123,7 @@ function UserDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: b
           <Field label="Email" required><Input type="email" value={f.email} onChange={set("email")} /></Field>
           <Field label="Title"><Input value={f.title} onChange={set("title")} placeholder="e.g. Dr." /></Field>
           <Field label="Specialty"><Input value={f.specialty} onChange={set("specialty")} /></Field>
-          <Field label="Role"><Select value={f.role} onValueChange={(v) => setF((x) => ({ ...x, role: v }))} options={[{ value: "clinician", label: "Clinician", description: "Full clinical access" }, { value: "viewer", label: "Viewer", description: "Read-only" }, { value: "admin", label: "Administrator", description: "Clinical access + settings, users, audit" }]} /></Field>
+          <Field label="Role"><Select value={f.role} onValueChange={(v) => setF((x) => ({ ...x, role: v }))} options={[{ value: "clinician", label: "Clinician", description: "Full clinical access" }, { value: "viewer", label: "Viewer", description: "Read-only" }, { value: "front_desk", label: "Front desk", description: "Registration, today's list and report uploads — no clinical content" }, { value: "admin", label: "Administrator", description: "Clinical access + settings, users, audit" }]} /></Field>
           <Field label="Temporary password" required hint="At least 8 characters"><Input type="password" value={f.password} onChange={set("password")} /></Field>
         </div>
       </DialogContent>
@@ -155,7 +155,7 @@ export function UsersSection() {
             {data?.map((u) => (
               <TR key={u.id}>
                 <TD><div className="flex items-center gap-3"><Avatar name={u.full_name} size="sm" /><div><div className="font-medium">{u.full_name}{u.id === me?.id && <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>}</div><div className="text-xs text-muted-foreground">{u.email}{u.specialty ? ` · ${u.specialty}` : ""}</div></div></div></TD>
-                <TD className="w-44"><Select size="sm" value={u.role} disabled={u.id === me?.id} onValueChange={(v) => patch(u, { role: v }, "Role updated")} options={[{ value: "admin", label: "Administrator" }, { value: "clinician", label: "Clinician" }, { value: "viewer", label: "Viewer" }]} /></TD>
+                <TD className="w-44"><Select size="sm" value={u.role} disabled={u.id === me?.id} onValueChange={(v) => patch(u, { role: v }, "Role updated")} options={[{ value: "admin", label: "Administrator" }, { value: "clinician", label: "Clinician" }, { value: "viewer", label: "Viewer" }, { value: "front_desk", label: "Front desk" }]} /></TD>
                 <TD><Badge tone={u.is_active ? "success" : "neutral"}>{u.is_active ? "Active" : "Deactivated"}</Badge></TD>
                 <TD className="text-xs text-muted-foreground">{u.last_login_at ? fmtRelative(u.last_login_at) : "Never"}</TD>
                 <TD className="text-right">

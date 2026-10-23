@@ -16,6 +16,7 @@ const FEATURES = [
 const DEMO = [
   { label: "Clinician", email: "doctor@gms.local", password: "Doctor@12345" },
   { label: "Administrator", email: "admin@gms.local", password: "Admin@12345" },
+  { label: "Front desk", email: "frontdesk@gms.local", password: "Desk@12345" },
   { label: "Viewer", email: "viewer@gms.local", password: "Viewer@12345" },
 ];
 

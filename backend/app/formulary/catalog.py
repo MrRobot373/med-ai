@@ -68,6 +68,7 @@ class Product:
     per_ml: bool = False
     strength: float | None = None  # single-ingredient strength, as written on the pack
     strength_label: str | None = None
+    freq: str | None = None  # usual starting frequency for this product
 
 
 @dataclass
@@ -121,7 +122,7 @@ class Formulary:
         self._by_brand.setdefault(norm(product.brand or ""), []).append(product)
 
     def _expand(self, p: dict) -> None:
-        brand, form = p["brand"], p.get("form", "tab")
+        brand, form, freq = p["brand"], p.get("form", "tab"), p.get("freq")
         if "generic" in p:
             gid = p["generic"]
             for s in p.get("strengths", []):
@@ -134,6 +135,7 @@ class Formulary:
                         {gid: float(s)},
                         strength=float(s),
                         strength_label=f"{s:g}",
+                        freq=freq,
                     )
                 )
             for s in p.get("per_5ml", []):
@@ -147,6 +149,7 @@ class Formulary:
                         per_ml=True,
                         strength=float(s),
                         strength_label=f"{s:g}",
+                        freq=freq,
                     )
                 )
         for combo_key, per_ml in (("combo", False), ("combo_per_5ml", True)):
@@ -162,6 +165,7 @@ class Formulary:
                         amounts,
                         per_ml=per_ml,
                         strength_label=label or None,
+                        freq=freq,
                     )
                 )
 
@@ -279,6 +283,7 @@ class Formulary:
                         {
                             "label": g.name,
                             "drug": g.name,
+                            "frequency": g.data.get("freq") or "BD",
                             "generic": g.id,
                             "generic_label": g.name,
                             "strength": None,
@@ -300,6 +305,13 @@ class Formulary:
                 break
         return out
 
+    def default_frequency(self, p: Product) -> str:
+        """Usual starting frequency (the doctor adjusts): product, then main ingredient."""
+        if p.freq:
+            return p.freq
+        g = self.generics.get(next(iter(p.components), ""))
+        return (g.data.get("freq") if g else None) or "BD"
+
     def product_option(self, p: Product) -> dict:
         gens = [self.generics[g] for g in p.components if g in self.generics]
         comp = " + ".join(
@@ -309,6 +321,7 @@ class Formulary:
         return {
             "label": p.label,
             "drug": p.label,
+            "frequency": self.default_frequency(p),
             "generic": "+".join(g.id for g in gens),
             "generic_label": comp,
             "strength": p.strength if len(gens) == 1 else None,

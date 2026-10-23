@@ -45,7 +45,7 @@ class UserCreate(BaseModel):
     full_name: str = Field(min_length=1, max_length=200)
     title: str | None = None
     specialty: str | None = None
-    role: Literal["admin", "clinician", "viewer"] = "clinician"
+    role: Literal["admin", "clinician", "viewer", "front_desk"] = "clinician"
     password: str = Field(min_length=8, max_length=200)
 
 
@@ -53,7 +53,7 @@ class UserUpdate(BaseModel):
     full_name: str | None = None
     title: str | None = None
     specialty: str | None = None
-    role: Literal["admin", "clinician", "viewer"] | None = None
+    role: Literal["admin", "clinician", "viewer", "front_desk"] | None = None
     is_active: bool | None = None
 
 

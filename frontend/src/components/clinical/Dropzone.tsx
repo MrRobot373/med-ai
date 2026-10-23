@@ -2,7 +2,7 @@ import { UploadCloud } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.md,.json,.png,.jpg,.jpeg,.webp";
+export const ACCEPT = ".pdf,.docx,.xlsx,.csv,.txt,.md,.json,.png,.jpg,.jpeg,.webp,.dcm";
 
 export function Dropzone({ onFiles, multiple = true, accept = ACCEPT, hint, className, compact, children }: { onFiles: (files: File[]) => void; multiple?: boolean; accept?: string; hint?: ReactNode; className?: string; compact?: boolean; children?: ReactNode }) {
   const [drag, setDrag] = useState(false);

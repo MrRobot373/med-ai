@@ -185,7 +185,8 @@
     "mg_kg_day_max": 60
    },
    "allergy": [],
-   "image": "Paracetamol tablets"
+   "image": "Paracetamol tablets",
+   "freq": "TDS"
   },
   {
    "id": "ibuprofen",
@@ -270,7 +271,8 @@
    "allergy": [
     "nsaid"
    ],
-   "image": "Ibuprofen tablets"
+   "image": "Ibuprofen tablets",
+   "freq": "TDS"
   },
   {
    "id": "diclofenac",
@@ -350,7 +352,8 @@
    "allergy": [
     "nsaid"
    ],
-   "image": "Diclofenac sodium tablets"
+   "image": "Diclofenac sodium tablets",
+   "freq": "TDS"
   },
   {
    "id": "aceclofenac",
@@ -540,7 +543,8 @@
    "allergy": [
     "nsaid"
    ],
-   "image": "Mefenamic acid"
+   "image": "Mefenamic acid",
+   "freq": "TDS"
   },
   {
    "id": "aspirin",
@@ -591,7 +595,8 @@
    "allergy": [
     "nsaid"
    ],
-   "image": "Aspirin tablets"
+   "image": "Aspirin tablets",
+   "freq": "OD"
   },
   {
    "id": "tramadol",
@@ -648,7 +653,8 @@
    "allergy": [
     "opioid"
    ],
-   "image": "Tramadol capsules"
+   "image": "Tramadol capsules",
+   "freq": "TDS"
   },
   {
    "id": "pantoprazole",
@@ -680,7 +686,8 @@
     "min_age": 5
    },
    "allergy": [],
-   "image": "Pantoprazole tablets"
+   "image": "Pantoprazole tablets",
+   "freq": "OD"
   },
   {
    "id": "omeprazole",
@@ -709,7 +716,8 @@
     "note": "Most experience of PPIs in pregnancy."
    },
    "allergy": [],
-   "image": "Omeprazole capsules"
+   "image": "Omeprazole capsules",
+   "freq": "OD"
   },
   {
    "id": "rabeprazole",
@@ -733,7 +741,8 @@
     "note": "Use if clearly needed."
    },
    "allergy": [],
-   "image": "Rabeprazole"
+   "image": "Rabeprazole",
+   "freq": "OD"
   },
   {
    "id": "esomeprazole",
@@ -762,7 +771,8 @@
     "note": "Use if clearly needed."
    },
    "allergy": [],
-   "image": "Esomeprazole"
+   "image": "Esomeprazole",
+   "freq": "OD"
   },
   {
    "id": "famotidine",
@@ -794,7 +804,8 @@
     "note": "Use if clearly needed."
    },
    "allergy": [],
-   "image": "Famotidine tablets"
+   "image": "Famotidine tablets",
+   "freq": "OD"
   },
   {
    "id": "domperidone",
@@ -849,7 +860,8 @@
    "max_days": 7,
    "allergy": [],
    "image": "Domperidone tablets",
-   "max_daily_note": "Sustained-release 30 mg once daily equals the 10 mg three-times-daily maximum."
+   "max_daily_note": "Sustained-release 30 mg once daily equals the 10 mg three-times-daily maximum.",
+   "freq": "TDS"
   },
   {
    "id": "ondansetron",
@@ -889,7 +901,8 @@
     }
    ],
    "allergy": [],
-   "image": "Ondansetron"
+   "image": "Ondansetron",
+   "freq": "TDS"
   },
   {
    "id": "metoclopramide",
@@ -945,7 +958,8 @@
    ],
    "max_days": 5,
    "allergy": [],
-   "image": "Metoclopramide"
+   "image": "Metoclopramide",
+   "freq": "TDS"
   },
   {
    "id": "dicyclomine",
@@ -998,7 +1012,8 @@
     }
    ],
    "allergy": [],
-   "image": "Dicyclomine"
+   "image": "Dicyclomine",
+   "freq": "TDS"
   },
   {
    "id": "drotaverine",
@@ -1039,7 +1054,8 @@
     }
    ],
    "allergy": [],
-   "image": "Drotaverine"
+   "image": "Drotaverine",
+   "freq": "TDS"
   },
   {
    "id": "hyoscine_butylbromide",
@@ -1089,7 +1105,8 @@
     }
    ],
    "allergy": [],
-   "image": "Hyoscine butylbromide"
+   "image": "Hyoscine butylbromide",
+   "freq": "TDS"
   },
   {
    "id": "loperamide",
@@ -1124,7 +1141,8 @@
     }
    ],
    "allergy": [],
-   "image": "Loperamide capsules"
+   "image": "Loperamide capsules",
+   "freq": "SOS"
   },
   {
    "id": "metronidazole",
@@ -1165,7 +1183,8 @@
    "allergy": [
     "nitroimidazole"
    ],
-   "image": "Metronidazole tablets"
+   "image": "Metronidazole tablets",
+   "freq": "TDS"
   },
   {
    "id": "ornidazole",
@@ -1194,7 +1213,8 @@
    "allergy": [
     "nitroimidazole"
    ],
-   "image": "Ornidazole"
+   "image": "Ornidazole",
+   "freq": "BD"
   },
   {
    "id": "tinidazole",
@@ -1292,7 +1312,8 @@
    "allergy": [
     "fluoroquinolone"
    ],
-   "image": "Norfloxacin"
+   "image": "Norfloxacin",
+   "freq": "BD"
   },
   {
    "id": "ciprofloxacin",
@@ -1355,7 +1376,8 @@
    "allergy": [
     "fluoroquinolone"
    ],
-   "image": "Ciprofloxacin tablets"
+   "image": "Ciprofloxacin tablets",
+   "freq": "BD"
   },
   {
    "id": "ofloxacin",
@@ -1417,7 +1439,8 @@
    "allergy": [
     "fluoroquinolone"
    ],
-   "image": "Ofloxacin"
+   "image": "Ofloxacin",
+   "freq": "BD"
   },
   {
    "id": "levofloxacin",
@@ -1486,7 +1509,8 @@
    "allergy": [
     "fluoroquinolone"
    ],
-   "image": "Levofloxacin tablets"
+   "image": "Levofloxacin tablets",
+   "freq": "OD"
   },
   {
    "id": "amoxicillin",
@@ -1526,7 +1550,8 @@
    "allergy": [
     "penicillin"
    ],
-   "image": "Amoxicillin capsules"
+   "image": "Amoxicillin capsules",
+   "freq": "TDS"
   },
   {
    "id": "clavulanic_acid",
@@ -1559,7 +1584,8 @@
    "allergy": [
     "penicillin"
    ],
-   "image": "Amoxicillin clavulanate tablets"
+   "image": "Amoxicillin clavulanate tablets",
+   "freq": "TDS"
   },
   {
    "id": "azithromycin",
@@ -1609,7 +1635,8 @@
    "allergy": [
     "macrolide"
    ],
-   "image": "Azithromycin tablets"
+   "image": "Azithromycin tablets",
+   "freq": "OD"
   },
   {
    "id": "clarithromycin",
@@ -1654,7 +1681,8 @@
    "allergy": [
     "macrolide"
    ],
-   "image": "Clarithromycin"
+   "image": "Clarithromycin",
+   "freq": "BD"
   },
   {
    "id": "cefixime",
@@ -1688,7 +1716,8 @@
    "allergy": [
     "cephalosporin"
    ],
-   "image": "Cefixime"
+   "image": "Cefixime",
+   "freq": "BD"
   },
   {
    "id": "cefuroxime",
@@ -1722,7 +1751,8 @@
    "allergy": [
     "cephalosporin"
    ],
-   "image": "Cefuroxime axetil"
+   "image": "Cefuroxime axetil",
+   "freq": "BD"
   },
   {
    "id": "cefpodoxime",
@@ -1755,7 +1785,8 @@
    "allergy": [
     "cephalosporin"
    ],
-   "image": "Cefpodoxime"
+   "image": "Cefpodoxime",
+   "freq": "BD"
   },
   {
    "id": "cephalexin",
@@ -1788,7 +1819,8 @@
    "allergy": [
     "cephalosporin"
    ],
-   "image": "Cephalexin capsules"
+   "image": "Cephalexin capsules",
+   "freq": "TDS"
   },
   {
    "id": "doxycycline",
@@ -1814,7 +1846,8 @@
    "allergy": [
     "tetracycline"
    ],
-   "image": "Doxycycline capsules"
+   "image": "Doxycycline capsules",
+   "freq": "BD"
   },
   {
    "id": "nitrofurantoin",
@@ -1857,7 +1890,8 @@
     }
    ],
    "allergy": [],
-   "image": "Nitrofurantoin"
+   "image": "Nitrofurantoin",
+   "freq": "BD"
   },
   {
    "id": "sulfamethoxazole",
@@ -1918,7 +1952,8 @@
    "allergy": [
     "sulfonamide"
    ],
-   "image": "Co-trimoxazole tablets"
+   "image": "Co-trimoxazole tablets",
+   "freq": "BD"
   },
   {
    "id": "trimethoprim",
@@ -1946,7 +1981,8 @@
     "note": "Folate antagonist — avoid in the first trimester."
    },
    "allergy": [],
-   "image": "Trimethoprim"
+   "image": "Trimethoprim",
+   "freq": "BD"
   },
   {
    "id": "fluconazole",
@@ -2063,7 +2099,8 @@
     "note": "Defer oral treatment until after pregnancy."
    },
    "allergy": [],
-   "image": "Terbinafine"
+   "image": "Terbinafine",
+   "freq": "OD"
   },
   {
    "id": "acyclovir",
@@ -2149,7 +2186,8 @@
     "note": "1–2 years: 200 mg."
    },
    "allergy": [],
-   "image": "Albendazole tablets"
+   "image": "Albendazole tablets",
+   "freq": "STAT"
   },
   {
    "id": "cetirizine",
@@ -2186,7 +2224,8 @@
     "note": "2–6 years: 2.5 mg twice daily."
    },
    "allergy": [],
-   "image": "Cetirizine tablets"
+   "image": "Cetirizine tablets",
+   "freq": "OD"
   },
   {
    "id": "levocetirizine",
@@ -2224,7 +2263,8 @@
     "note": "2–6 years: 1.25 mg twice daily."
    },
    "allergy": [],
-   "image": "Levocetirizine"
+   "image": "Levocetirizine",
+   "freq": "OD"
   },
   {
    "id": "fexofenadine",
@@ -2248,7 +2288,8 @@
     "note": "6–11 years: 30 mg twice daily."
    },
    "allergy": [],
-   "image": "Fexofenadine"
+   "image": "Fexofenadine",
+   "freq": "OD"
   },
   {
    "id": "chlorpheniramine",
@@ -2328,7 +2369,8 @@
     }
    ],
    "allergy": [],
-   "image": "Montelukast"
+   "image": "Montelukast",
+   "freq": "HS"
   },
   {
    "id": "salbutamol",
@@ -2369,7 +2411,8 @@
     }
    ],
    "allergy": [],
-   "image": "Salbutamol tablets"
+   "image": "Salbutamol tablets",
+   "freq": "TDS"
   },
   {
    "id": "ambroxol",
@@ -2391,7 +2434,8 @@
     "mg_kg_day_max": 1.5
    },
    "allergy": [],
-   "image": "Ambroxol"
+   "image": "Ambroxol",
+   "freq": "TDS"
   },
   {
    "id": "prednisolone",
@@ -2449,7 +2493,8 @@
     }
    ],
    "allergy": [],
-   "image": "Prednisolone tablets"
+   "image": "Prednisolone tablets",
+   "freq": "OD"
   },
   {
    "id": "amlodipine",
@@ -2496,7 +2541,8 @@
     }
    ],
    "allergy": [],
-   "image": "Amlodipine tablets"
+   "image": "Amlodipine tablets",
+   "freq": "OD"
   },
   {
    "id": "telmisartan",
@@ -2545,7 +2591,8 @@
     }
    ],
    "allergy": [],
-   "image": "Telmisartan tablets"
+   "image": "Telmisartan tablets",
+   "freq": "OD"
   },
   {
    "id": "losartan",
@@ -2594,7 +2641,8 @@
     }
    ],
    "allergy": [],
-   "image": "Losartan potassium tablets"
+   "image": "Losartan potassium tablets",
+   "freq": "OD"
   },
   {
    "id": "olmesartan",
@@ -2633,7 +2681,8 @@
     }
    ],
    "allergy": [],
-   "image": "Olmesartan"
+   "image": "Olmesartan",
+   "freq": "OD"
   },
   {
    "id": "ramipril",
@@ -2696,7 +2745,8 @@
    "allergy": [
     "acei"
    ],
-   "image": "Ramipril capsules"
+   "image": "Ramipril capsules",
+   "freq": "OD"
   },
   {
    "id": "enalapril",
@@ -2746,7 +2796,8 @@
    "allergy": [
     "acei"
    ],
-   "image": "Enalapril maleate tablets"
+   "image": "Enalapril maleate tablets",
+   "freq": "BD"
   },
   {
    "id": "metoprolol",
@@ -2811,7 +2862,8 @@
     }
    ],
    "allergy": [],
-   "image": "Metoprolol tablets"
+   "image": "Metoprolol tablets",
+   "freq": "OD"
   },
   {
    "id": "atenolol",
@@ -2873,7 +2925,8 @@
     }
    ],
    "allergy": [],
-   "image": "Atenolol tablets"
+   "image": "Atenolol tablets",
+   "freq": "OD"
   },
   {
    "id": "bisoprolol",
@@ -2934,7 +2987,8 @@
     }
    ],
    "allergy": [],
-   "image": "Bisoprolol"
+   "image": "Bisoprolol",
+   "freq": "OD"
   },
   {
    "id": "hydrochlorothiazide",
@@ -2996,7 +3050,8 @@
     }
    ],
    "allergy": [],
-   "image": "Hydrochlorothiazide"
+   "image": "Hydrochlorothiazide",
+   "freq": "OD"
   },
   {
    "id": "chlorthalidone",
@@ -3047,7 +3102,8 @@
     }
    ],
    "allergy": [],
-   "image": "Chlorthalidone"
+   "image": "Chlorthalidone",
+   "freq": "OD"
   },
   {
    "id": "furosemide",
@@ -3089,7 +3145,8 @@
     }
    ],
    "allergy": [],
-   "image": "Furosemide tablets"
+   "image": "Furosemide tablets",
+   "freq": "OD"
   },
   {
    "id": "torsemide",
@@ -3113,7 +3170,8 @@
     }
    ],
    "allergy": [],
-   "image": "Torasemide"
+   "image": "Torasemide",
+   "freq": "OD"
   },
   {
    "id": "spironolactone",
@@ -3168,7 +3226,8 @@
     }
    ],
    "allergy": [],
-   "image": "Spironolactone tablets"
+   "image": "Spironolactone tablets",
+   "freq": "OD"
   },
   {
    "id": "atorvastatin",
@@ -3208,7 +3267,8 @@
    "allergy": [
     "statin"
    ],
-   "image": "Atorvastatin tablets"
+   "image": "Atorvastatin tablets",
+   "freq": "HS"
   },
   {
    "id": "rosuvastatin",
@@ -3244,7 +3304,8 @@
    "allergy": [
     "statin"
    ],
-   "image": "Rosuvastatin"
+   "image": "Rosuvastatin",
+   "freq": "HS"
   },
   {
    "id": "clopidogrel",
@@ -3276,7 +3337,8 @@
     }
    ],
    "allergy": [],
-   "image": "Clopidogrel tablets"
+   "image": "Clopidogrel tablets",
+   "freq": "OD"
   },
   {
    "id": "warfarin",
@@ -3313,7 +3375,8 @@
     }
    ],
    "allergy": [],
-   "image": "Warfarin tablets"
+   "image": "Warfarin tablets",
+   "freq": "OD"
   },
   {
    "id": "apixaban",
@@ -3370,7 +3433,8 @@
     }
    ],
    "allergy": [],
-   "image": "Apixaban"
+   "image": "Apixaban",
+   "freq": "BD"
   },
   {
    "id": "rivaroxaban",
@@ -3420,7 +3484,8 @@
     }
    ],
    "allergy": [],
-   "image": "Rivaroxaban"
+   "image": "Rivaroxaban",
+   "freq": "OD"
   },
   {
    "id": "metformin",
@@ -3485,7 +3550,8 @@
     }
    ],
    "allergy": [],
-   "image": "Metformin hydrochloride tablets"
+   "image": "Metformin hydrochloride tablets",
+   "freq": "BD"
   },
   {
    "id": "glimepiride",
@@ -3538,7 +3604,8 @@
    "allergy": [
     "sulfonylurea"
    ],
-   "image": "Glimepiride tablets"
+   "image": "Glimepiride tablets",
+   "freq": "OD"
   },
   {
    "id": "gliclazide",
@@ -3582,7 +3649,8 @@
    "allergy": [
     "sulfonylurea"
    ],
-   "image": "Gliclazide"
+   "image": "Gliclazide",
+   "freq": "BD"
   },
   {
    "id": "glibenclamide",
@@ -3662,7 +3730,8 @@
     }
    ],
    "allergy": [],
-   "image": "Sitagliptin"
+   "image": "Sitagliptin",
+   "freq": "OD"
   },
   {
    "id": "vildagliptin",
@@ -3696,7 +3765,8 @@
     "note": "Insulin preferred in pregnancy."
    },
    "allergy": [],
-   "image": "Vildagliptin"
+   "image": "Vildagliptin",
+   "freq": "BD"
   },
   {
    "id": "teneligliptin",
@@ -3731,7 +3801,8 @@
     }
    ],
    "allergy": [],
-   "image": "Teneligliptin"
+   "image": "Teneligliptin",
+   "freq": "OD"
   },
   {
    "id": "dapagliflozin",
@@ -3782,7 +3853,8 @@
     }
    ],
    "allergy": [],
-   "image": "Dapagliflozin"
+   "image": "Dapagliflozin",
+   "freq": "OD"
   },
   {
    "id": "empagliflozin",
@@ -3825,7 +3897,8 @@
     }
    ],
    "allergy": [],
-   "image": "Empagliflozin"
+   "image": "Empagliflozin",
+   "freq": "OD"
   },
   {
    "id": "pioglitazone",
@@ -3873,7 +3946,8 @@
     }
    ],
    "allergy": [],
-   "image": "Pioglitazone"
+   "image": "Pioglitazone",
+   "freq": "OD"
   },
   {
    "id": "voglibose",
@@ -3899,7 +3973,8 @@
     }
    ],
    "allergy": [],
-   "image": "Voglibose"
+   "image": "Voglibose",
+   "freq": "TDS"
   },
   {
    "id": "levothyroxine",
@@ -3950,7 +4025,8 @@
     }
    ],
    "allergy": [],
-   "image": "Levothyroxine sodium tablets"
+   "image": "Levothyroxine sodium tablets",
+   "freq": "OD"
   },
   {
    "id": "carbimazole",
@@ -4025,7 +4101,8 @@
     }
    ],
    "allergy": [],
-   "image": "Amitriptyline tablets"
+   "image": "Amitriptyline tablets",
+   "freq": "HS"
   },
   {
    "id": "gabapentin",
@@ -4070,7 +4147,8 @@
     "note": "Use only if clearly needed."
    },
    "allergy": [],
-   "image": "Gabapentin capsules"
+   "image": "Gabapentin capsules",
+   "freq": "TDS"
   },
   {
    "id": "pregabalin",
@@ -4115,7 +4193,8 @@
     "note": "Avoid unless clearly needed."
    },
    "allergy": [],
-   "image": "Pregabalin capsules"
+   "image": "Pregabalin capsules",
+   "freq": "BD"
   },
   {
    "id": "sertraline",
@@ -4153,7 +4232,8 @@
     }
    ],
    "allergy": [],
-   "image": "Sertraline tablets"
+   "image": "Sertraline tablets",
+   "freq": "OD"
   },
   {
    "id": "escitalopram",
@@ -4203,7 +4283,8 @@
     }
    ],
    "allergy": [],
-   "image": "Escitalopram"
+   "image": "Escitalopram",
+   "freq": "OD"
   },
   {
    "id": "fluoxetine",
@@ -4233,7 +4314,8 @@
     "note": "Use if benefit outweighs risk."
    },
    "allergy": [],
-   "image": "Fluoxetine capsules"
+   "image": "Fluoxetine capsules",
+   "freq": "OD"
   },
   {
    "id": "alprazolam",
@@ -4284,7 +4366,8 @@
    ],
    "max_days": 28,
    "allergy": [],
-   "image": "Alprazolam"
+   "image": "Alprazolam",
+   "freq": "BD"
   },
   {
    "id": "clonazepam",
@@ -4322,7 +4405,8 @@
     }
    ],
    "allergy": [],
-   "image": "Clonazepam"
+   "image": "Clonazepam",
+   "freq": "HS"
   },
   {
    "id": "lorazepam",
@@ -4400,7 +4484,8 @@
    ],
    "max_days": 28,
    "allergy": [],
-   "image": "Zolpidem"
+   "image": "Zolpidem",
+   "freq": "HS"
   },
   {
    "id": "levetiracetam",
@@ -4448,7 +4533,8 @@
     }
    ],
    "allergy": [],
-   "image": "Levetiracetam"
+   "image": "Levetiracetam",
+   "freq": "BD"
   },
   {
    "id": "sodium_valproate",
@@ -4474,7 +4560,8 @@
     "mg_kg_day_max": 60
    },
    "allergy": [],
-   "image": "Sodium valproate"
+   "image": "Sodium valproate",
+   "freq": "BD"
   },
   {
    "id": "phenytoin",
@@ -4540,7 +4627,8 @@
     }
    ],
    "allergy": [],
-   "image": "Betahistine"
+   "image": "Betahistine",
+   "freq": "TDS"
   },
   {
    "id": "cinnarizine",
@@ -4569,7 +4657,8 @@
     }
    ],
    "allergy": [],
-   "image": "Cinnarizine"
+   "image": "Cinnarizine",
+   "freq": "TDS"
   },
   {
    "id": "prochlorperazine",
@@ -4599,7 +4688,8 @@
    ],
    "max_days": 7,
    "allergy": [],
-   "image": "Prochlorperazine"
+   "image": "Prochlorperazine",
+   "freq": "TDS"
   },
   {
    "id": "sumatriptan",
@@ -4641,7 +4731,8 @@
     }
    ],
    "allergy": [],
-   "image": "Sumatriptan"
+   "image": "Sumatriptan",
+   "freq": "STAT"
   },
   {
    "id": "allopurinol",
@@ -4682,7 +4773,8 @@
     }
    ],
    "allergy": [],
-   "image": "Allopurinol tablets"
+   "image": "Allopurinol tablets",
+   "freq": "OD"
   },
   {
    "id": "febuxostat",
@@ -4718,7 +4810,8 @@
     }
    ],
    "allergy": [],
-   "image": "Febuxostat"
+   "image": "Febuxostat",
+   "freq": "OD"
   },
   {
    "id": "colchicine",
@@ -4759,7 +4852,8 @@
     "note": "Use if clearly needed."
    },
    "allergy": [],
-   "image": "Colchicine"
+   "image": "Colchicine",
+   "freq": "BD"
   },
   {
    "id": "tamsulosin",
@@ -4795,7 +4889,8 @@
     }
    ],
    "allergy": [],
-   "image": "Tamsulosin capsules"
+   "image": "Tamsulosin capsules",
+   "freq": "OD"
   },
   {
    "id": "hydroxychloroquine",
@@ -4840,7 +4935,8 @@
     }
    ],
    "allergy": [],
-   "image": "Hydroxychloroquine sulfate tablets"
+   "image": "Hydroxychloroquine sulfate tablets",
+   "freq": "BD"
   },
   {
    "id": "methotrexate",
@@ -4900,7 +4996,8 @@
     }
    ],
    "allergy": [],
-   "image": "Methotrexate tablets"
+   "image": "Methotrexate tablets",
+   "freq": "Weekly"
   },
   {
    "id": "folic_acid",
@@ -4918,7 +5015,8 @@
     "note": "Recommended preconception and in the first trimester."
    },
    "allergy": [],
-   "image": "Folic acid tablets"
+   "image": "Folic acid tablets",
+   "freq": "OD"
   },
   {
    "id": "methylcobalamin",
@@ -4937,7 +5035,8 @@
     "note": "Compatible."
    },
    "allergy": [],
-   "image": "Methylcobalamin"
+   "image": "Methylcobalamin",
+   "freq": "OD"
   },
   {
    "id": "cholecalciferol",
@@ -4971,7 +5070,8 @@
     }
    ],
    "allergy": [],
-   "image": "Cholecalciferol"
+   "image": "Cholecalciferol",
+   "freq": "Weekly"
   },
   {
    "id": "ferrous_ascorbate",
@@ -4998,7 +5098,8 @@
     }
    ],
    "allergy": [],
-   "image": "Ferrous sulfate tablets"
+   "image": "Ferrous sulfate tablets",
+   "freq": "OD"
   },
   {
    "id": "calcium_carbonate",
@@ -5033,7 +5134,8 @@
     }
    ],
    "allergy": [],
-   "image": "Calcium carbonate tablets"
+   "image": "Calcium carbonate tablets",
+   "freq": "BD"
   }
  ],
  "products": [
@@ -5116,7 +5218,8 @@
      "ibuprofen": 400,
      "paracetamol": 325
     }
-   }
+   },
+   "freq": "TDS"
   },
   {
    "brand": "Voveran",
@@ -5167,7 +5270,8 @@
      "aceclofenac": 100,
      "paracetamol": 325
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Hifenac-P",
@@ -5177,7 +5281,8 @@
      "aceclofenac": 100,
      "paracetamol": 325
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Nise",
@@ -5212,7 +5317,8 @@
      "mefenamic_acid": 250,
      "dicyclomine": 10
     }
-   }
+   },
+   "freq": "TDS"
   },
   {
    "brand": "Ecosprin",
@@ -5247,7 +5353,8 @@
      "tramadol": 37.5,
      "paracetamol": 325
     }
-   }
+   },
+   "freq": "TDS"
   },
   {
    "brand": "Pan",
@@ -5275,7 +5382,8 @@
      "pantoprazole": 40,
      "domperidone": 30
     }
-   }
+   },
+   "freq": "OD"
   },
   {
    "brand": "Pantocid-DSR",
@@ -5285,7 +5393,8 @@
      "pantoprazole": 40,
      "domperidone": 30
     }
-   }
+   },
+   "freq": "OD"
   },
   {
    "brand": "Omez",
@@ -5304,7 +5413,8 @@
      "omeprazole": 10,
      "domperidone": 10
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Razo",
@@ -5331,7 +5441,8 @@
      "rabeprazole": 20,
      "domperidone": 30
     }
-   }
+   },
+   "freq": "OD"
   },
   {
    "brand": "Nexpro",
@@ -5411,7 +5522,8 @@
      "dicyclomine": 20,
      "paracetamol": 325
     }
-   }
+   },
+   "freq": "TDS"
   },
   {
    "brand": "Drotin",
@@ -5430,7 +5542,8 @@
      "drotaverine": 80,
      "mefenamic_acid": 250
     }
-   }
+   },
+   "freq": "TDS"
   },
   {
    "brand": "Buscopan",
@@ -5499,7 +5612,8 @@
      "norfloxacin": 400,
      "tinidazole": 600
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Ciplox",
@@ -5528,7 +5642,8 @@
      "ciprofloxacin": 500,
      "tinidazole": 600
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Zanocin",
@@ -5556,7 +5671,8 @@
      "ofloxacin": 200,
      "ornidazole": 500
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Zenflox-OZ",
@@ -5566,7 +5682,8 @@
      "ofloxacin": 200,
      "ornidazole": 500
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Levoflox",
@@ -5797,7 +5914,8 @@
      "sulfamethoxazole": 800,
      "trimethoprim": 160
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Bactrim DS",
@@ -5807,7 +5925,8 @@
      "sulfamethoxazole": 800,
      "trimethoprim": 160
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Forcan",
@@ -5931,7 +6050,8 @@
      "montelukast": 10,
      "levocetirizine": 5
     }
-   }
+   },
+   "freq": "HS"
   },
   {
    "brand": "Montek-LC",
@@ -5941,7 +6061,8 @@
      "montelukast": 10,
      "levocetirizine": 5
     }
-   }
+   },
+   "freq": "HS"
   },
   {
    "brand": "Asthalin",
@@ -6030,7 +6151,8 @@
      "telmisartan": 40,
      "amlodipine": 5
     }
-   }
+   },
+   "freq": "OD"
   },
   {
    "brand": "Telma-H",
@@ -6040,7 +6162,8 @@
      "telmisartan": 40,
      "hydrochlorothiazide": 12.5
     }
-   }
+   },
+   "freq": "OD"
   },
   {
    "brand": "Losar",
@@ -6068,7 +6191,8 @@
      "losartan": 50,
      "hydrochlorothiazide": 12.5
     }
-   }
+   },
+   "freq": "OD"
   },
   {
    "brand": "Olmezest",
@@ -6200,7 +6324,8 @@
      "aspirin": 150,
      "atorvastatin": 20
     }
-   }
+   },
+   "freq": "HS"
   },
   {
    "brand": "Rosuvas",
@@ -6247,7 +6372,8 @@
      "clopidogrel": 75,
      "aspirin": 75
     }
-   }
+   },
+   "freq": "OD"
   },
   {
    "brand": "Warf",
@@ -6324,7 +6450,8 @@
      "glimepiride": 2,
      "metformin": 500
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Gemer",
@@ -6338,7 +6465,8 @@
      "glimepiride": 2,
      "metformin": 500
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Amaryl",
@@ -6399,7 +6527,8 @@
      "sitagliptin": 50,
      "metformin": 1000
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Galvus",
@@ -6421,7 +6550,8 @@
      "vildagliptin": 50,
      "metformin": 1000
     }
-   }
+   },
+   "freq": "BD"
   },
   {
    "brand": "Tenepride",
@@ -6796,7 +6926,8 @@
      "ferrous_ascorbate": 100,
      "folic_acid": 1.5
     }
-   }
+   },
+   "freq": "OD"
   },
   {
    "brand": "Shelcal",
@@ -6806,7 +6937,8 @@
      "calcium_carbonate": 500,
      "cholecalciferol": 250
     }
-   }
+   },
+   "freq": "BD"
   }
  ],
  "interactions": [

@@ -1,12 +1,14 @@
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Activity, AlertTriangle, Archive, ArchiveRestore, CalendarClock, ChevronLeft, Download, FileText, FlaskConical, LayoutDashboard,
-  MessagesSquare, MoreHorizontal, Pill, Pencil, Stethoscope, Trash2, Wand2, HeartPulse,
+  MessagesSquare, MoreHorizontal, Pill, Pencil, Stethoscope, Trash2, Wand2, HeartPulse, ClipboardPen, Microscope, FileSignature,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { useMe, useOverview, usePatient } from "@/api/hooks";
+import { useMe, useOverview, usePatient, useToday } from "@/api/hooks";
+import { FrontDeskPatient } from "@/features/frontdesk/FrontDeskPatient";
+import { canChart, isFrontDesk } from "@/lib/roles";
 import {
   Avatar, Badge, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, EmptyState, Skeleton,
 } from "@/components/ui";
@@ -17,9 +19,12 @@ import { cn, fmtDate, sexLabel } from "@/lib/utils";
 
 const TABS = [
   { to: "", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "consult", label: "Consultation", icon: ClipboardPen },
   { to: "timeline", label: "Timeline", icon: Activity },
   { to: "documents", label: "Reports & imaging", icon: FileText },
   { to: "results", label: "Results", icon: FlaskConical },
+  { to: "orders", label: "Orders", icon: Microscope },
+  { to: "prescriptions", label: "Prescriptions", icon: FileSignature },
   { to: "medications", label: "Medications", icon: Pill },
   { to: "problems", label: "Problems", icon: HeartPulse },
   { to: "encounters", label: "Encounters", icon: CalendarClock },
@@ -29,16 +34,21 @@ const TABS = [
 
 export default function PatientWorkspace() {
   const { patientId = "" } = useParams();
-  const { data: patient, isLoading, error } = usePatient(patientId);
-  const { data: overview } = useOverview(patientId);
   const { data: me } = useMe();
+  const frontDesk = isFrontDesk(me?.role);
+  const { data: patient, isLoading, error } = usePatient(patientId);
+  const { data: overview } = useOverview(patientId, !!me && !frontDesk);
+  const { data: today } = useToday();
   const [editOpen, setEditOpen] = useState(false);
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const canWrite = me?.role !== "viewer";
+  const canWrite = canChart(me?.role);
 
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-28" /><Skeleton className="h-10" /><Skeleton className="h-96" /></div>;
   if (error || !patient) return <EmptyState icon={<AlertTriangle />} title="Patient not found" description="The chart may have been removed." action={<Button variant="secondary" asChild><Link to="/patients">Back to patients</Link></Button>} />;
+
+  if (frontDesk) return <FrontDeskPatient patient={patient} />;
+  const onList = today?.appointments.find((a) => a.patient_id === patient.id && a.status !== "seen" && a.status !== "cancelled");
 
   const allergies = overview?.allergies.filter((a) => a.status === "active") ?? [];
   const activeProblems = overview?.conditions.filter((c) => c.status === "active") ?? [];
@@ -85,11 +95,12 @@ export default function PatientWorkspace() {
         </div>
         <div className="no-print flex shrink-0 items-center gap-2 xl:ml-auto">
           <Button variant="secondary" className="rounded-full" onClick={() => navigate("assistant")}><MessagesSquare /> Ask about patient</Button>
-          <Button variant="strong" className="rounded-full" onClick={() => navigate("tools")}><Stethoscope /> Clinical tools</Button>
+          <Button variant="strong" className="rounded-full" onClick={() => navigate("consult")}><Stethoscope /> {onList?.encounter_id ? "Continue consultation" : "Consultation"}</Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild><Button variant="secondary" size="icon" className="rounded-full" aria-label="More actions"><MoreHorizontal /></Button></DropdownMenuTrigger>
             <DropdownMenuContent>
               {canWrite && <DropdownMenuItem onSelect={() => setEditOpen(true)}><Pencil /> Edit demographics</DropdownMenuItem>}
+              <DropdownMenuItem onSelect={() => navigate("tools")}><Wand2 /> Clinical tools</DropdownMenuItem>
               <DropdownMenuItem onSelect={exportSummary}><Download /> Export summary (.md)</DropdownMenuItem>
               {canWrite && (patient.status === "active"
                 ? <DropdownMenuItem onSelect={() => setStatus("archived")}><Archive /> Archive chart</DropdownMenuItem>

@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, FileCheck2, FileWarning, FlaskConical, Inbox, RotateCw, ShieldAlert, Sparkles } from "lucide-react";
+import { CalendarClock, Check, FileCheck2, Microscope, FileWarning, FlaskConical, Inbox, RotateCw, ShieldAlert, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { useInbox, useMe } from "@/api/hooks";
 import type { InboxItem } from "@/api/types";
 import { Badge, Button, Card, EmptyState, PageHeader, Segmented, Skeleton } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
+import { canChart } from "@/lib/roles";
 import { cn, fmtRelative } from "@/lib/utils";
 
 const META: Record<InboxItem["type"], { icon: typeof Inbox; label: string; tone: string }> = {
@@ -15,6 +16,8 @@ const META: Record<InboxItem["type"], { icon: typeof Inbox; label: string; tone:
   lab: { icon: FlaskConical, label: "Result", tone: "bg-warning-soft text-warning-foreground" },
   review: { icon: FileCheck2, label: "Document", tone: "bg-info-soft text-info-foreground" },
   draft: { icon: Sparkles, label: "AI draft", tone: "bg-primary-soft text-primary-soft-foreground" },
+  result: { icon: Microscope, label: "Result back", tone: "bg-warning-soft text-warning-foreground" },
+  follow_up: { icon: CalendarClock, label: "Follow-up", tone: "bg-info-soft text-info-foreground" },
 };
 
 function useAct() {
@@ -36,12 +39,14 @@ export function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean
   const meta = META[item.type];
   const act = useAct();
   const { data: me } = useMe();
-  const canWrite = me?.role !== "viewer";
+  const canWrite = canChart(me?.role);
   const [busy, setBusy] = useState(false);
   const run = async (fn: () => Promise<unknown>, msg: string) => { setBusy(true); await act(fn, msg); setBusy(false); };
   const openTo = item.patient_id
     ? item.type === "lab" ? `/patients/${item.patient_id}/results`
     : item.type === "draft" ? `/patients/${item.patient_id}/tools?run=${item.ref_id}`
+    : item.type === "result" ? `/patients/${item.patient_id}/orders`
+    : item.type === "follow_up" ? `/patients/${item.patient_id}/prescriptions`
     : `/patients/${item.patient_id}/documents?doc=${item.ref_id}${item.type === "identity" || item.type === "ingestion" ? "&details=1" : ""}`
     : "/library";
 
@@ -72,7 +77,7 @@ export function InboxRow({ item, compact }: { item: InboxItem; compact?: boolean
   );
 }
 
-type Filter = "all" | "urgent" | "lab" | "review" | "draft";
+type Filter = "all" | "urgent" | "lab" | "result" | "review" | "draft";
 
 export default function InboxPage() {
   const { data, isLoading } = useInbox();
@@ -87,7 +92,7 @@ export default function InboxPage() {
 
   return (
     <div>
-      <PageHeader title="Inbox" description="Everything that needs a clinician's decision: suspected wrong-patient documents, abnormal results, new reports and AI drafts." />
+      <PageHeader title="Inbox" description="Everything that needs a doctor's decision: results back for tests you ordered, suspected wrong-patient documents, abnormal values, follow-ups due and AI drafts." />
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
           <Segmented<Filter>
@@ -95,7 +100,8 @@ export default function InboxPage() {
             options={[
               { value: "all", label: <>All <span className="text-muted-foreground num">{count("all")}</span></> },
               { value: "urgent", label: <>Urgent <span className="text-muted-foreground num">{count("urgent")}</span></> },
-              { value: "lab", label: <>Results <span className="text-muted-foreground num">{count("lab")}</span></> },
+              { value: "lab", label: <>Abnormal labs <span className="text-muted-foreground num">{count("lab")}</span></> },
+              { value: "result", label: <>Results back <span className="text-muted-foreground num">{count("result")}</span></> },
               { value: "review", label: <>Documents <span className="text-muted-foreground num">{count("review")}</span></> },
               { value: "draft", label: <>AI drafts <span className="text-muted-foreground num">{count("draft")}</span></> },
             ]}

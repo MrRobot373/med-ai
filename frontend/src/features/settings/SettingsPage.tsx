@@ -17,7 +17,7 @@ const GROUPS: { group: string; items: Item[] }[] = [
     { id: "appearance", label: "Appearance", icon: Palette, render: () => <AppearanceSection />, description: "Theme, accent colour, density and accessibility." },
   ] },
   { group: "AI & retrieval", items: [
-    { id: "models", label: "AI models", icon: Cpu, admin: true, render: () => <ModelsSection />, description: "Language and vision model endpoints." },
+    { id: "models", label: "AI models", icon: Cpu, admin: true, render: () => <ModelsSection />, description: "Language, vision and clinical reasoning models; medicines." },
     { id: "embeddings", label: "Embeddings & reranking", icon: Binary, admin: true, render: () => <EmbeddingsSection />, description: "Semantic search models and the vector index." },
     { id: "retrieval", label: "Retrieval tuning", icon: SlidersHorizontal, admin: true, render: () => <RetrievalSection />, description: "Candidate pools, fusion, context budget and chunking." },
     { id: "vector", label: "Vector store", icon: Database, admin: true, render: () => <VectorSection />, description: "Embedded or server Qdrant." },

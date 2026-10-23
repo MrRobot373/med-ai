@@ -9,7 +9,8 @@ import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMe
 import { cn } from "@/lib/utils";
 import { BrandMark } from "./BrandMark";
 import { CommandPaletteProvider, usePalette } from "./CommandPalette";
-import { NAV, PRIMARY_NAV, RAIL_NAV } from "./nav";
+import { NAV, PRIMARY_NAV, RAIL_NAV, visibleFor } from "./nav";
+import { canSeeClinical } from "@/lib/roles";
 import { StatusIndicator } from "./StatusIndicator";
 import { UserMenu } from "./UserMenu";
 
@@ -42,9 +43,11 @@ function TopBar() {
   const palette = usePalette();
   const { resolvedTheme, update } = useAppearance();
   const { data: me } = useMe();
-  const { data: inbox } = useInbox();
+  const clinical = canSeeClinical(me?.role);
+  const { data: inbox } = useInbox(clinical);
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const primary = visibleFor(PRIMARY_NAV, me?.role);
   const urgent = inbox?.filter((i) => i.priority !== "low").length ?? 0;
   const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
 
@@ -74,7 +77,7 @@ function TopBar() {
         <BrandMark className="shrink-0" showText />
 
         <nav className="glass mx-auto hidden items-center gap-1 rounded-full border border-white/70 p-1 shadow-card dark:border-white/[0.06] md:flex">
-          {PRIMARY_NAV.map((item) => (
+          {primary.map((item) => (
             <NavLink
               key={item.to} to={item.to} end={item.to === "/"}
               className={({ isActive }) => cn(
@@ -98,18 +101,18 @@ function TopBar() {
               {resolvedTheme === "dark" ? <Sun /> : <Moon />}
             </button>
           </Tooltip>
-          <Tooltip content="Inbox">
+          {clinical && <Tooltip content="Inbox">
             <Link to="/inbox" className={cn(iconBtn, "gap-1.5 px-3 w-auto")} aria-label="Inbox">
               <Inbox /><span className="text-[0.8rem] font-semibold text-foreground num">{urgent}</span>
             </Link>
-          </Tooltip>
+          </Tooltip>}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="strong" className="hidden h-10 rounded-xl px-3.5 sm:inline-flex"><Plus /> New</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
               {me?.role !== "viewer" && <DropdownMenuItem onSelect={() => navigate("/patients?new=1")}><UserPlus /> Patient</DropdownMenuItem>}
-              <DropdownMenuItem onSelect={() => navigate("/assistant?new=1")}><MessageSquarePlus /> Conversation</DropdownMenuItem>
+              {clinical && <DropdownMenuItem onSelect={() => navigate("/assistant?new=1")}><MessageSquarePlus /> Conversation</DropdownMenuItem>}
               {me?.role === "admin" && <DropdownMenuItem onSelect={() => navigate("/library?upload=1")}><Upload /> Library document</DropdownMenuItem>}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -117,7 +120,7 @@ function TopBar() {
         </div>
       </div>
       <nav className="mt-3 flex gap-1 overflow-x-auto md:hidden">
-        {PRIMARY_NAV.map((item) => (
+        {primary.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === "/"} className={({ isActive }) => cn("flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium", isActive ? "bg-strong text-strong-foreground" : "glass border text-muted-foreground")}>
             <item.icon className="size-3.5" /> {item.label}
           </NavLink>

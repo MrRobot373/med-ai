@@ -1,4 +1,4 @@
-import { Cpu, Eye, PlugZap } from "lucide-react";
+import { BriefcaseMedical, Cpu, Eye, Pill, PlugZap } from "lucide-react";
 import { Badge, Button, Field, Input, Segmented, Slider, SwitchRow } from "@/components/ui";
 import { useSection } from "../useSection";
 import { ModelInput, NumberField, PresetPicker, SaveBar, SecretField, SettingsCard, TestResult } from "../parts";
@@ -46,7 +46,9 @@ function EndpointFields({ s, section }: { s: ReturnType<typeof useSection>; sect
 export function ModelsSection() {
   const s = useSection("llm");
   const v = useSection("vision");
-  if (!s.server || !v.server) return null;
+  const c = useSection("clinical");
+  const f = useSection("formulary");
+  if (!s.server || !v.server || !c.server || !f.server) return null;
   const d = s.draft;
   return (
     <div className="space-y-[var(--gap)]">
@@ -82,6 +84,42 @@ export function ModelsSection() {
           <Field label={`Temperature · ${Number(v.draft.temperature).toFixed(2)}`}><Slider value={[v.draft.temperature]} min={0} max={1} step={0.05} onValueChange={([x]) => v.set({ temperature: x })} /></Field>
         </div>
         <TestResult result={v.testResult} />
+      </SettingsCard>
+
+      <SettingsCard
+        title={<span className="flex items-center gap-2"><BriefcaseMedical className="size-4 text-primary" /> Clinical reasoning model</span>}
+        description="Used for the doctor's co-pilot: pre-visit brief, diagnosis second look, prescription dose review and reading returned reports. A medical model such as MedGemma 27B is recommended."
+        badge={<Badge tone="primary">{c.draft.use_main_llm ? s.server.model : c.server.model}</Badge>}
+        footer={<SaveBar dirty={c.dirty} saving={c.saving} onSave={c.save} onReset={c.reset} extra={<Button size="sm" variant="secondary" onClick={() => c.test("clinical")} loading={c.testing}><PlugZap /> Test</Button>} />}
+      >
+        <SwitchRow label="Use the main language model" description="Turn off to send clinical reasoning to a dedicated medical model." checked={!!c.draft.use_main_llm} onCheckedChange={(x) => c.set({ use_main_llm: x })} />
+        {!c.draft.use_main_llm && (
+          <>
+            <EndpointFields s={c} section="clinical" />
+            <div className="rounded-lg border bg-subtle px-3 py-2 text-xs text-muted-foreground">
+              <b className="text-foreground">MedGemma on Ollama:</b> <code>ollama pull medgemma:27b</code> needs about 17 GB of GPU memory at 4-bit; on smaller GPUs it runs partly on the CPU and is slow. <code>medgemma:4b</code> is a lighter alternative.
+            </div>
+          </>
+        )}
+        <div className="grid gap-5 border-t pt-5 md:grid-cols-2">
+          <Field label={`Temperature · ${Number(c.draft.temperature).toFixed(2)}`} hint="Keep low (≈0.1) for consistent clinical checks."><Slider value={[c.draft.temperature]} min={0} max={1} step={0.05} onValueChange={([x]) => c.set({ temperature: x })} /></Field>
+          <Field label="Max output tokens"><NumberField value={c.draft.max_output_tokens} onChange={(x) => c.set({ max_output_tokens: x })} min={256} /></Field>
+          <Field label="Context window"><NumberField value={c.draft.context_window} onChange={(x) => c.set({ context_window: x })} min={2048} step={1024} suffix="tokens" /></Field>
+          <Field label="Request timeout" hint="Large local models can need several minutes."><NumberField value={c.draft.timeout_seconds} onChange={(x) => c.set({ timeout_seconds: x })} min={10} suffix="sec" /></Field>
+        </div>
+        <TestResult result={c.testResult} />
+      </SettingsCard>
+
+      <SettingsCard
+        title={<span className="flex items-center gap-2"><Pill className="size-4 text-primary" /> Medicines & prescribing</span>}
+        description="The formulary behind autocomplete and the rule-based safety checks (doses, kidney and liver adjustment, older adults, pregnancy, interactions, allergies)."
+        badge={<Badge tone="neutral">India</Badge>}
+        footer={<SaveBar dirty={f.dirty} saving={f.saving} onSave={f.save} onReset={f.reset} />}
+      >
+        <Field label="Region" hint="Indian generics and brands. More regions can be added as data files without code changes.">
+          <Segmented value={f.draft.region} onChange={(x) => f.set({ region: x })} options={[{ value: "IN", label: "India" }]} />
+        </Field>
+        <SwitchRow label="Show medicine pictures" description="Looks up a freely licensed reference photo on Wikimedia Commons by generic name only — never patient data — and caches it. Turn off for fully offline use." checked={!!f.draft.fetch_images} onCheckedChange={(x) => f.set({ fetch_images: x })} />
       </SettingsCard>
     </div>
   );

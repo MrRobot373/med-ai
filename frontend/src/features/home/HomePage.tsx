@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity, ArrowUpRight, Check, ChevronRight, Clock, FileClock, FileWarning, FlaskConical, Inbox, LayoutDashboard, MessagesSquare,
+  Activity, ArrowUpRight, CalendarClock, Check, Microscope, ChevronRight, Clock, FileClock, FileWarning, FlaskConical, Inbox, LayoutDashboard, MessagesSquare,
   ShieldAlert, Sparkles, Stethoscope, UserPlus, Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -16,16 +16,20 @@ import { LevelBar, RangeBar, rangeStatus } from "@/components/clinical/RangeBar"
 import { InsightCard, ReportViewer } from "@/components/clinical/ReportViewer";
 import { ComponentRow, STATUS_TONE } from "@/components/layout/StatusIndicator";
 import { api, ApiError } from "@/lib/api";
+import { TodayCard } from "@/features/today/TodayCard";
+import { canChart } from "@/lib/roles";
 import { cn, fmtDate, fmtNum, fmtRelative, greeting, sexLabel } from "@/lib/utils";
 
 const TONE_TEXT = { danger: "text-danger-foreground", warning: "text-warning-foreground", success: "text-success-foreground", neutral: "text-muted-foreground" };
-const INBOX_ICON: Record<InboxItem["type"], typeof Inbox> = { identity: ShieldAlert, ingestion: FileWarning, lab: FlaskConical, review: FileClock, draft: Sparkles };
+const INBOX_ICON: Record<InboxItem["type"], typeof Inbox> = { identity: ShieldAlert, ingestion: FileWarning, lab: FlaskConical, review: FileClock, draft: Sparkles, result: Microscope, follow_up: CalendarClock };
 const INBOX_TONE: Record<InboxItem["priority"], "danger" | "warning" | "primary"> = { high: "danger", medium: "warning", low: "primary" };
 
 function inboxLink(i: InboxItem) {
   if (!i.patient_id) return "/library";
   if (i.type === "lab") return `/patients/${i.patient_id}/results`;
   if (i.type === "draft") return `/patients/${i.patient_id}/tools?run=${i.ref_id}`;
+  if (i.type === "result") return `/patients/${i.patient_id}/orders`;
+  if (i.type === "follow_up") return `/patients/${i.patient_id}/prescriptions`;
   return `/patients/${i.patient_id}/documents?doc=${i.ref_id}${["identity", "ingestion"].includes(i.type) ? "&details=1" : ""}`;
 }
 
@@ -115,7 +119,7 @@ export default function HomePage() {
   const ranked = attention.data ?? [];
   const top = ranked[0];
   const name = me ? (me.title ? `${me.title} ${me.full_name.replace(/^Dr\.?\s+/, "").split(" ").slice(-1)[0]}` : me.full_name.split(" ")[0]) : "";
-  const canWrite = me?.role !== "viewer";
+  const canWrite = canChart(me?.role);
 
   const markReviewed = async (id: string) => {
     setBusy(true);
@@ -181,6 +185,7 @@ export default function HomePage() {
 
         <div className="min-w-0 space-y-[var(--gap)]">
           <WorkloadHeader open={open} urgent={urgent} docs={docs.length} name={name} />
+          <TodayCard />
 
           <div className="grid gap-[var(--gap)] sm:grid-cols-[1.25fr_1fr]">
             <Card className="card-pad">

@@ -159,6 +159,8 @@ def test_search_autocomplete():
     labels = [o["label"] for o in FM.search("dolo")]
     assert "Dolo 650" in labels
     assert any(o["generic"] == "paracetamol" for o in FM.search("paraceta"))
+    assert {o["label"]: o["frequency"] for o in FM.search("telma")}["Telma 40"] == "OD"
+    assert FM.search("folitrax")[0]["frequency"] == "Weekly"
 
 
 async def test_image_fetch_and_cache(tmp_path, monkeypatch):
