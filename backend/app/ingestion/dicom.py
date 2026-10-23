@@ -59,8 +59,10 @@ def render_png(data: bytes, max_dim: int = 1600) -> bytes:
     if arr.ndim == 3 and arr.shape[-1] not in (3, 4):  # multi-frame: middle frame
         arr = arr[arr.shape[0] // 2]
     try:
-        from pydicom.pixels import apply_voi_lut
+        from pydicom.pixels import apply_modality_lut, apply_voi_lut
 
+        # Stored values → real units (e.g. Hounsfield) first; the window is defined in those units.
+        arr = apply_modality_lut(arr, ds).astype("float32")
         arr = apply_voi_lut(arr, ds).astype("float32")
     except Exception:
         center, width = getattr(ds, "WindowCenter", None), getattr(ds, "WindowWidth", None)

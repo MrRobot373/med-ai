@@ -40,7 +40,7 @@ def bootstrap() -> None:
             db.add(
                 User(
                     email=s.bootstrap_admin_email.lower(),
-                    full_name="Administrator",
+                    full_name=s.bootstrap_admin_name,
                     role="admin",
                     password_hash=hash_password(s.bootstrap_admin_password),
                 )

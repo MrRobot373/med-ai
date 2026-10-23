@@ -13,13 +13,6 @@ const FEATURES = [
   { icon: Cpu, title: "Your models, your choice", text: "Use local Ollama models or any OpenAI-compatible endpoint." },
 ];
 
-const DEMO = [
-  { label: "Clinician", email: "doctor@gms.local", password: "Doctor@12345" },
-  { label: "Administrator", email: "admin@gms.local", password: "Admin@12345" },
-  { label: "Front desk", email: "frontdesk@gms.local", password: "Desk@12345" },
-  { label: "Viewer", email: "viewer@gms.local", password: "Viewer@12345" },
-];
-
 export default function LoginPage() {
   const { data: b } = useBranding();
   const [email, setEmail] = useState("");
@@ -115,20 +108,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {b?.show_demo_accounts && (
-            <div className="mt-8 rounded-2xl border border-border/70 bg-subtle/70 p-3">
-              <div className="text-label mb-2 px-1">Demo accounts</div>
-              <div className="grid gap-1">
-                {DEMO.map((d) => (
-                  <button key={d.email} type="button" onClick={() => { setEmail(d.email); setPassword(d.password); }}
-                    className="flex items-center justify-between rounded-full px-3 py-1.5 text-left text-xs hover:bg-card">
-                    <span className="font-medium">{d.label}</span>
-                    <span className="text-muted-foreground">{d.email}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
       </div>

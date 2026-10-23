@@ -1,0 +1,100 @@
+{
+  "uhid": "GMS-10240",
+  "honorific": "Mrs.",
+  "first_name": "Lakshmi",
+  "last_name": "Venkatesh",
+  "date_of_birth": "1960-06-14",
+  "sex": "female",
+  "phone": "+91 98221 90433",
+  "email": null,
+  "address": "A-1102, Megapolis Sparklet, Hinjewadi Phase 3, Pune 411057",
+  "blood_group": "B+",
+  "tags": [
+    "neurology"
+  ],
+  "summary": "66-year-old retired teacher whose headaches and a single seizure led to an MRI showing a right frontal convexity meningioma. On levetiracetam; awaiting elective surgery.",
+  "conditions": [
+    {
+      "name": "Meningioma, right frontal convexity",
+      "code": "D32.0",
+      "since": "2026-09-12",
+      "status": "active"
+    },
+    {
+      "name": "Seizure — single focal to bilateral",
+      "code": "R56.9",
+      "since": "2026-09-06",
+      "status": "active"
+    },
+    {
+      "name": "Essential hypertension",
+      "code": "I10",
+      "since": "2014-01-01",
+      "status": "active"
+    }
+  ],
+  "allergies": [],
+  "medications": [
+    {
+      "name": "Levipil 500",
+      "dose": "1 tab",
+      "frequency": "BD",
+      "indication": "Seizure prophylaxis",
+      "since": "2026-09-08"
+    },
+    {
+      "name": "Telma 40",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Hypertension",
+      "since": "2014-02-01"
+    }
+  ],
+  "visits": [],
+  "orders": [],
+  "today": null,
+  "documents": [
+    {
+      "file": "Hospital/2026-09-08 Discharge summary - Vedant.pdf",
+      "title": "Discharge summary",
+      "kind": "discharge_summary",
+      "date": "2026-09-08",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-09-12 MRI Brain (plain and contrast) report - Vedant.pdf",
+      "title": "MRI Brain (plain and contrast) report",
+      "kind": "imaging",
+      "date": "2026-09-12",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-09-12 MRI brain - coronal T1 post-contrast.dcm",
+      "title": "MRI brain - coronal T1 post-contrast",
+      "kind": "imaging",
+      "date": "2026-09-12",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-09-12 MRI brain - sagittal T1 post-contrast.dcm",
+      "title": "MRI brain - sagittal T1 post-contrast",
+      "kind": "imaging",
+      "date": "2026-09-12",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-09-20 Pre-operative profile - Sanvita.pdf",
+      "title": "Pre-operative profile",
+      "kind": "lab_report",
+      "date": "2026-09-20",
+      "load": true
+    },
+    {
+      "file": "Letters & referrals/2026-09-20 Neurosurgery consultation - Vedant.pdf",
+      "title": "Neurosurgery consultation",
+      "kind": "referral",
+      "date": "2026-09-20",
+      "load": true
+    }
+  ]
+}

@@ -24,5 +24,7 @@ describe("utils", () => {
     expect(fmtNum(1.23456)).toBe("1.235");
     expect(fmtNum(null)).toBe("—");
     expect(initials("Ananya Rao")).toBe("AR");
+    expect(initials("Dr. Ananya Rao")).toBe("AR");
+    expect(initials("Harish Chandra Gupta")).toBe("HG");
   });
 });

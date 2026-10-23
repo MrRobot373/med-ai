@@ -52,3 +52,36 @@ def test_parse_json_response_tolerates_fences():
     assert parse_json_response('Sure! {"a": 2} hope that helps') == {"a": 2}
     with pytest.raises(ValueError):
         parse_json_response("no json")
+
+
+def test_pdf_column_table_keeps_decimal_values():
+    """Lab PDFs lay results out in columns; decimals must survive text extraction."""
+    import pymupdf
+
+    from app.ingestion import labs, parsers
+
+    doc = pymupdf.open()
+    page = doc.new_page()
+    y = 100
+    for row in (
+        ("Haemoglobin", "12.9", "g/dL", "13.0 - 17.0", "L"),
+        ("Serum Creatinine", "1.36", "mg/dL", "0.70 - 1.30", "H"),
+    ):
+        for x, cell in zip((50, 220, 300, 380, 480), row, strict=True):
+            page.insert_text((x, y), cell, fontsize=10)
+        y += 16
+    pages = parsers.parse(doc.tobytes(), "application/pdf").pages
+    got = {o.code: (o.value_num, o.unit, o.ref_low, o.ref_high, o.flag) for o in labs.extract(pages)}
+    assert got["hemoglobin"] == (12.9, "g/dL", 13.0, 17.0, "low")
+    assert got["creatinine"] == (1.36, "mg/dL", 0.7, 1.3, "high")
+
+
+def test_identity_flags_namesake_in_table_layout():
+    from app.ingestion import identity
+    from app.models import Patient
+
+    p = Patient(mrn="GMS-10232", first_name="Harish Chandra", last_name="Gupta")
+    other = "LABORATORY REPORT\nPatient Name | : Mr. Hemant Gupta | Lab No. | : AP/2610/44871\nPatient ID | : AP-778812"
+    assert identity.check(p, other).status == "mismatch"
+    own = "Patient Name | : Mr. Harish Chandra Gupta | Lab No. | : SV/1\nPatient ID | : SV-99812"
+    assert identity.check(p, own).status == "match"

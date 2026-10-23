@@ -35,8 +35,9 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
     # First-run administrator. Created only when the users table is empty.
-    bootstrap_admin_email: str = Field(default="admin@gms.local", alias="BOOTSTRAP_ADMIN_EMAIL")
-    bootstrap_admin_password: str = Field(default="Admin@12345", alias="BOOTSTRAP_ADMIN_PASSWORD")
+    bootstrap_admin_email: str = Field(default="admin@gmsclinic.local", alias="BOOTSTRAP_ADMIN_EMAIL")
+    bootstrap_admin_password: str = Field(default="Admin@2026", alias="BOOTSTRAP_ADMIN_PASSWORD")
+    bootstrap_admin_name: str = Field(default="Vikram Shah", alias="BOOTSTRAP_ADMIN_NAME")
 
     # Seed values for the runtime configuration (first start only; edit later in Settings).
     default_llm_provider: str = Field(default="ollama", alias="DEFAULT_LLM_PROVIDER")

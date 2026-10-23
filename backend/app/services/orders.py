@@ -5,6 +5,7 @@ the front desk or the doctor is linked to the open order it answers ("USG abdome
 from __future__ import annotations
 
 import re
+from datetime import timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -19,6 +20,7 @@ TEST_GROUPS: dict[str, tuple[str, ...]] = {
     "mri": ("mri", "mr imaging", "magnetic resonance"),
     "ecg": ("ecg", "ekg", "electrocardiogram"),
     "echo": ("echo", "2d echo", "echocardiogram", "echocardiography"),
+    "tmt": ("tmt", "treadmill", "stress test", "exercise ecg"),
     "endoscopy": ("endoscopy", "ogd", "ugi scopy", "gastroscopy", "colonoscopy"),
     "cbc": ("cbc", "complete blood count", "haemogram", "hemogram", "blood count"),
     "lft": ("lft", "liver function"),
@@ -54,6 +56,7 @@ REGIONS = (
     "heart",
 )
 CATEGORY_OF = {
+    "tmt": "cardiology",
     "ultrasound": "radiology",
     "xray": "radiology",
     "ct": "radiology",
@@ -129,7 +132,13 @@ def auto_match(db: Session, doc: Document, text: str) -> Order | None:
         return None
     if db.scalar(select(Order).where(Order.result_document_id == doc.id)) is not None:
         return None
-    scored = sorted(((match_score(o, doc, text), o) for o in open_orders(db, doc.patient_id)), key=lambda x: -x[0])
+    # A report can only answer an order placed before it (one day of slack for same-day paperwork).
+    candidates = [
+        o
+        for o in open_orders(db, doc.patient_id)
+        if doc.document_date is None or doc.document_date >= o.ordered_at.date() - timedelta(days=1)
+    ]
+    scored = sorted(((match_score(o, doc, text), o) for o in candidates), key=lambda x: -x[0])
     if not scored or scored[0][0] < 1.0:
         return None
     if len(scored) > 1 and scored[1][0] == scored[0][0]:

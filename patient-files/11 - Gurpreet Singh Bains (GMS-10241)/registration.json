@@ -1,0 +1,156 @@
+{
+  "uhid": "GMS-10241",
+  "honorific": "Mr.",
+  "first_name": "Gurpreet Singh",
+  "last_name": "Bains",
+  "date_of_birth": "1972-12-01",
+  "sex": "male",
+  "phone": "+91 98811 66024",
+  "email": null,
+  "address": "Bungalow 14, Ekta Colony, Aundh, Pune 411007",
+  "blood_group": "A+",
+  "tags": [
+    "cardiac",
+    "smoker"
+  ],
+  "summary": "53-year-old transport business owner and smoker with exertional chest tightness. ECG shows lateral T-wave changes and the treadmill test was positive; angiography planned. On clopidogrel together with omeprazole.",
+  "conditions": [
+    {
+      "name": "Stable angina",
+      "code": "I20.8",
+      "since": "2026-10-05",
+      "status": "active"
+    },
+    {
+      "name": "Dyslipidaemia",
+      "code": "E78.5",
+      "since": "2026-10-05",
+      "status": "active"
+    },
+    {
+      "name": "Tobacco smoking",
+      "code": "F17.210",
+      "since": "1995-01-01",
+      "status": "active"
+    }
+  ],
+  "allergies": [],
+  "medications": [
+    {
+      "name": "Ecosprin 75",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Angina",
+      "since": "2026-10-07"
+    },
+    {
+      "name": "Clopilet 75",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Angina",
+      "since": "2026-10-07"
+    },
+    {
+      "name": "Omez 20",
+      "dose": "1 cap",
+      "frequency": "OD",
+      "indication": "Gastric protection",
+      "since": "2026-10-07"
+    },
+    {
+      "name": "Atorva 40",
+      "dose": "1 tab",
+      "frequency": "HS",
+      "indication": "Dyslipidaemia",
+      "since": "2026-10-07"
+    },
+    {
+      "name": "Metolar 25",
+      "dose": "1 tab",
+      "frequency": "BD",
+      "indication": "Angina",
+      "since": "2026-10-07"
+    }
+  ],
+  "visits": [
+    {
+      "reason": "Chest tightness on climbing stairs",
+      "history": "Central chest tightness on climbing 2 flights for 3 weeks, relieved by rest in 5 minutes. Smokes 15 cigarettes a day for 30 years. Father had MI at 58.",
+      "examination": "BMI 29. Heart sounds normal, no murmur. Chest clear.",
+      "vitals": {
+        "bp": "148/92",
+        "hr": 86,
+        "weight_kg": 86
+      },
+      "diagnoses": [
+        "Stable angina — suspected",
+        "Dyslipidaemia"
+      ],
+      "assessment": "Typical exertional angina with multiple risk factors.",
+      "plan": "ECG, lipid profile, chest X-ray today; cardiology referral for TMT.",
+      "date": "2026-10-05",
+      "prescription": null
+    }
+  ],
+  "orders": [
+    {
+      "date": "2026-10-05",
+      "test": "TMT (treadmill stress test)",
+      "category": "cardiology",
+      "reason": "Exertional chest tightness — inducible ischaemia?",
+      "visit": 0
+    },
+    {
+      "date": "2026-10-05",
+      "test": "Lipid profile and HbA1c",
+      "category": "lab",
+      "reason": "Cardiovascular risk assessment",
+      "visit": 0
+    }
+  ],
+  "today": null,
+  "documents": [
+    {
+      "file": "ECG & cardiology/2026-10-05 ECG 12-lead - Ojas.jpg",
+      "title": "ECG 12-lead",
+      "kind": "ecg",
+      "date": "2026-10-05",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-10-05 Lipid profile and HbA1c - Sanvita.pdf",
+      "title": "Lipid profile and HbA1c",
+      "kind": "lab_report",
+      "date": "2026-10-05",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-10-05 Chest X-Ray Pa.jpg",
+      "title": "Chest X-Ray Pa",
+      "kind": "imaging",
+      "date": "2026-10-05",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-10-05 X-ray Chest PA View report - Medisight.pdf",
+      "title": "X-ray Chest PA View report",
+      "kind": "imaging",
+      "date": "2026-10-05",
+      "load": true
+    },
+    {
+      "file": "ECG & cardiology/2026-10-07 Treadmill Test (Bruce protocol) report - Ojas.pdf",
+      "title": "Treadmill Test (Bruce protocol) report",
+      "kind": "imaging",
+      "date": "2026-10-07",
+      "load": true
+    },
+    {
+      "file": "Letters & referrals/2026-10-07 Cardiology consultation - Ojas.pdf",
+      "title": "Cardiology consultation",
+      "kind": "referral",
+      "date": "2026-10-07",
+      "load": true
+    }
+  ]
+}

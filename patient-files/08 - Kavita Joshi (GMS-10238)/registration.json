@@ -1,0 +1,157 @@
+{
+  "uhid": "GMS-10238",
+  "honorific": "Mrs.",
+  "first_name": "Kavita",
+  "last_name": "Joshi",
+  "date_of_birth": "1965-01-30",
+  "sex": "female",
+  "phone": "+91 94230 17788",
+  "email": null,
+  "address": "Row House 5, Swapnashilp Society, Kothrud, Pune 411038",
+  "blood_group": "AB+",
+  "tags": [
+    "diabetes",
+    "ckd",
+    "high-risk"
+  ],
+  "summary": "61-year-old with long-standing diabetes and diabetic kidney disease. eGFR has fallen from 46 to 36 over a year; still on metformin 1 g twice daily. Today: diabetes and kidney review.",
+  "conditions": [
+    {
+      "name": "Type 2 diabetes mellitus",
+      "code": "E11.22",
+      "since": "2008-06-01",
+      "status": "active"
+    },
+    {
+      "name": "Diabetic nephropathy — CKD stage 3b",
+      "code": "N18.32",
+      "since": "2024-11-01",
+      "status": "active"
+    },
+    {
+      "name": "Essential hypertension",
+      "code": "I10",
+      "since": "2012-03-01",
+      "status": "active"
+    },
+    {
+      "name": "Non-proliferative diabetic retinopathy",
+      "code": "E11.329",
+      "since": "2025-02-01",
+      "status": "active"
+    },
+    {
+      "name": "Dyslipidaemia",
+      "code": "E78.5",
+      "since": "2015-01-01",
+      "status": "active"
+    }
+  ],
+  "allergies": [],
+  "medications": [],
+  "visits": [
+    {
+      "reason": "Diabetes and kidney review",
+      "history": "No hypoglycaemia. Mild ankle swelling in the evenings. Eye check done in Feb — mild NPDR.",
+      "examination": "Trace pedal oedema. Fundus: done by ophthalmologist.",
+      "vitals": {
+        "bp": "148/88",
+        "hr": 80,
+        "weight_kg": 71
+      },
+      "diagnoses": [
+        "Type 2 diabetes mellitus",
+        "Diabetic nephropathy — CKD stage 3b"
+      ],
+      "assessment": "HbA1c 8.4 %. eGFR 41. Albuminuria. BP above target.",
+      "plan": "Continue. Needs SGLT2 inhibitor — patient to decide. Repeat KFT and UACR in 6 months.",
+      "date": "2026-04-28",
+      "prescription": {
+        "items": [
+          {
+            "drug": "Glycomet 1000",
+            "dose": "1 tab",
+            "frequency": "BD",
+            "duration_days": 180,
+            "instructions": "After meals"
+          },
+          {
+            "drug": "Amaryl 2",
+            "dose": "1 tab",
+            "frequency": "OD",
+            "duration_days": 180,
+            "instructions": "Before breakfast"
+          },
+          {
+            "drug": "Telma 40",
+            "dose": "1 tab",
+            "frequency": "OD",
+            "duration_days": 180,
+            "instructions": "Morning"
+          },
+          {
+            "drug": "Atorva 20",
+            "dose": "1 tab",
+            "frequency": "HS",
+            "duration_days": 180,
+            "instructions": null
+          }
+        ],
+        "advice": "Diabetic, low-salt diet. Protein moderation.",
+        "follow_up_days": 180,
+        "long_term": true
+      }
+    }
+  ],
+  "orders": [
+    {
+      "date": "2026-10-10",
+      "test": "KFT, UACR and HbA1c",
+      "category": "lab",
+      "reason": "Six-monthly kidney and diabetes monitoring",
+      "visit": null
+    }
+  ],
+  "today": {
+    "time": "11:30",
+    "reason": "Diabetes and kidney review",
+    "status": "expected"
+  },
+  "documents": [
+    {
+      "file": "Lab reports/2025-10-15 Kidney function test, UACR and HbA1c - Sanvita.pdf",
+      "title": "Kidney function test, UACR and HbA1c",
+      "kind": "lab_report",
+      "date": "2025-10-15",
+      "load": true
+    },
+    {
+      "file": "Letters & referrals/2026-02-11 Diabetic retinopathy screening - Vedant.pdf",
+      "title": "Diabetic retinopathy screening",
+      "kind": "clinical_note",
+      "date": "2026-02-11",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-04-20 Kidney function test, UACR and HbA1c - Sanvita.pdf",
+      "title": "Kidney function test, UACR and HbA1c",
+      "kind": "lab_report",
+      "date": "2026-04-20",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-04-25 USG KUB report - Medisight.pdf",
+      "title": "USG KUB report",
+      "kind": "imaging",
+      "date": "2026-04-25",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-10-12 Kidney function test, UACR and HbA1c - Sanvita.pdf",
+      "title": "Kidney function test, UACR and HbA1c",
+      "kind": "lab_report",
+      "date": "2026-10-12",
+      "load": true
+    }
+  ]
+}

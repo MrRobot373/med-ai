@@ -16,6 +16,7 @@ RUN pip install -r requirements.txt
 COPY backend/ ./
 RUN pip install --no-deps -e .
 COPY knowledge-packs/ /app/knowledge-packs/
+COPY patient-files/ /app/patient-files/
 COPY --from=web /web/dist /app/frontend/dist
 RUN useradd --create-home --uid 10001 gms && mkdir -p /data && chown -R gms:gms /data /app
 USER gms

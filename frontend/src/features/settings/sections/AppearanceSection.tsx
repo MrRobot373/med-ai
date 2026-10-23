@@ -67,7 +67,7 @@ export function AppearanceSection() {
       <Card className="card-pad h-fit space-y-4">
         <div className="text-label">Live preview</div>
         <div className="space-y-3 rounded-xl border bg-background p-4">
-          <div className="flex items-center gap-2"><span className="font-semibold">James Carter</span><Badge tone="danger">Penicillin</Badge></div>
+          <div className="flex items-center gap-2"><span className="font-semibold">Rohit Verma</span><Badge tone="danger">Sulfa drugs</Badge></div>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-lg border bg-card p-2.5"><div className="text-xs text-muted-foreground">HbA1c</div><div className="font-semibold num">8.4 %</div><Badge tone="danger" className="mt-1">High</Badge></div>
             <div className="rounded-lg border bg-card p-2.5"><div className="text-xs text-muted-foreground">eGFR</div><div className="font-semibold num">44</div><Badge tone="warning" className="mt-1">Low</Badge></div>

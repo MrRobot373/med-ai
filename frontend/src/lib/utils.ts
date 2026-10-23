@@ -35,13 +35,13 @@ export function fmtRelative(value: string | Date | null | undefined) {
   return format(d, "d MMM yyyy");
 }
 
+const HONORIFIC = /^(dr|mr|mrs|ms|miss|prof|shri|smt)\.?$/i;
+
+/** "Dr. Ananya Rao" → "AR", "Harish Chandra Gupta" → "HG": first and last name, titles skipped. */
 export function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("");
+  const parts = name.split(/\s+/).filter((p) => p && !HONORIFIC.test(p));
+  const picked = parts.length > 1 ? [parts[0], parts[parts.length - 1]] : parts;
+  return picked.map((p) => p[0]?.toUpperCase()).join("");
 }
 
 export function fmtBytes(n: number) {

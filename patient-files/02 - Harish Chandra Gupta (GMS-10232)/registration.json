@@ -1,0 +1,175 @@
+{
+  "uhid": "GMS-10232",
+  "honorific": "Mr.",
+  "first_name": "Harish Chandra",
+  "last_name": "Gupta",
+  "date_of_birth": "1952-03-02",
+  "sex": "male",
+  "phone": "+91 98220 47613",
+  "email": null,
+  "address": "B-401, Sai Sparsh, Baner, Pune 411045",
+  "blood_group": "O+",
+  "tags": [
+    "cardiac",
+    "anticoagulated",
+    "high-risk"
+  ],
+  "summary": "74-year-old with permanent atrial fibrillation and heart failure (EF 35 %); admitted in August with fluid overload. On apixaban 5 mg twice daily although he weighs 58 kg and his creatinine is 1.6.",
+  "conditions": [
+    {
+      "name": "Atrial fibrillation",
+      "code": "I48.21",
+      "since": "2024-02-01",
+      "status": "active"
+    },
+    {
+      "name": "Heart failure with reduced ejection fraction",
+      "code": "I50.2",
+      "since": "2024-02-01",
+      "status": "active"
+    },
+    {
+      "name": "Essential hypertension",
+      "code": "I10",
+      "since": "2010-01-01",
+      "status": "active"
+    },
+    {
+      "name": "Chronic kidney disease, stage 3a",
+      "code": "N18.31",
+      "since": "2025-09-01",
+      "status": "active"
+    }
+  ],
+  "allergies": [],
+  "medications": [
+    {
+      "name": "Eliquis 5",
+      "dose": "1 tab",
+      "frequency": "BD",
+      "indication": "Atrial fibrillation — stroke prevention",
+      "since": "2024-02-10"
+    },
+    {
+      "name": "Met XL 25",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Heart failure / rate control",
+      "since": "2024-02-10"
+    },
+    {
+      "name": "Lasix 40",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Heart failure",
+      "since": "2026-08-24"
+    },
+    {
+      "name": "Aldactone 25",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Heart failure",
+      "since": "2024-06-01"
+    },
+    {
+      "name": "Telma 20",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Heart failure / hypertension",
+      "since": "2024-06-01"
+    }
+  ],
+  "visits": [
+    {
+      "reason": "Post-discharge review — heart failure",
+      "history": "Discharged on 24 Aug after admission with breathlessness and leg swelling. Now walks 300 m on level ground. Two-pillow orthopnoea, no PND.",
+      "examination": "JVP not raised. Bilateral basal crepts minimal. Trace pedal oedema. Irregularly irregular pulse.",
+      "vitals": {
+        "bp": "118/72",
+        "hr": 84,
+        "weight_kg": 58,
+        "spo2": 96
+      },
+      "diagnoses": [
+        "Heart failure with reduced ejection fraction",
+        "Atrial fibrillation"
+      ],
+      "assessment": "Euvolaemic on current diuretics. Rate controlled.",
+      "plan": "Continue medicines. Repeat KFT and electrolytes and echo in one month; daily weight chart.",
+      "date": "2026-09-05",
+      "prescription": null
+    }
+  ],
+  "orders": [
+    {
+      "date": "2026-09-05",
+      "test": "2D Echo",
+      "category": "cardiology",
+      "reason": "LV function on treatment after HF admission",
+      "visit": 0
+    },
+    {
+      "date": "2026-09-05",
+      "test": "KFT with electrolytes and NT-proBNP",
+      "category": "lab",
+      "reason": "On spironolactone, telmisartan and furosemide — potassium and creatinine",
+      "visit": 0
+    }
+  ],
+  "today": {
+    "time": "09:30",
+    "reason": "Breathlessness follow-up",
+    "status": "arrived"
+  },
+  "documents": [
+    {
+      "file": "Radiology/2026-08-20 Chest X-Ray Pa.jpg",
+      "title": "Chest X-Ray Pa",
+      "kind": "imaging",
+      "date": "2026-08-20",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-08-20 X-ray Chest PA View report - Panchavati.pdf",
+      "title": "X-ray Chest PA View report",
+      "kind": "imaging",
+      "date": "2026-08-20",
+      "load": true
+    },
+    {
+      "file": "Hospital/2026-08-24 Discharge summary - Panchavati.pdf",
+      "title": "Discharge summary",
+      "kind": "discharge_summary",
+      "date": "2026-08-24",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-10-09 KFT, electrolytes and NT-proBNP - Sanvita.pdf",
+      "title": "KFT, electrolytes and NT-proBNP",
+      "kind": "lab_report",
+      "date": "2026-10-09",
+      "load": true
+    },
+    {
+      "file": "ECG & cardiology/2026-10-10 2D Echo and Colour Doppler report - Ojas.pdf",
+      "title": "2D Echo and Colour Doppler report",
+      "kind": "imaging",
+      "date": "2026-10-10",
+      "load": true
+    },
+    {
+      "file": "ECG & cardiology/2026-10-10 ECG 12-lead - Ojas.jpg",
+      "title": "ECG 12-lead",
+      "kind": "ecg",
+      "date": "2026-10-10",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-10-14 Lipid profile - Arogyam.pdf",
+      "title": "Lipid profile",
+      "kind": "lab_report",
+      "date": "2026-10-14",
+      "load": true
+    }
+  ]
+}

@@ -96,17 +96,35 @@ def _pdf(data: bytes) -> list[dict]:
     pages = []
     with pymupdf.open(stream=data, filetype="pdf") as doc:
         for i, page in enumerate(doc, start=1):
-            text = page.get_text("text") or ""
-            # Tables: render rows as pipe-separated lines so lab parsing and the LLM keep structure.
-            try:
-                for table in page.find_tables().tables:
-                    rows = [" | ".join((c or "").strip() for c in row) for row in table.extract()]
-                    if rows:
-                        text += "\n\n" + "\n".join(rows)
-            except Exception:
-                pass
+            text = _layout_text(page.get_text("words")) or page.get_text("text") or ""
             pages.append({"page": i, "text": text})
     return pages
+
+
+def _layout_text(words: list[tuple]) -> str:
+    """Rebuilds printed lines from word positions. Words on one baseline form a line;
+    a wide horizontal gap becomes " | " so column layouts (lab tables) keep their cells:
+    "Haemoglobin | 12.9 | g/dL | 13.0 - 17.0 | L". Prose keeps ordinary spacing."""
+    if not words:
+        return ""
+    rows: list[list[tuple]] = []
+    for w in sorted(words, key=lambda w: ((w[1] + w[3]) / 2, w[0])):
+        mid = (w[1] + w[3]) / 2
+        if rows and abs(mid - rows[-1][0][4]) <= max(2.5, (w[3] - w[1]) * 0.35):
+            rows[-1][1].append(w)
+        else:
+            rows.append([(0, 0, 0, 0, mid), [w]])
+    lines = []
+    for _anchor, row in rows:
+        row.sort(key=lambda w: w[0])
+        height = max(w[3] - w[1] for w in row) or 10
+        parts = [row[0][4]]
+        for prev, cur in zip(row, row[1:], strict=False):
+            gap = cur[0] - prev[2]
+            sep = " | " if gap > height * 1.6 and prev[4] != "|" and cur[4] != "|" else " "
+            parts.append(sep + cur[4])
+        lines.append("".join(parts))
+    return "\n".join(lines)
 
 
 def _docx(data: bytes) -> list[dict]:

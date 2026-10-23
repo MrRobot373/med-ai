@@ -1,0 +1,101 @@
+{
+  "uhid": "GMS-10243",
+  "honorific": "Mr.",
+  "first_name": "Ramesh",
+  "last_name": "Patil",
+  "date_of_birth": "1969-09-09",
+  "sex": "male",
+  "phone": "+91 94220 81356",
+  "email": null,
+  "address": "At post Ozar, Tal. Niphad, Dist. Nashik 422206",
+  "blood_group": "B+",
+  "tags": [
+    "diabetes",
+    "post-viral"
+  ],
+  "summary": "57-year-old farmer recovering from COVID-19 viral pneumonia (CT severity 12/25) treated in September; diabetic and hypertensive; tapering prednisolone. Still breathless on exertion.",
+  "conditions": [
+    {
+      "name": "COVID-19 viral pneumonia, moderate",
+      "code": "U07.1",
+      "since": "2026-09-21",
+      "status": "resolved"
+    },
+    {
+      "name": "Type 2 diabetes mellitus",
+      "code": "E11.9",
+      "since": "2017-01-01",
+      "status": "active"
+    },
+    {
+      "name": "Essential hypertension",
+      "code": "I10",
+      "since": "2019-01-01",
+      "status": "active"
+    }
+  ],
+  "allergies": [],
+  "medications": [
+    {
+      "name": "Glycomet 500",
+      "dose": "1 tab",
+      "frequency": "BD",
+      "indication": "Type 2 diabetes",
+      "since": "2017-02-01"
+    },
+    {
+      "name": "Amlong 5",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Hypertension",
+      "since": "2019-02-01"
+    },
+    {
+      "name": "Wysolone 10",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Post-viral lung inflammation — tapering",
+      "since": "2026-09-28"
+    }
+  ],
+  "visits": [],
+  "orders": [],
+  "today": null,
+  "documents": [
+    {
+      "file": "Radiology/2026-09-22 HRCT Chest (plain) report - Sahyog.pdf",
+      "title": "HRCT Chest (plain) report",
+      "kind": "imaging",
+      "date": "2026-09-22",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-09-22 HRCT chest - axial (lower).dcm",
+      "title": "HRCT chest - axial (lower)",
+      "kind": "imaging",
+      "date": "2026-09-22",
+      "load": true
+    },
+    {
+      "file": "Radiology/2026-09-22 HRCT chest - axial (upper).dcm",
+      "title": "HRCT chest - axial (upper)",
+      "kind": "imaging",
+      "date": "2026-09-22",
+      "load": true
+    },
+    {
+      "file": "Hospital/2026-09-28 Discharge summary - Panchavati.pdf",
+      "title": "Discharge summary",
+      "kind": "discharge_summary",
+      "date": "2026-09-28",
+      "load": true
+    },
+    {
+      "file": "Lab reports/2026-10-12 Post-COVID follow-up profile - Prakruti.pdf",
+      "title": "Post-COVID follow-up profile",
+      "kind": "lab_report",
+      "date": "2026-10-12",
+      "load": true
+    }
+  ]
+}

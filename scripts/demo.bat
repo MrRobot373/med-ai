@@ -12,5 +12,5 @@ if "%1"=="--mock" (
   .venv\Scripts\python -m app.seed use-mock-ai http://127.0.0.1:9100/v1
 )
 .venv\Scripts\python -m app.seed demo
-echo Open http://localhost:8000   (doctor@gms.local / Doctor@12345)
+echo Open http://localhost:8000   (doctor: ananya.rao@gmsclinic.local / Clinic@2026)
 .venv\Scripts\uvicorn app.main:app --host 0.0.0.0 --port 8000

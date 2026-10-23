@@ -76,7 +76,6 @@ export default function PatientWorkspace() {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="truncate text-[1.35rem] font-semibold tracking-tight">{patient.full_name}</h1>
               {patient.status === "archived" && <Badge tone="warning"><Archive /> Archived</Badge>}
-              {patient.synthetic && <Badge tone="outline">Synthetic demo</Badge>}
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8rem] text-muted-foreground">
               <span className="font-semibold text-foreground/80">{patient.mrn}</span>

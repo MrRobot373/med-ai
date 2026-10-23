@@ -5,7 +5,8 @@ combines patient records, document ingestion, hybrid retrieval (RAG) and
 evidence-cited AI — with every model endpoint swappable from the UI.
 
 > Clinical decision support. AI output is always a draft for the treating clinician to
-> verify against the cited sources. Demo patients are synthetic.
+> verify against the cited sources. The bundled patient files are fictional; their medical
+> images come from openly licensed, de-identified datasets (see `patient-files/`).
 
 ---
 
@@ -33,8 +34,18 @@ scripts/setup.sh            # venv + deps, frontend deps, .env with a fresh secr
 scripts/demo.sh --mock      # no models needed: bundled mock AI, demo data, http://localhost:8000
 ```
 
-Sign in as `doctor@gms.local / Doctor@12345` (clinician), `frontdesk@gms.local / Desk@12345` (front desk), `admin@gms.local / Admin@12345`
-(administrator) or `viewer@gms.local / Viewer@12345` (read-only).
+Staff accounts created by the seed:
+
+| Person | Role | Email | Password |
+|---|---|---|---|
+| Dr. Ananya Rao | Clinician | `ananya.rao@gmsclinic.local` | `Clinic@2026` |
+| Meera Pillai | Front desk | `meera.pillai@gmsclinic.local` | `Desk@2026` |
+| Vikram Shah | Administrator | `admin@gmsclinic.local` | `Admin@2026` |
+| Rahul Menon | Read-only (audit) | `rahul.menon@gmsclinic.local` | `Audit@2026` |
+
+The seed loads the 15 patient folders in [`patient-files/`](patient-files/README.md) — lab reports, X-ray,
+ultrasound, CT and MRI (some as DICOM), ECGs, discharge summaries and outside prescriptions — and books
+five of them on today's list. Change these passwords before any real use.
 
 ### With real local models (Ollama)
 

@@ -21,7 +21,6 @@ export interface User {
 export interface Branding {
   product_name: string; tagline: string; organization: string; logo_data_url: string | null;
   default_accent: string; default_theme: "light" | "dark" | "system"; disclaimer: string; login_message: string;
-  show_demo_accounts?: boolean;
 }
 
 export interface Patient {
