@@ -85,3 +85,15 @@ def test_identity_flags_namesake_in_table_layout():
     assert identity.check(p, other).status == "mismatch"
     own = "Patient Name | : Mr. Harish Chandra Gupta | Lab No. | : SV/1\nPatient ID | : SV-99812"
     assert identity.check(p, own).status == "match"
+
+
+def test_lab_parser_reads_uacr_row_and_egfr_comment():
+    text = "\n".join(
+        [
+            "Urine albumin/creatinine ratio | 320 | H | mg/g | < 30",
+            "• eGFR by CKD-EPI 2021: 36 mL/min/1.73 m² (G3b). Declining trend over 12 months.",
+        ]
+    )
+    obs = {o.code: o for o in extract([{"page": 1, "text": text}])}
+    assert obs["uacr"].value_num == 320 and obs["uacr"].flag == "high"
+    assert obs["egfr"].value_num == 36
