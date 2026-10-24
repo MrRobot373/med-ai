@@ -1,0 +1,21 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #e9eef6; font-family: Inter, sans-serif; }
+    #later-time { position: absolute; left: 0; width: 1920px; top: 400px; text-align: center; font-size: 40px; font-weight: 600; letter-spacing: 0.01em; color: #246bfd; }
+    #later-line { position: absolute; left: 0; width: 1920px; top: 460px; text-align: center; font-size: 120px; font-weight: 700; letter-spacing: -0.04em; color: #0f1b3d; }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="later" data-width="1920" data-height="1080">
+    <div id="later-time">4:40 PM</div>
+    <div id="later-line"><span class="w" id="later-w0">The</span> <span class="w" id="later-w1">report</span> <span class="w" id="later-w2">is</span> <span class="w" id="later-w3">back.</span></div>
+    <audio id="later-a1" class="clip" data-hf-media-start-basis="local" data-start="0.1" data-duration="0.57" data-track-index="10" data-volume="0.3" src="assets/sfx/whoosh.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#later-time", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 0.15);
+    for (let i = 0; i < 4; i++) tl.fromTo(`#later-w${i}`, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power2.out" }, 0.35 + i * 0.08);
+    tl.to("#later-time, #later-line", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 1.95);
+    tl.set({}, {}, 2.2);
+    window.__timelines["later"] = tl;
+  </script>
+</template>

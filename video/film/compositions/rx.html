@@ -1,0 +1,115 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #rx-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #rx-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #rx-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #rx-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #rx-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #rx-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="rx" data-width="1920" data-height="1080">
+    <div id="rx-ground"></div>
+    <div id="rx-win">
+      <div id="rx-cam">
+        <video id="rx-video" class="clip" data-start="0" data-duration="28.325" data-track-index="1" muted playsinline src="assets/shots/rx.mp4"></video>
+        <div id="rx-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="rx-cap0" class="clip cap" data-start="2.1" data-duration="3.6" data-track-index="3"><div class="cap-in" id="rx-cap0-in"><span class="w" id="rx-cap0-w0">Checked</span> <span class="w" id="rx-cap0-w1">against</span> <span class="w" id="rx-cap0-w2">his</span> <span class="w" id="rx-cap0-w3">age,</span> <span class="w" id="rx-cap0-w4">kidneys,</span> <span class="w" id="rx-cap0-w5">medicines</span> <span class="w" id="rx-cap0-w6">and</span> <span class="w" id="rx-cap0-w7">allergies</span></div></div>
+    <div id="rx-cap1" class="clip cap" data-start="18.624" data-duration="3.6" data-track-index="3"><div class="cap-in" id="rx-cap1-in"><span class="w" id="rx-cap1-w0">Sulfa</span> <span class="w" id="rx-cap1-w1">allergy</span> <span class="w" id="rx-cap1-w2">—</span> <span class="w" id="rx-cap1-w3">stopped</span> <span class="w" id="rx-cap1-w4">before</span> <span class="w" id="rx-cap1-w5">it</span> <span class="w" id="rx-cap1-w6">is</span> <span class="w" id="rx-cap1-w7">prescribed</span></div></div>
+    <audio id="rx-a0" class="clip" data-hf-media-start-basis="local" data-start="1.95" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="rx-a1" class="clip" data-hf-media-start-basis="local" data-start="4.35" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="rx-a2" class="clip" data-hf-media-start-basis="local" data-start="6.62" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="rx-a3" class="clip" data-hf-media-start-basis="local" data-start="9.02" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="rx-a4" class="clip" data-hf-media-start-basis="local" data-start="12.52" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="rx-a5" class="clip" data-hf-media-start-basis="local" data-start="14.92" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="rx-a6" class="clip" data-hf-media-start-basis="local" data-start="18.474" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="rx-a7" class="clip" data-hf-media-start-basis="local" data-start="22.074" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="rx-a8" class="clip" data-hf-media-start-basis="local" data-start="1.51" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="rx-a9" class="clip" data-hf-media-start-basis="local" data-start="4.86" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="rx-a10" class="clip" data-hf-media-start-basis="local" data-start="6.18" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="rx-a11" class="clip" data-hf-media-start-basis="local" data-start="9.68" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="rx-a12" class="clip" data-hf-media-start-basis="local" data-start="10.43" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="rx-a13" class="clip" data-hf-media-start-basis="local" data-start="12.08" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="rx-a14" class="clip" data-hf-media-start-basis="local" data-start="15.58" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="rx-a15" class="clip" data-hf-media-start-basis="local" data-start="16.33" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="rx-a16" class="clip" data-hf-media-start-basis="local" data-start="18.034" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="rx-a17" class="clip" data-hf-media-start-basis="local" data-start="23.634" data-duration="0.36" data-track-index="10" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="rx-a18" class="clip" data-hf-media-start-basis="local" data-start="5" data-duration="0.314" data-track-index="12" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="rx-a19" class="clip" data-hf-media-start-basis="local" data-start="10.57" data-duration="0.627" data-track-index="12" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="rx-a20" class="clip" data-hf-media-start-basis="local" data-start="16.47" data-duration="0.682" data-track-index="12" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#rx-win", { y: 0, scale: 1, opacity: 1 }, 0);
+    tl.set("#rx-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.to("#rx-cam", { x: 0, y: -494.106, scale: 2, duration: 1, ease: "power2.inOut" }, 1.9);
+    tl.to("#rx-cam", { x: -1317.969, y: -371.551, scale: 1.749, duration: 0.9, ease: "power2.inOut" }, 4.3);
+    tl.to("#rx-cam", { x: -1733.755, y: -578.703, scale: 2, duration: 0.8, ease: "power2.inOut" }, 6.57);
+    tl.to("#rx-cam", { x: -233.315, y: -131.24, scale: 1.133, duration: 0.7, ease: "power2.inOut" }, 8.97);
+    tl.to("#rx-cam", { x: -1733.755, y: -940.569, scale: 2, duration: 0.8, ease: "power2.inOut" }, 12.47);
+    tl.to("#rx-cam", { x: 0, y: 0, scale: 1, duration: 0.7, ease: "power2.inOut" }, 14.87);
+    tl.to("#rx-cam", { x: -1733.755, y: -990, scale: 2, duration: 0.8, ease: "power2.inOut" }, 18.424);
+    tl.to("#rx-cam", { x: 0, y: 0, scale: 1, duration: 0.7, ease: "power2.inOut" }, 22.024);
+    tl.to("#rx-cam", { x: 0, y: 0, scale: 1, duration: 0.9, ease: "power2.inOut" }, 25.324);
+    tl.set("#rx-cursor", { x: 213.409, y: 850.506, scale: 1 }, 0);
+    tl.to("#rx-cursor", { x: 1306.877, y: 532.967, duration: 0.8, ease: "power3.inOut" }, 0.6);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 1.48);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 1.56);
+    tl.to("#rx-cursor", { x: 1135.69, y: 425.03, duration: 0.45, ease: "power3.inOut" }, 4.3);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 4.83);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 4.91);
+    tl.to("#rx-cursor", { x: 1135.69, y: 618.698, duration: 0.45, ease: "power3.inOut" }, 5.62);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 6.15);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 6.23);
+    tl.to("#rx-cursor", { x: 969.435, y: 584.598, duration: 0.6, ease: "power3.inOut" }, 8.97);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 9.65);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 9.729999999999999);
+    tl.to("#rx-cursor", { x: 1135.69, y: 600.136, duration: 0.45, ease: "power3.inOut" }, 9.87);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 10.4);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 10.479999999999999);
+    tl.to("#rx-cursor", { x: 1135.69, y: 754.48, duration: 0.45, ease: "power3.inOut" }, 11.52);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 12.05);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 12.129999999999999);
+    tl.to("#rx-cursor", { x: 969.435, y: 752.383, duration: 0.6, ease: "power3.inOut" }, 14.87);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 15.55);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 15.629999999999999);
+    tl.to("#rx-cursor", { x: 1135.69, y: 767.92, duration: 0.45, ease: "power3.inOut" }, 15.77);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 16.3);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 16.38);
+    tl.to("#rx-cursor", { x: 1135.69, y: 821.339, duration: 0.45, ease: "power3.inOut" }, 17.474);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 18.004);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 18.084);
+    tl.to("#rx-cursor", { x: 1012.387, y: 434.156, duration: 0.6, ease: "power3.inOut" }, 22.924);
+    tl.to("#rx-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 23.604);
+    tl.to("#rx-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 23.683999999999997);
+    tl.fromTo("#rx-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 2.1);
+    tl.fromTo("#rx-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.15);
+    tl.fromTo("#rx-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.21);
+    tl.fromTo("#rx-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.27);
+    tl.fromTo("#rx-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.33);
+    tl.fromTo("#rx-cap0-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.39);
+    tl.fromTo("#rx-cap0-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.45);
+    tl.fromTo("#rx-cap0-w6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.51);
+    tl.fromTo("#rx-cap0-w7", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.57);
+    tl.to("#rx-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 5.46);
+    tl.fromTo("#rx-cap1-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 18.624);
+    tl.fromTo("#rx-cap1-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 18.674);
+    tl.fromTo("#rx-cap1-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 18.734);
+    tl.fromTo("#rx-cap1-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 18.794);
+    tl.fromTo("#rx-cap1-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 18.854);
+    tl.fromTo("#rx-cap1-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 18.914);
+    tl.fromTo("#rx-cap1-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 18.974);
+    tl.fromTo("#rx-cap1-w6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 19.034);
+    tl.fromTo("#rx-cap1-w7", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 19.094);
+    tl.to("#rx-cap1-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 21.984);
+    tl.set({}, {}, 28.325);
+    window.__timelines["rx"] = tl;
+  </script>
+</template>

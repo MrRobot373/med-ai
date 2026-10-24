@@ -67,3 +67,21 @@ def test_connection_test_reports_failure_not_crash(admin):
         "/api/settings/models", json={"section": "llm", "provider": "ollama", "base_url": "http://127.0.0.1:1"}
     )
     assert r.json()["ok"] is False
+
+
+def test_settings_saved_by_another_process_are_picked_up(admin, monkeypatch):
+    from app.db import SessionLocal
+    from app.models import AppSetting
+    from app.services import runtime_config
+
+    monkeypatch.setattr(runtime_config, "_RECHECK_SECONDS", 0)
+    db = SessionLocal()
+    try:
+        runtime_config.load(db)
+        row = db.get(AppSetting, "runtime")
+        row.value = {**row.value, "llm": {**row.value["llm"], "model": "set-elsewhere"}}  # as a CLI command would
+        db.commit()
+        assert runtime_config.load(db).llm.model == "set-elsewhere"
+        assert admin.get("/api/settings").json()["llm"]["model"] == "set-elsewhere"
+    finally:
+        db.close()

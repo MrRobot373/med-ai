@@ -1,0 +1,59 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #login-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #login-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #login-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #login-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #login-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #login-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="login" data-width="1920" data-height="1080">
+    <div id="login-ground"></div>
+    <div id="login-win">
+      <div id="login-cam">
+        <video id="login-video" class="clip" data-start="0" data-duration="8.617" data-track-index="1" muted playsinline src="assets/shots/login.mp4"></video>
+        <div id="login-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="login-cap0" class="clip cap" data-start="0.4" data-duration="3.2" data-track-index="3"><div class="cap-in" id="login-cap0-in"><span class="w" id="login-cap0-w0">Dr.</span> <span class="w" id="login-cap0-w1">Ananya</span> <span class="w" id="login-cap0-w2">Rao</span> <span class="w" id="login-cap0-w3">signs</span> <span class="w" id="login-cap0-w4">in</span></div></div>
+    <audio id="login-a0" class="clip" data-hf-media-start-basis="local" data-start="0" data-duration="0.57" data-track-index="10" data-volume="0.32" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="login-a1" class="clip" data-hf-media-start-basis="local" data-start="7.35" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="login-a2" class="clip" data-hf-media-start-basis="local" data-start="1.56" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="login-a3" class="clip" data-hf-media-start-basis="local" data-start="4.655" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="login-a4" class="clip" data-hf-media-start-basis="local" data-start="7.126" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="login-a5" class="clip" data-hf-media-start-basis="local" data-start="2" data-duration="1.5" data-track-index="12" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="login-a6" class="clip" data-hf-media-start-basis="local" data-start="3.5" data-duration="0.38" data-track-index="12" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="login-a7" class="clip" data-hf-media-start-basis="local" data-start="5.095" data-duration="1.113" data-track-index="12" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#login-win", { y: 70, scale: 0.94, opacity: 0, filter: "blur(10px)" }, { y: 0, scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, 0);
+    tl.set("#login-cam", { x: -528, y: -297, scale: 1.6 }, 0);
+    tl.to("#login-cam", { x: 0, y: 0, scale: 1, duration: 0.9, ease: "power2.inOut" }, 7.3);
+    tl.set("#login-cursor", { x: 1091.2, y: 1108.8, scale: 1 }, 0);
+    tl.to("#login-cursor", { x: 1149.861, y: 485.719, duration: 0.75, ease: "power3.inOut" }, 0.7);
+    tl.to("#login-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 1.53);
+    tl.to("#login-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 1.61);
+    tl.to("#login-cursor", { x: 1149.861, y: 565.331, duration: 0.45, ease: "power3.inOut" }, 4.095);
+    tl.to("#login-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 4.625);
+    tl.to("#login-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 4.705);
+    tl.to("#login-cursor", { x: 1149.861, y: 621.019, duration: 0.5, ease: "power3.inOut" }, 6.516);
+    tl.to("#login-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 7.096);
+    tl.to("#login-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 7.176);
+    tl.fromTo("#login-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 0.4);
+    tl.fromTo("#login-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.45);
+    tl.fromTo("#login-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.51);
+    tl.fromTo("#login-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.57);
+    tl.fromTo("#login-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.63);
+    tl.fromTo("#login-cap0-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.69);
+    tl.to("#login-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 3.36);
+    tl.set({}, {}, 8.617);
+    window.__timelines["login"] = tl;
+  </script>
+</template>

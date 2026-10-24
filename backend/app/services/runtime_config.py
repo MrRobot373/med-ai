@@ -12,9 +12,11 @@ document can evolve without migrations.
 from __future__ import annotations
 
 import threading
+import time
 from typing import Literal
 
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -203,7 +205,11 @@ SECRET_FIELDS: tuple[tuple[str, str], ...] = (
 
 _KEY = "runtime"
 _cache: RuntimeConfig | None = None
+_cache_stamp = None
+_checked = 0.0
 _lock = threading.Lock()
+# Settings saved by another process (a CLI command, a second worker) are picked up within this time.
+_RECHECK_SECONDS = 3.0
 
 
 def _defaults() -> RuntimeConfig:
@@ -243,39 +249,46 @@ def _encrypt_copy(cfg: RuntimeConfig) -> dict:
 
 
 def load(db: Session) -> RuntimeConfig:
-    global _cache
-    if _cache is not None:
+    global _cache, _cache_stamp, _checked
+    if _cache is not None and time.monotonic() - _checked < _RECHECK_SECONDS:
         return _cache
     with _lock:
+        stamp = db.scalar(select(AppSetting.updated_at).where(AppSetting.key == _KEY))
+        _checked = time.monotonic()
+        if _cache is not None and stamp is not None and stamp == _cache_stamp:
+            return _cache
         row = db.get(AppSetting, _KEY)
         if row is None:
             cfg = _defaults()
-            db.add(AppSetting(key=_KEY, value=_encrypt_copy(cfg)))
+            row = AppSetting(key=_KEY, value=_encrypt_copy(cfg))
+            db.add(row)
             db.commit()
         else:
+            db.refresh(row)
             cfg = RuntimeConfig.model_validate(_decrypt_in_place(dict(row.value)))
-        _cache = cfg
+        _cache, _cache_stamp = cfg, row.updated_at
         return cfg
 
 
 def save(db: Session, cfg: RuntimeConfig, user_id: str | None = None) -> RuntimeConfig:
-    global _cache
+    global _cache, _cache_stamp, _checked
     with _lock:
         row = db.get(AppSetting, _KEY)
         data = _encrypt_copy(cfg)
         if row is None:
-            db.add(AppSetting(key=_KEY, value=data, updated_by=user_id))
+            row = AppSetting(key=_KEY, value=data, updated_by=user_id)
+            db.add(row)
         else:
             row.value = data
             row.updated_by = user_id
         db.commit()
-        _cache = cfg.model_copy(deep=True)
+        _cache, _cache_stamp, _checked = cfg.model_copy(deep=True), row.updated_at, time.monotonic()
     return _cache
 
 
 def invalidate_cache() -> None:
-    global _cache
-    _cache = None
+    global _cache, _cache_stamp
+    _cache, _cache_stamp = None, None
 
 
 def apply_section_update(cfg: RuntimeConfig, section: str, patch: dict) -> RuntimeConfig:

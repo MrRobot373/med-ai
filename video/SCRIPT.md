@@ -1,180 +1,141 @@
-# GMS Clinical AI — product film script
+# GMS Clinical AI — voiceover script
 
-**Length:** about 3 min 05 s · 16:9, 1920×1080, 30 fps · English
-**Clinic:** Life Care Medico · **Doctor:** Dr. Ananya Rao · **Front desk:** Meera Pillai
-**Spine:** one patient, Rohit Verma (69), followed from the front desk to a reviewed result. Other patients appear where they show something Rohit's chart can't.
+For the rendered film `gms-clinical-ai-film.mp4` (3 min 17 s, 1920×1080). Each block below is
+one ElevenLabs clip. The timecode is where it starts in the film and how long it has. The lines
+are short enough to fit with room to breathe; the clicks, typing and whooshes are already in the film.
 
-Every screen is the real app running on the seeded patient files. HyperFrames adds the camera moves, cursor, typing and sound.
+## Recording in ElevenLabs
+
+- Record **one clip per block** and name them `vo-01.mp3` … `vo-21.mp3`. Send them back and I'll
+  place each at its timecode and mix the effects under the voice.
+- Voice: calm, warm and confident, like a senior doctor explaining something to a colleague.
+  Not a movie-trailer voice.
+- Starting settings: Stability 50 %, Similarity 75 %, Style 10–15 %, Speed 1.0, Speaker boost on.
+- Export MP3, 44.1 kHz, 128 kbps or higher.
+- Paste the **Read** text exactly. Abbreviations are already spelled for speech (H-b-A-1-C, e-G-F-R).
+  `…` is a short pause.
+- If a clip comes out longer than its slot, re-generate at Speed 1.05–1.1 rather than cutting words.
+
+## Music (optional)
+
+ElevenLabs Music prompt: *"Warm, modern, minimal piano and soft plucked synth over a gentle pulse,
+92 BPM, calm and hopeful, healthcare technology film, builds slightly at 1:15 and again at 3:00,
+ends on a soft resolve. Instrumental, no vocals, 3 minutes 20 seconds."* Export as `music.mp3`;
+I'll keep it low under the voice and dip it at the sulfa-allergy moment (1:32).
 
 ---
 
-## How to record the voiceover in ElevenLabs
+## The script
 
-- Record **one clip per scene** (16 clips). Name them `vo-01.mp3` … `vo-16.mp3`. The film is timed to the clip lengths, so small differences are fine.
-- **Voice:** calm, warm, confident and unhurried, like a doctor explaining something to a colleague. A narrator voice (not a "trailer" voice) works best.
-- **Settings to start from:** Stability 50 %, Similarity 75 %, Style 15 %, Speed 1.0, Speaker boost on. Model: Multilingual v2 or newer.
-- **Export:** MP3 44.1 kHz, 128 kbps or better.
-- The **"Read this"** lines below are already spelled for speech (for example "H-b-A-1-C" and "e-G-F-R"). Paste them exactly as written. The **On screen** lines are what the viewer reads, so the voice never repeats the screen word for word.
-- `…` marks a short pause. A new line inside one clip is a breath.
+### 01 · Opening — 0:00 (8 s)
+On screen: real reports, an X-ray, an ECG and a CT land around "One patient. Dozens of reports."
+**Read:**
+> Every patient arrives with a history … lab reports, X-rays, scans and prescriptions from a dozen different places.
 
----
+### 02 · Title — 0:08 (5 s)
+On screen: GMS Clinical AI.
+**Read:**
+> G-M-S Clinical A-I reads all of it … before the doctor decides.
 
-## Scene by scene
+### 03 · Sign in — 0:13 (8.5 s)
+On screen: Life Care Medico sign-in, email typed, Continue.
+**Read:**
+> Ten in the morning at Life Care Medico. Doctor Ananya Rao signs in … on the clinic's own server.
 
-### 01 · Hook — "Every patient brings a story" · 0:00–0:10 (10 s)
-**On screen:** Rohit Verma's real patient folder opens. His X-ray, two lab reports and an old prescription slide out, stack up and fan across the frame. Small labels from the real files: *Chest X-ray PA · 14 Feb 2026*, *Diabetes, kidney and thyroid panel · Sanvita Diagnostics*.
-**Read this (vo-01):**
-> Every patient walks in with a story …
-> scattered across lab reports, X-rays, scans and old prescriptions.
+### 04 · Today's patients — 0:22 (6 s)
+On screen: today's list, Rohit Verma highlighted.
+**Read:**
+> Five patients today … and for each one, what has changed since the last visit.
 
-**Sound:** paper slides, a soft whoosh as the files fan out.
+### 05 · Rohit's chart — 0:28 (11.5 s)
+On screen: glycaemic control 8.1 %, fasting glucose 162 up from 148, creatinine 1.36 above range, the original lab report.
+**Read:**
+> Rohit Verma, sixty-nine. His reports have already been read … sugar control, the rise in fasting glucose, a creatinine above range … and one click opens the original report.
 
-### 02 · Reveal — the product · 0:10–0:17 (7 s)
-**On screen:** The papers fold into one clean screen. Title: **GMS Clinical AI**, with *A private AI co-pilot for doctors* under it.
-**Read this (vo-02):**
-> GMS Clinical AI brings that story together … for the doctor.
+### 06 · Before he walks in — 0:40 (12 s)
+On screen: results since the last visit, then the AI pre-visit brief and what to ask.
+**Read:**
+> Before he walks in, Doctor Rao sees what happened last time … every new result … and the questions worth asking today.
 
-**Sound:** a whoosh into the title, then a soft low hit when it lands.
+### 07 · The consultation — 0:52 (21.5 s)
+On screen: history, vitals and examination typed; diagnosis Acute gastritis; the diagnosis second look with red flags.
+**Read:**
+> Stomach pain for two days. She writes her notes and vitals, as she always would.
+> Then a second look at her diagnosis … checked against his history, with the red flags worth ruling out.
 
-### 03 · Sign in · 0:17–0:27 (10 s)
-**On screen:** The Life Care Medico sign-in page. The cursor clicks *Email* and types `ananya.rao@lifecaremedico.in`, then the password as dots, then clicks **Continue**. The camera pushes in on the typing and pulls back as the dashboard opens.
-Caption, small: *Runs on the clinic's own server.*
-**Read this (vo-03):**
-> Nine-thirty at Life Care Medico. Doctor Ananya Rao signs in.
-> Everything runs on the clinic's own server … so patient data never leaves the building.
+### 08 · The prescription — 1:14 (28 s)
+On screen: "Checked against: 69 y, 78 kg, eGFR 55, Sulfa allergy, 5 current medicines"; Pan-D; Meftal-Spas cautions; Septran DS — Stop & check; clinical review.
+**Read:**
+> Every medicine is checked as she types … against his age, his weight, his kidney function and the five medicines he already takes.
+> Meftal-Spas: a caution. It can worsen his prostate symptoms, and with his aspirin, raise the risk of bleeding.
+> Septran D-S … stop. He had a sulfa reaction in twenty nineteen … and it is caught before it is ever prescribed.
 
-**Sound:** a mouse click, keyboard typing in short bursts, a click on Continue, a whoosh into the dashboard.
+### 09 · A clean prescription — 1:42 (8.5 s)
+On screen: Septran removed, finalised, printed on the Life Care Medico letterhead.
+**Read:**
+> She removes it, finalises … and Rohit leaves with a clean prescription.
 
-### 04 · Front desk — reports in · 0:27–0:43 (16 s)
-**On screen:** Meera's *Today's list*. She clicks **Mark arrived** on Harish Chandra Gupta, then opens Rohit Verma, drags his report PDF onto *Upload a report*, and it files itself. Punch-in on the chips as they appear: *Lab report · 22 Sep 2026 · Identity verified*.
-**Read this (vo-04):**
-> At the front desk, Meera checks patients in and uploads their reports.
-> Each file is read, dated, sorted … and checked against the right patient.
+### 10 · Ordering a test — 1:51 (9 s)
+On screen: "USG abdomen and pelvis", and the question it should answer.
+**Read:**
+> An ultrasound … ordered with the exact question it should answer.
 
-**Sound:** a click, a drag-and-drop "thunk", a soft pop for each chip.
+### 11 · Later that day — 2:00 (2 s)
+On screen: "4:40 PM. The report is back."
+**Read:**
+> That afternoon …
 
-### 05 · The wrong-patient catch · 0:43–0:53 (10 s)
-**On screen:** A lipid profile filed in Harish Chandra Gupta's chart. Zoom on its header: *Patient Name: Mr. Hemant Gupta*. A red **Possible wrong-patient document** card slides in with an **Urgent** tag.
-**Read this (vo-05):**
-> And when a report belongs to someone else … a different Gupta … it's held back and flagged before anyone relies on it.
+### 12 · The result — 2:02 (10 s)
+On screen: the order shows "Result back", the report read against the question: gallstones, fatty liver, enlarged prostate.
+**Read:**
+> … the report lands on the right order, and is read against her question. Gallstones … found, and marked as reviewed.
 
-**Sound:** a soft two-note alert as the card lands.
+### 13 · Kavita Joshi — 2:12 (3 s)
+On screen: Kavita Joshi, three kidney reports.
+**Read:**
+> Kavita Joshi … three kidney reports in a year.
 
-### 06 · The doctor's day · 0:53–1:05 (12 s)
-**On screen:** Dr. Rao's dashboard. The camera drifts across *Today's patients*: times, reasons, problem chips, *2 results back*, *7 abnormal*. Then a punch-in on the Inbox count and the *Next: Harish* button.
-**Read this (vo-06):**
-> Her day opens on one screen … who's coming, what's changed since their last visit, and what needs a decision.
+### 14 · A year of data — 2:15 (11 s)
+On screen: creatinine 1.30 → 1.45 → 1.62; eGFR 46 → 41 → 36; urine albumin rising.
+**Read:**
+> Read together, they tell one story. Creatinine climbing … e-G-F-R falling … albumin in the urine rising.
 
-**Sound:** a whoosh on the camera move, a light tick as each row highlights.
+### 15 · From data to a stage — 2:26 (9.5 s)
+On screen: CKD stage G3b A3, very high risk; how it's calculated.
+**Read:**
+> So the chart works out her kidney disease stage … three-B, A-three … from her own results, and shows exactly how.
 
-### 07 · Pre-visit brief — Rohit Verma · 1:05–1:17 (12 s)
-**On screen:** She clicks **Continue** on Rohit Verma (69 · Male · *Sulfa drugs* allergy chip in red). The *Before you see the patient* card fills the frame. Highlights appear one by one: *Last time: fever, weight gain*, *HbA1c 8.1 % high*, *TSH 7.2 high*, *Creatinine 1.36 high*, then *Ask about*.
-**Read this (vo-07):**
-> Before Rohit Verma walks in … a brief. What happened last time, the new results … H-b-A-1-C at eight point one, his thyroid up … and what to ask today.
+### 16 · Ask the chart — 2:36 (14 s)
+On screen: "How has her kidney function changed over the last year?", the answer with citations, the source panel.
+**Read:**
+> Doctor Rao can simply ask. Every line of the answer points to the report it came from … so nothing has to be taken on trust.
 
-**Sound:** a click, a soft pop on each highlight.
+### 17 · Harish Chandra Gupta — 2:50 (2.5 s)
+On screen: Harish Chandra Gupta, an ECG strip.
+**Read:**
+> Harish Chandra Gupta.
 
-### 08 · Consultation and a second look · 1:17–1:31 (14 s)
-**On screen:** *Consultation notes*. Typing in the *History* box: "Burning epigastric pain for 2 days, worse after meals…". Vitals fill in: 136/84, 80, 98.4, 98 %, 78 kg. She types the diagnosis *Acute gastritis* and presses Enter. The *Diagnosis — second look* card opens: *Partly consistent*, *Red flags to ask about*.
-**Read this (vo-08):**
-> She writes her notes and vitals.
-> Then a second look … her diagnosis checked against his history, with the red flags worth asking about.
+### 18 · One view of the heart — 2:52 (8 s)
+On screen: echo report, BNP down from 6840 to 2840, CHA₂DS₂-VASc 3 — anticoagulation recommended.
+**Read:**
+> His echo, his B-N-P, and his stroke risk … in one view, with the score that guides his blood thinner.
 
-**Sound:** keyboard typing, an Enter key, a whoosh as the card opens.
+### 19 · Imaging — 3:00 (4.5 s)
+On screen: a CT brain from the DICOM file.
+**Read:**
+> Scans open straight from the scanner's files.
 
-### 09 · The prescription catches it · 1:31–1:55 (24 s) — the main moment
-**On screen:**
-1. The *Prescription* panel. Punch-in on the *Checked against* row: *69 y · older adult*, *78 kg*, **eGFR 55**, *Allergy: Sulfa drugs*, *5 current medicines*.
-2. She types **Pan-D** and it resolves to *Pantoprazole 40 mg + Domperidone 30 mg* with a caution: *Domperidone: Age 69*.
-3. She types **Meftal-Spas**. Cautions stack up: *Dicyclomine: Benign prostatic hyperplasia — risk of urinary retention* and *GI bleeding risk: with Ecosprin 75*.
-4. She types **Septran DS**. A hard cut to a red **Stop & check**, then a zoom on *Allergy: Sulfa drugs — Sulfamethoxazole — documented Sulfa drugs allergy (reaction: itchy rash, 2019, after Septran)*.
-5. The *Clinical review* panel opens beside it.
+### 20 · The promise — 3:05 (5 s)
+On screen: "Every report, read. Every decision, yours."
+**Read:**
+> Every report, read. Every decision … yours.
 
-**Read this (vo-09):**
-> Then the prescription.
-> Every medicine is checked as she types … against his age, his kidney function from his latest report, his current medicines … and his allergies.
-> Septran D-S. Stop.
-> He reacted to sulfa in twenty nineteen.
-
-**Sound:** typing for each medicine, a soft chime per caution, then a low, firm alert on *Stop & check* with the music dipping under it.
-
-### 10 · A clean prescription · 1:55–2:03 (8 s)
-**On screen:** She clicks **Remove** on the Septran line, then **Finalise prescription**. A whoosh to the printed A4 prescription on the Life Care Medico letterhead, sliding up like a page from a printer.
-**Read this (vo-10):**
-> She swaps it out, finalises … and the patient leaves with a clean prescription.
-
-**Sound:** a click, a click, a printer-style paper slide.
-
-### 11 · Order, report, match · 2:03–2:21 (18 s)
-**On screen:**
-1. In *Investigations*, she orders *USG abdomen and pelvis*, reason: *Epigastric pain in an elderly diabetic — exclude gallstones*.
-2. A split-second wipe to the front desk: Meera drops *2026-10-23 USG Abdomen and Pelvis report – Medisight.pdf* onto the upload area.
-3. Back to the doctor: the order card flips to **Result back — review**, linked to the report. The report opens, and the camera zooms to the impression: *Cholelithiasis — multiple gall bladder calculi…*.
-4. She clicks **Mark reviewed**.
-
-**Read this (vo-11):**
-> She orders an abdominal ultrasound.
-> When the report arrives, the front desk uploads it … and it lands on the right order, read against the question she asked.
-
-**Sound:** a click, a drag-and-drop thunk, a soft "ding" when the order flips, a click on *Mark reviewed*.
-
-### 12 · The whole chart · 2:21–2:39 (18 s)
-**On screen:** A quick, rhythmic tour with a different camera move in each shot:
-1. *Reports & imaging* for Suresh Babu Reddy: a CT brain DICOM opens in the viewer with a slow push-in.
-2. *Results* for Kavita Joshi: the creatinine trend draws itself, 1.30 → 1.45 → 1.62 over a year.
-3. *Clinical scores*: Kavita's CKD stage, **G3b A3**, worked out from her own eGFR and urine albumin results.
-4. *Timeline*: visits, reports and prescriptions scroll past in date order.
-
-**Read this (vo-12):**
-> Every chart holds the whole story.
-> C-T and M-R-I straight from the scanner … a year of kidney function at a glance … risk scores … and every visit in order.
-
-**Sound:** a whoosh between each shot, a soft tick as the chart line draws.
-
-### 13 · Ask the chart · 2:39–2:50 (11 s)
-**On screen:** *Ask about Kavita Joshi*. Typing: "How has kidney function changed over the last year?" The answer streams in with citation chips. She clicks a citation: the evidence panel shows the lab report, its page and the exact lines quoted. **Open document** brings up the report itself.
-**Read this (vo-13):**
-> Ask the chart a question … and every answer shows the exact report, and the page, it came from.
-
-**Sound:** typing, an Enter key, a soft pop on the citation, a whoosh as the page opens.
-
-### 14 · The clinic stays in control · 2:50–3:00 (10 s)
-**On screen:** Three quick cuts:
-1. *Settings → AI models*: the clinical model and endpoint fields, with *Test connection* clicked and a green *Connection successful*.
-2. The theme switches from light to dark in one click.
-3. *Users & roles*, then the *Audit log* scrolling.
-
-**Read this (vo-14):**
-> And the clinic stays in control … its own AI models, a role for every staff member, and a record of every action.
-
-**Sound:** a click, a "switch" sound on the theme change, a whoosh.
-
-### 15 · Claim · 3:00–3:05 (5 s)
-**On screen:** A clean white frame. Kinetic type, one line at a time: **The doctor decides.** then **Nothing gets missed.**
-**Read this (vo-15):**
-> The doctor decides. Nothing gets missed.
-
-**Sound:** music swells, then a single low hit on the second line.
-
-### 16 · End card · 3:05–3:12 (7 s)
-**On screen:** The GMS Clinical AI mark is drawn in, then the wordmark **GMS Clinical AI** wipes in beside it, with *Clinical intelligence, grounded in evidence* under it. Held for 3 s.
-Fine print, small, at the bottom: *Demonstration with fictional patients. Medical images from openly licensed, de-identified datasets. AI output is decision support; the treating clinician decides.*
-**Read this (vo-16):**
+### 21 · End card — 3:10 (6.5 s)
+On screen: GMS Clinical AI — Clinical intelligence, grounded in evidence.
+**Read:**
 > G-M-S Clinical A-I.
 
-**Sound:** a final whoosh into the mark, a soft resolve, then silence.
-
 ---
 
-## Word count and pacing
-
-Voiceover: about 330 words across 3 min 12 s. That leaves room for the sound effects and for the "Stop & check" moment to breathe.
-
-## Music (optional — you can make it in ElevenLabs Music)
-
-Prompt: *"Modern, warm, minimal corporate ambient for a healthcare technology film. Soft piano and light plucked synth over a gentle pulse, 92 BPM, hopeful and calm, builds slightly at 1:30 and again at 2:55, ends on a soft resolve. Instrumental, no vocals, 3 minutes 15 seconds."*
-Export it as `music.mp3`. I'll duck it under the voice and dip it at *Stop & check*.
-
-## Sound effects
-
-I'll make the clicks, keyboard typing, whooshes, pops and alert tones myself. If you'd rather use ElevenLabs Sound Effects, send them and I'll swap them in.
+About 420 words in total. Every number in the script is on screen in the film and comes from the
+patient files.

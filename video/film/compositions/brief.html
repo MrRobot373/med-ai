@@ -1,0 +1,61 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #brief-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #brief-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #brief-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #brief-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #brief-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #brief-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="brief" data-width="1920" data-height="1080">
+    <div id="brief-ground"></div>
+    <div id="brief-win">
+      <div id="brief-cam">
+        <video id="brief-video" class="clip" data-start="0" data-duration="12.001" data-track-index="1" muted playsinline src="assets/shots/brief.mp4"></video>
+        <div id="brief-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="brief-cap0" class="clip cap" data-start="0.6" data-duration="3" data-track-index="3"><div class="cap-in" id="brief-cap0-in"><span class="w" id="brief-cap0-w0">Before</span> <span class="w" id="brief-cap0-w1">the</span> <span class="w" id="brief-cap0-w2">patient</span> <span class="w" id="brief-cap0-w3">walks</span> <span class="w" id="brief-cap0-w4">in</span></div></div>
+    <div id="brief-cap1" class="clip cap" data-start="9.15" data-duration="2.801" data-track-index="3"><div class="cap-in" id="brief-cap1-in"><span class="w" id="brief-cap1-w0">What</span> <span class="w" id="brief-cap1-w1">changed,</span> <span class="w" id="brief-cap1-w2">and</span> <span class="w" id="brief-cap1-w3">what</span> <span class="w" id="brief-cap1-w4">to</span> <span class="w" id="brief-cap1-w5">ask</span> <span class="w" id="brief-cap1-w6">today</span></div></div>
+    <audio id="brief-a0" class="clip" data-hf-media-start-basis="local" data-start="0.85" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="brief-a1" class="clip" data-hf-media-start-basis="local" data-start="8.85" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="brief-a2" class="clip" data-hf-media-start-basis="local" data-start="5.31" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#brief-win", { y: 0, scale: 1, opacity: 1 }, 0);
+    tl.set("#brief-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.to("#brief-cam", { x: 0, y: -280.002, scale: 1.413, duration: 1.1, ease: "power2.inOut" }, 0.8);
+    tl.to("#brief-cam", { x: 0, y: -251.859, scale: 1.362, duration: 0.9, ease: "power2.inOut" }, 2.2);
+    tl.to("#brief-cam", { x: 0, y: -280.002, scale: 1.413, duration: 0.8, ease: "power2.inOut" }, 4.4);
+    tl.to("#brief-cam", { x: -198, y: -781, scale: 2, duration: 0.9, ease: "power2.inOut" }, 8.8);
+    tl.set("#brief-cursor", { x: 1490.715, y: 423.139, scale: 1 }, 0);
+    tl.to("#brief-cursor", { x: 202.374, y: 825.344, duration: 0.8, ease: "power3.inOut" }, 4.4);
+    tl.to("#brief-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 5.28);
+    tl.to("#brief-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 5.36);
+    tl.fromTo("#brief-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 0.6);
+    tl.fromTo("#brief-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.65);
+    tl.fromTo("#brief-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.71);
+    tl.fromTo("#brief-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.77);
+    tl.fromTo("#brief-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.83);
+    tl.fromTo("#brief-cap0-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.89);
+    tl.to("#brief-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 3.36);
+    tl.fromTo("#brief-cap1-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 9.15);
+    tl.fromTo("#brief-cap1-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 9.2);
+    tl.fromTo("#brief-cap1-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 9.26);
+    tl.fromTo("#brief-cap1-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 9.32);
+    tl.fromTo("#brief-cap1-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 9.38);
+    tl.fromTo("#brief-cap1-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 9.44);
+    tl.fromTo("#brief-cap1-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 9.5);
+    tl.fromTo("#brief-cap1-w6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 9.56);
+    tl.to("#brief-cap1-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 11.711);
+    tl.set({}, {}, 12.001);
+    window.__timelines["brief"] = tl;
+  </script>
+</template>

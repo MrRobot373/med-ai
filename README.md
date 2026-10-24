@@ -70,11 +70,13 @@ scripts/dev.sh               # API with reload on :8000, Vite on :5173 (proxying
 
 ### Docker
 
+Step-by-step guide for a demo or test server on your network (Docker or bare metal, test AI or Ollama, firewall, HTTPS, backups and a manual test plan): [docs/DEPLOY_LOCAL.md](docs/DEPLOY_LOCAL.md).
+
 ```bash
 cp .env.example .env         # set APP_SECRET_KEY
 docker compose up -d --build                  # app on :8000, talks to Ollama on the host
 docker compose --profile qdrant up -d         # optional Qdrant server
-docker compose run --rm app python -m app.seed demo
+docker compose exec app python -m app.seed demo
 ```
 
 ## Architecture

@@ -1,0 +1,52 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #heart-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #heart-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #heart-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #heart-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #heart-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #heart-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="heart" data-width="1920" data-height="1080">
+    <div id="heart-ground"></div>
+    <div id="heart-win">
+      <div id="heart-cam">
+        <video id="heart-video" class="clip" data-start="0" data-duration="7.901" data-track-index="1" muted playsinline src="assets/shots/heart.mp4"></video>
+        <div id="heart-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="heart-cap0" class="clip cap" data-start="0.6" data-duration="3.4" data-track-index="3"><div class="cap-in" id="heart-cap0-in"><span class="w" id="heart-cap0-w0">Echo,</span> <span class="w" id="heart-cap0-w1">BNP</span> <span class="w" id="heart-cap0-w2">and</span> <span class="w" id="heart-cap0-w3">stroke</span> <span class="w" id="heart-cap0-w4">risk</span> <span class="w" id="heart-cap0-w5">in</span> <span class="w" id="heart-cap0-w6">one</span> <span class="w" id="heart-cap0-w7">view</span></div></div>
+    <audio id="heart-a0" class="clip" data-hf-media-start-basis="local" data-start="0" data-duration="0.57" data-track-index="10" data-volume="0.32" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="heart-a1" class="clip" data-hf-media-start-basis="local" data-start="0.65" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="heart-a2" class="clip" data-hf-media-start-basis="local" data-start="2.85" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="heart-a3" class="clip" data-hf-media-start-basis="local" data-start="7.45" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#heart-win", { y: 70, scale: 0.94, opacity: 0, filter: "blur(10px)" }, { y: 0, scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, 0);
+    tl.set("#heart-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.to("#heart-cam", { x: 0, y: -610.627, scale: 1.68, duration: 1.1, ease: "power2.inOut" }, 0.6);
+    tl.to("#heart-cam", { x: -1760, y: -38.225, scale: 2, duration: 1, ease: "power2.inOut" }, 2.8);
+    tl.to("#heart-cam", { x: -1760, y: -300.334, scale: 2, duration: 0.9, ease: "power2.inOut" }, 5);
+    tl.to("#heart-cam", { x: 0, y: 0, scale: 1, duration: 0.8, ease: "power2.inOut" }, 7.4);
+    tl.set("#heart-cursor", { x: 1091.2, y: 1108.8, scale: 1 }, 0);
+    tl.fromTo("#heart-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 0.6);
+    tl.fromTo("#heart-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.65);
+    tl.fromTo("#heart-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.71);
+    tl.fromTo("#heart-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.77);
+    tl.fromTo("#heart-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.83);
+    tl.fromTo("#heart-cap0-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.89);
+    tl.fromTo("#heart-cap0-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.95);
+    tl.fromTo("#heart-cap0-w6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.01);
+    tl.fromTo("#heart-cap0-w7", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.07);
+    tl.to("#heart-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 3.76);
+    tl.set({}, {}, 7.901);
+    window.__timelines["heart"] = tl;
+  </script>
+</template>

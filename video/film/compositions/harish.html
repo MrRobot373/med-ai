@@ -1,0 +1,28 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #e9eef6; font-family: Inter, sans-serif; }
+    #harish-av { position: absolute; left: 192px; top: 210px; width: 120px; height: 120px; border-radius: 60px; background: #ffe4e6; color: #be123c; font-size: 46px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    #harish-name { position: absolute; left: 192px; top: 360px; font-size: 100px; font-weight: 700; letter-spacing: -0.04em; color: #0f1b3d; }
+    #harish-sub { position: absolute; left: 196px; top: 490px; font-size: 40px; font-weight: 500; color: #475569; }
+    #harish-strip { position: absolute; left: 0; top: 610px; width: 1920px; height: 330px; overflow: hidden; }
+    #harish-ecg { position: absolute; left: 0; top: -150px; width: 2400px; opacity: 0.9; }
+  </style>
+  <div id="root" data-composition-id="harish" data-width="1920" data-height="1080">
+    <div id="harish-av">HG</div>
+    <div id="harish-name">Harish Chandra Gupta</div>
+    <div id="harish-sub">74 · Heart failure · Atrial fibrillation</div>
+    <div id="harish-strip" data-layout-allow-overflow><img id="harish-ecg" src="assets/docs/ecg-harish.jpg" alt="" /></div>
+    <audio id="harish-a1" class="clip" data-hf-media-start-basis="local" data-start="0.05" data-duration="0.57" data-track-index="10" data-volume="0.3" src="assets/sfx/whoosh.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#harish-av", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 0.1);
+    tl.fromTo("#harish-name", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 0.25);
+    tl.fromTo("#harish-sub", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 0.5);
+    tl.fromTo("#harish-strip", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 1.1, ease: "power2.inOut" }, 0.3);
+    tl.fromTo("#harish-ecg", { x: 0 }, { x: -380, duration: 2.6, ease: "none" }, 0);
+    tl.to("#root > div", { opacity: 0, filter: "blur(10px)", duration: 0.25, ease: "power2.in" }, 2.32);
+    tl.set({}, {}, 2.6);
+    window.__timelines["harish"] = tl;
+  </script>
+</template>

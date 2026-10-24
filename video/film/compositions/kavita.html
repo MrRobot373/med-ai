@@ -1,0 +1,33 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #e9eef6; font-family: Inter, sans-serif; }
+    #kavita-av { position: absolute; left: 192px; top: 330px; width: 120px; height: 120px; border-radius: 60px; background: #ede9fe; color: #6d28d9; font-size: 46px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    #kavita-name { position: absolute; left: 192px; top: 480px; font-size: 104px; font-weight: 700; letter-spacing: -0.04em; color: #0f1b3d; }
+    #kavita-sub { position: absolute; left: 196px; top: 615px; font-size: 36px; font-weight: 500; color: #475569; letter-spacing: -0.01em; }
+    .rep { position: absolute; top: 250px; width: 236px; background: #fff; padding: 10px; border-radius: 10px; box-shadow: 0 30px 60px -28px rgba(15, 27, 61, 0.5), 0 0 0 1px rgba(15, 27, 61, 0.06); }
+    .rep img { display: block; width: 100%; }
+    .rep .d { margin-top: 10px; font-size: 28px; font-weight: 600; color: #0f1b3d; text-align: center; }
+  </style>
+  <div id="root" data-composition-id="kavita" data-width="1920" data-height="1080">
+    <div id="kavita-av">KJ</div>
+    <div id="kavita-name">Kavita Joshi</div>
+    <div id="kavita-sub">61 · Type 2 diabetes · Diabetic kidney disease</div>
+    <div class="rep" id="kavita-r1" style="left: 1080px"><img src="assets/docs/kft-kavita-1.png" alt="" /><div class="d">Oct 2025</div></div>
+    <div class="rep" id="kavita-r2" style="left: 1315px"><img src="assets/docs/kft-kavita-2.png" alt="" /><div class="d">Apr 2026</div></div>
+    <div class="rep" id="kavita-r3" style="left: 1550px"><img src="assets/docs/kft-kavita-3.png" alt="" /><div class="d">Oct 2026</div></div>
+    <audio id="kavita-a1" class="clip" data-hf-media-start-basis="local" data-start="0.05" data-duration="0.57" data-track-index="10" data-volume="0.3" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="kavita-a2" class="clip" data-hf-media-start-basis="local" data-start="0.95" data-duration="0.72" data-track-index="11" data-volume="0.22" src="assets/sfx/pop.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#kavita-av", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 0.1);
+    tl.fromTo("#kavita-name", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 0.25);
+    tl.fromTo("#kavita-sub", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 0.55);
+    [["#kavita-r1", -7], ["#kavita-r2", -1], ["#kavita-r3", 6]].forEach(([id, r], i) => {
+      tl.fromTo(id, { y: 640, rotation: r * 3, opacity: 0 }, { y: 0, rotation: r, opacity: 1, duration: 0.8, ease: "expo.out" }, 0.5 + i * 0.18);
+    });
+    tl.to("#root > div", { opacity: 0, filter: "blur(10px)", duration: 0.25, ease: "power2.in" }, 2.72);
+    tl.set({}, {}, 3.0);
+    window.__timelines["kavita"] = tl;
+  </script>
+</template>

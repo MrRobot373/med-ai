@@ -54,3 +54,10 @@ Thumbs.db
 
 # --- Logs ---
 *.log
+
+# Product film: captured frames, encoded shots and renders are rebuilt by video/capture + video/film/build.mjs
+video/capture/out/
+video/film/assets/shots/
+video/film/renders/
+video/film/node_modules/
+video/film/.hyperframes/

@@ -1,0 +1,76 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #trends-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #trends-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #trends-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #trends-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #trends-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #trends-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="trends" data-width="1920" data-height="1080">
+    <div id="trends-ground"></div>
+    <div id="trends-win">
+      <div id="trends-cam">
+        <video id="trends-video" class="clip" data-start="0" data-duration="11.101" data-track-index="1" muted playsinline src="assets/shots/trends.mp4"></video>
+        <div id="trends-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="trends-cap0" class="clip cap" data-start="1.7" data-duration="2.6" data-track-index="3"><div class="cap-in" id="trends-cap0-in"><span class="w" id="trends-cap0-w0">Creatinine</span> <span class="w" id="trends-cap0-w1">1.30</span> <span class="w" id="trends-cap0-w2">→</span> <span class="w" id="trends-cap0-w3">1.45</span> <span class="w" id="trends-cap0-w4">→</span> <span class="w" id="trends-cap0-w5">1.62</span></div></div>
+    <div id="trends-cap1" class="clip cap" data-start="5" data-duration="2.6" data-track-index="3"><div class="cap-in" id="trends-cap1-in"><span class="w" id="trends-cap1-w0">eGFR</span> <span class="w" id="trends-cap1-w1">46</span> <span class="w" id="trends-cap1-w2">→</span> <span class="w" id="trends-cap1-w3">41</span> <span class="w" id="trends-cap1-w4">→</span> <span class="w" id="trends-cap1-w5">36</span></div></div>
+    <div id="trends-cap2" class="clip cap" data-start="8.3" data-duration="2.6" data-track-index="3"><div class="cap-in" id="trends-cap2-in"><span class="w" id="trends-cap2-w0">Albumin</span> <span class="w" id="trends-cap2-w1">in</span> <span class="w" id="trends-cap2-w2">the</span> <span class="w" id="trends-cap2-w3">urine,</span> <span class="w" id="trends-cap2-w4">rising</span></div></div>
+    <audio id="trends-a0" class="clip" data-hf-media-start-basis="local" data-start="0" data-duration="0.57" data-track-index="10" data-volume="0.32" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="trends-a1" class="clip" data-hf-media-start-basis="local" data-start="1.55" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="trends-a2" class="clip" data-hf-media-start-basis="local" data-start="10.75" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="trends-a3" class="clip" data-hf-media-start-basis="local" data-start="1.31" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="trends-a4" class="clip" data-hf-media-start-basis="local" data-start="4.61" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="trends-a5" class="clip" data-hf-media-start-basis="local" data-start="7.91" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#trends-win", { y: 70, scale: 0.94, opacity: 0, filter: "blur(10px)" }, { y: 0, scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.8, ease: "expo.out" }, 0);
+    tl.set("#trends-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.to("#trends-cam", { x: -647.912, y: -225.44, scale: 1.758, duration: 0.9, ease: "power2.inOut" }, 1.5);
+    tl.to("#trends-cam", { x: 0, y: 0, scale: 1, duration: 0.8, ease: "power2.inOut" }, 10.7);
+    tl.set("#trends-cursor", { x: 1091.2, y: 1108.8, scale: 1 }, 0);
+    tl.to("#trends-cursor", { x: 150.013, y: 359.305, duration: 0.6, ease: "power3.inOut" }, 0.6);
+    tl.to("#trends-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 1.28);
+    tl.to("#trends-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 1.36);
+    tl.to("#trends-cursor", { x: 133.229, y: 749.53, duration: 0.6, ease: "power3.inOut" }, 3.9);
+    tl.to("#trends-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 4.58);
+    tl.to("#trends-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 4.66);
+    tl.to("#trends-cursor", { x: 199.315, y: 619.455, duration: 0.6, ease: "power3.inOut" }, 7.2);
+    tl.to("#trends-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 7.88);
+    tl.to("#trends-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 7.96);
+    tl.fromTo("#trends-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 1.7);
+    tl.fromTo("#trends-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.75);
+    tl.fromTo("#trends-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.81);
+    tl.fromTo("#trends-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.87);
+    tl.fromTo("#trends-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.93);
+    tl.fromTo("#trends-cap0-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.99);
+    tl.fromTo("#trends-cap0-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 2.05);
+    tl.to("#trends-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 4.06);
+    tl.fromTo("#trends-cap1-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 5);
+    tl.fromTo("#trends-cap1-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.05);
+    tl.fromTo("#trends-cap1-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.11);
+    tl.fromTo("#trends-cap1-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.17);
+    tl.fromTo("#trends-cap1-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.23);
+    tl.fromTo("#trends-cap1-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.29);
+    tl.fromTo("#trends-cap1-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.35);
+    tl.to("#trends-cap1-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 7.36);
+    tl.fromTo("#trends-cap2-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 8.3);
+    tl.fromTo("#trends-cap2-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 8.35);
+    tl.fromTo("#trends-cap2-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 8.41);
+    tl.fromTo("#trends-cap2-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 8.47);
+    tl.fromTo("#trends-cap2-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 8.53);
+    tl.fromTo("#trends-cap2-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 8.59);
+    tl.to("#trends-cap2-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 10.66);
+    tl.set({}, {}, 11.101);
+    window.__timelines["trends"] = tl;
+  </script>
+</template>

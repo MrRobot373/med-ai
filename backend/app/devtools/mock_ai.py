@@ -15,6 +15,7 @@ import asyncio
 import hashlib
 import json
 import math
+import os
 import re
 import time
 
@@ -23,6 +24,9 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 DIM = 384
 app = FastAPI(title="GMS mock AI")
+
+# MOCK_AI_PLAIN=1 drops the "[mock]" markers (for screen recordings of the interface).
+TAG = "" if os.getenv("MOCK_AI_PLAIN") == "1" else " [mock]"
 _WORD = re.compile(r"[a-z0-9]+")
 
 
@@ -70,18 +74,53 @@ async def rerank(req: Request):
     }
 
 
-def _labels(text: str) -> list[tuple[str, str]]:
-    """(label, first sentence) for each evidence block in the prompt."""
+_NOISE = re.compile(
+    r"tel[:. ]|@|road|shop |lab no|patient name|patient id|age / sex|referred by|collected|reported|page \d|^investigation|end of report|method:",
+    re.I,
+)
+_TOPICS = {
+    "kidney": ("creatinine", "egfr", "urea", "albumin", "potassium", "ckd"),
+    "renal": ("creatinine", "egfr", "albumin"),
+    "sugar": ("hba1c", "glucose"),
+    "diabetes": ("hba1c", "glucose"),
+    "heart": ("bnp", "lvef", "ejection"),
+    "liver": ("alt", "ast", "bilirubin"),
+}
+
+
+def _row(line: str) -> str:
+    """'Serum Creatinine | 1.62 | H | mg/dL | 0.50 - 1.10' -> 'Serum Creatinine 1.62 mg/dL (high; reference 0.50 - 1.10)'."""
+    parts = [x.strip() for x in line.split("|") if x.strip()]
+    if len(parts) < 2 or not re.match(r"^[<>]?\d", parts[1]):
+        return line.lstrip("•-* ").strip()
+    flag = next((x for x in parts[2:] if x in ("H", "L")), None)
+    rest = [x for x in parts[2:] if x not in ("H", "L")]
+    unit = rest[0] if rest and not re.search(r"\d", rest[0]) else ""
+    ref = next((x for x in rest if re.search(r"\d", x)), None)
+    note = ", ".join(filter(None, [{"H": "high", "L": "low"}.get(flag), f"reference {ref}" if ref else None]))
+    return f"{parts[0]} {parts[1]} {unit}".strip() + (f" ({note})" if note else "")
+
+
+def _labels(text: str, question: str = "") -> list[tuple[str, str]]:
+    """(label, the most relevant line) for each evidence block in the prompt."""
+    q = question.lower()
+    keys = {w for w in re.findall(r"[a-z0-9]{3,}", q)}
+    for topic, extra in _TOPICS.items():
+        if topic in q:
+            keys |= set(extra)
     out = []
     for m in re.finditer(r"^\[([PK]\d+)\][^\n]*\n(.+?)(?=\n\n---|\n\n=====|\Z)", text, re.S | re.M):
         lines = [
             ln.strip()
             for ln in m.group(2).splitlines()
-            if ln.strip() and not ln.strip().startswith("#") and not ln.strip().startswith("_")
+            if ln.strip() and not ln.strip().startswith(("#", "_")) and not _NOISE.search(ln)
         ]
-        body = " ".join(" ".join(lines).split())
-        sentence = re.split(r"(?<=[.!?])\s", body)[0][:220] if body else "Relevant passage"
-        out.append((m.group(1), sentence))
+        if not lines:
+            continue
+        scored = sorted(lines, key=lambda ln: -(3 * sum(k in ln.lower() for k in keys) + bool(re.search(r"\d", ln))))
+        best = scored[0]
+        sentence = _row(best) if "|" in best else re.split(r"(?<=[.!?])\s", " ".join(best.lstrip("•-* ").split()))[0]
+        out.append((m.group(1), sentence[:220]))
     return out
 
 
@@ -99,14 +138,14 @@ def _answer(messages: list[dict]) -> str:
         return json.dumps({"scores": [5] * n})
     if "Respond with a single JSON object" in system or "Return JSON only" in user:
         return json.dumps(_structured(system + user))
-    labels = _labels(user)
+    labels = _labels(user, question)
     has_record = "PATIENT RECORD [R]" in user
     if not labels and not has_record:
         return (
             "Insufficient evidence is available in the selected patient record and knowledge sources to answer this "
             "reliably.\n\nThe provided material did not cover this question."
         )
-    lines = [f"**Mock answer** (synthetic — for interface testing) to: _{question[:120]}_", ""]
+    lines = [] if not TAG else [f"**Mock answer** (synthetic — for interface testing) to: _{question[:120]}_", ""]
     if has_record:
         rec = re.search(r"PATIENT RECORD \[R\]\n(.+?)(?:\n\n=====|\Z)", user, re.S).group(1)
         problems = re.search(r"Active problems: (.+)", rec)
@@ -126,6 +165,12 @@ def _field(prompt: str, label: str) -> str:
     return m.group(1).strip() if m else ""
 
 
+def _impression(prompt: str) -> list[str]:
+    """The numbered lines under a report's IMPRESSION heading, as written in the report."""
+    m = re.search(r"^IMPRESSION\s*\n((?:\s*\d+\..+\n?)+)", prompt, re.M | re.I)
+    return [re.sub(r"^\s*\d+\.\s*", "", x).strip() for x in m.group(1).splitlines() if x.strip()][:5] if m else []
+
+
 def _copilot(prompt: str) -> dict | None:
     """Plausible, input-aware answers for the consultation tools (interface testing only)."""
     problems = _field(prompt, "Active problems")
@@ -134,7 +179,7 @@ def _copilot(prompt: str) -> dict | None:
         orders = re.findall(r"^Order (.+?) \(", prompt, re.M)
         last = _field(prompt, "Last visit")
         return {
-            "headline": f"Known {problems[:90] or 'patient'} — review changes since the last visit [mock].",
+            "headline": f"Known {problems[:90] or 'patient'} — review changes since the last visit.{TAG}",
             "since_last_visit": ([f"Last visit {last[:120]}"] if last else [])
             + [f"New abnormal result: {a}" for a in abnormal[:3]],
             "ask_about": [
@@ -160,7 +205,7 @@ def _copilot(prompt: str) -> dict | None:
         dx = _field(prompt, "Working diagnosis")
         return {
             "verdict": "partly_consistent",
-            "summary": f"“{dx}” fits “{complaint[:80]}”, but given the history keep a serious alternative in mind [mock].",
+            "summary": f"“{dx}” fits “{complaint[:80]}”, but given the history keep a serious alternative in mind.{TAG}",
             "supporting": [f"Presenting complaint: {complaint[:100]}"],
             "against": ["No examination findings recorded yet"],
             "consider": [
@@ -188,7 +233,7 @@ def _copilot(prompt: str) -> dict | None:
                     "dose_assessment": "high" if "too high" in rules else ("adequate" if not flagged else "unclear"),
                     "comment": ("Agree with the rule check: " + rules.split(" — ")[0])
                     if (flagged or warned)
-                    else "Dose and choice look reasonable for this patient [mock].",
+                    else f"Dose and choice look reasonable for this patient.{TAG}",
                     "suggestion": "Consider a safer alternative or adjusted dose." if flagged else None,
                 }
             )
@@ -199,7 +244,7 @@ def _copilot(prompt: str) -> dict | None:
         )
         return {
             "overall": overall,
-            "summary": f"{len(items)} medicine(s) reviewed against age, kidney function and current medicines [mock].",
+            "summary": f"{len(items)} medicine(s) reviewed against age, kidney function and current medicines.{TAG}",
             "items": items,
             "diagnosis_fit": "Choices are consistent with the working diagnosis.",
             "missing": [],
@@ -207,11 +252,10 @@ def _copilot(prompt: str) -> dict | None:
             "counselling": ["Take after food", "Return if symptoms worsen"],
         }
     if '"answers_question"' in prompt:
-        order = _field(prompt, "ORDER")
         reason = _field(prompt, "Reason for the test")
         return {
-            "answers_question": f"The report addresses the question “{reason[:100]}” for {order[:60]} [mock].",
-            "key_findings": ["Findings as described in the report impression"],
+            "answers_question": f"The report answers the question asked: “{reason[:120]}”.{TAG}",
+            "key_findings": _impression(prompt) or ["Findings as described in the report impression"],
             "abnormal": [],
             "change_from_previous": None,
             "next_steps": ["Discuss the result with the patient", "Correlate clinically"],
@@ -227,7 +271,7 @@ def _structured(prompt: str) -> dict:
         return copilot
     if '"subjective"' in prompt:
         return {
-            "subjective": "Patient-reported history as documented in the encounter note [mock].",
+            "subjective": f"Patient-reported history as documented in the encounter note.{TAG}",
             "objective": "Vitals and results as recorded.",
             "assessment": "Assessment pending clinician review.",
             "plan": "- Review results with the clinician\n- Arrange follow-up",
@@ -340,5 +384,6 @@ if __name__ == "__main__":
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=9100)
+    ap.add_argument("--host", default="127.0.0.1")
     args = ap.parse_args()
-    uvicorn.run(app, host="127.0.0.1", port=args.port)
+    uvicorn.run(app, host=args.host, port=args.port)

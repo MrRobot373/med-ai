@@ -3,8 +3,10 @@
 #   docker compose up -d                      app only (uses Ollama on the host)
 #   docker compose --profile qdrant up -d     + Qdrant server (then Settings → Vector store → Server, http://qdrant:6333)
 #   docker compose --profile ollama up -d     + Ollama in a container (GPU passthrough below)
+#   docker compose --profile mock up -d       + the bundled mock AI (demo without models)
 #
-# Seed demo data once:   docker compose run --rm app python -m app.seed demo
+# Seed demo data once:   docker compose exec app python -m app.seed demo
+#   (with the mock AI, first: docker compose exec app python -m app.seed use-mock-ai http://mock-ai:9100/v1)
 
 services:
   app:
@@ -19,6 +21,13 @@ services:
       DEFAULT_EMBEDDING_BASE_URL: ${DEFAULT_EMBEDDING_BASE_URL:-http://host.docker.internal:11434}
     extra_hosts: ["host.docker.internal:host-gateway"]
     volumes: [gms-data:/data]
+    restart: unless-stopped
+
+  # Interface demos and testing without a GPU. Not a model: never use it clinically.
+  mock-ai:
+    profiles: [mock]
+    image: gms-clinical-ai:latest
+    command: ["python", "-m", "app.devtools.mock_ai", "--host", "0.0.0.0", "--port", "9100"]
     restart: unless-stopped
 
   qdrant:

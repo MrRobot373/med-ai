@@ -10,7 +10,7 @@ import { api, ApiError } from "@/lib/api";
 const FEATURES = [
   { icon: ShieldCheck, title: "Private by design", text: "Runs on your own infrastructure. Patient data never leaves it without your say." },
   { icon: FileSearch, title: "Evidence you can verify", text: "Every answer cites the exact report, page or guideline it came from." },
-  { icon: Cpu, title: "Your models, your choice", text: "Use local Ollama models or any OpenAI-compatible endpoint." },
+  { icon: Cpu, title: "Your models, your choice", text: "Connect the clinical AI models your clinic trusts, on infrastructure you control." },
 ];
 
 export default function LoginPage() {
