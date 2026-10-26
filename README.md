@@ -214,6 +214,9 @@ npm run build
 See [docs/architecture.md](docs/architecture.md). Reference UI screenshots that guided
 the visual design live in `docs/ui-reference/`.
 
+The plan for the next module — **MED AI Cardiac** (ECG analysis & monitoring) — and its
+UI concept live in [docs/ecg/ECG_PRODUCT_PLAN.md](docs/ecg/ECG_PRODUCT_PLAN.md).
+
 ## Third-party software
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
