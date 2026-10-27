@@ -96,6 +96,7 @@ React + Vite + Tailwind + Radix ──►  FastAPI  ──►  SQLite (records, 
 ```
 
 Details: [docs/architecture.md](docs/architecture.md).
+Visual design system (colours, type, components, clinical patterns, Figma setup): [docs/DESIGN.md](docs/DESIGN.md).
 
 ## Knowledge library
 
