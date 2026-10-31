@@ -12,8 +12,8 @@ evidence-cited AI — with every model endpoint swappable from the UI.
 
 ## Project status
 
-Pilot-grade (v2.0.0): suitable for demonstrations and supervised testing with fictional or consented test data;
-**not yet for real patients**. What exists: [docs/FEATURES.md](docs/FEATURES.md). What is left:
+Strong core, **not yet market-ready.** What exists: [docs/FEATURES.md](docs/FEATURES.md). Whether it can be sold and
+what stands in the way: [docs/PRODUCT_READINESS.md](docs/PRODUCT_READINESS.md). The detailed work lists:
 [docs/PENDING_TECHNICAL.md](docs/PENDING_TECHNICAL.md) (engineering) and
 [docs/PENDING_MANAGEMENT.md](docs/PENDING_MANAGEMENT.md) (regulatory, privacy, clinical governance, legal, operations).
 

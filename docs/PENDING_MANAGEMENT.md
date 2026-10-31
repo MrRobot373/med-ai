@@ -10,9 +10,11 @@ built is in [FEATURES.md](FEATURES.md).
 > qualified regulatory consultant or lawyer before you rely on it. The most valuable first step is a single
 > meeting with a medical-device regulatory consultant and a healthcare lawyer (see [Step 0](#step-0--decisions-only-you-can-make)).
 
-**Where the product stands.** Pilot-grade software, never used with real patients, never run against a real
-clinical AI model, with no regulatory classification, no privacy documentation, no clinical validation, and no
-certifications. The demo is safe to show because every patient in it is fictional.
+**Where the product stands.** Software with a strong core, never used with real patients, never run against a real
+clinical AI model, with no regulatory classification, no privacy documentation, no clinical validation, no
+contracts or insurance, and no certifications. For a product that will be **sold**, sections 1–8 are *gating*:
+they must be done before the first paying customer, not after. The film and demo are safe to show because every
+patient in them is fictional. See [PRODUCT_READINESS.md](PRODUCT_READINESS.md) for the commercial assessment.
 
 ---
 
@@ -29,7 +31,7 @@ certifications. The demo is safe to show because every patient in it is fictiona
 8. [Insurance and liability](#8-insurance-and-liability)
 9. [Public release of the film and marketing](#9-public-release-of-the-film-and-marketing)
 10. [Operations: support, training, incident response](#10-operations-support-training-incident-response)
-11. [Pilot plan](#11-pilot-plan)
+11. [Design-partner validation plan](#11-design-partner-validation-plan)
 12. [Business readiness](#12-business-readiness)
 13. [Indicative sequence and owners](#13-indicative-sequence-and-owners)
 
@@ -110,7 +112,7 @@ controlled documents.
 
 ## 3. Privacy and data protection
 
-Patient records are sensitive personal data. Treat privacy as a pre-condition for any pilot.
+Patient records are sensitive personal data. Treat privacy as a pre-condition for any use with real patients, including validation.
 
 | Item | Detail | Owner |
 |---|---|---|
@@ -243,9 +245,11 @@ You said the video is going out to the world. Before it is published:
 
 ---
 
-## 11. Pilot plan
+## 11. Design-partner validation plan
 
-A small, supervised pilot is the safest next step and produces the evidence for everything above.
+Validation with real clinics ("design partners") is a **required step on the way to market**, not a substitute for it:
+it produces the clinical evidence, usability data and references that regulators, hospitals and buyers ask for.
+Run it on release candidates, under a written agreement, with consent and supervision.
 
 | Element | Suggestion |
 |---|---|
@@ -279,8 +283,8 @@ Durations depend heavily on the regulatory outcome; treat this as order, not a s
 |---|---|---|
 | **0 · Decide** | D1–D8; engage a regulatory consultant and a healthcare lawyer; appoint the clinical lead | Founder |
 | **1 · Foundations** | Regulatory opinion; privacy documents (DPIA, notices, consent wording, DPA); start hazard log and development procedure; resolve PyMuPDF licence; trademark search; model licence review | Regulatory, Legal, Engineering |
-| **2 · Make it safe to pilot** | Engineering hardening (T-06, T-07, T-08, T-05); real-model validation and evaluation suite (T-01, T-02); formulary and knowledge sign-off (T-03, T-04); insurance quote; support and incident procedures | Engineering, Pharmacist, Clinical lead, Ops |
-| **3 · Pilot** | Ethics approval if needed; training; 8–12 week supervised pilot; collect measures | Clinical lead, Ops |
+| **2 · Make it safe for design partners** | Engineering hardening (T-06, T-07, T-08, T-05); real-model validation and evaluation suite (T-01, T-02); formulary and knowledge sign-off (T-03, T-04); insurance quote; support and incident procedures | Engineering, Pharmacist, Clinical lead, Ops |
+| **3 · Design-partner validation** | Ethics approval if needed; training; 8–12 week supervised pilot; collect measures | Clinical lead, Ops |
 | **4 · Assurance** | VAPT; ISO 27001 / 13485 / 62304 as decided in §1–2; usability study; corrective actions | Security, Regulatory |
 | **5 · Launch** | Device registration if required; contracts and SLAs; public marketing with the film (after §9 fixes); ABDM work if chosen | Founder, Legal |
 

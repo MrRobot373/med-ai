@@ -1,9 +1,10 @@
 # GMS Clinical AI — Pending technical work
 
-**Verdict: the product is not complete.** It is a working, tested **pilot-grade build** (v2.0.0): all the
-features in [FEATURES.md](FEATURES.md) exist, 96 backend + 8 frontend + 6 browser tests pass, and it deploys
-cleanly with Docker. It is suitable for **demonstrations and supervised testing with fictional or
-consented test data**. It is **not ready for real patients** until the items marked **P0** are done.
+**Verdict: not yet a sellable product.** The core is real and well built (see [FEATURES.md](FEATURES.md); 96 backend,
+8 frontend and 6 browser tests pass; it deploys cleanly with Docker), but a product that is sold to other clinics
+needs far more than a working core. The commercial-level assessment, scorecard and definition of "ready to sell"
+are in [PRODUCT_READINESS.md](PRODUCT_READINESS.md). This file lists the engineering work behind it. **Everything
+marked P0 and P0-C is required before the first customer or any real patient data.**
 
 Management, regulatory and legal items are in [PENDING_MANAGEMENT.md](PENDING_MANAGEMENT.md).
 
@@ -26,7 +27,7 @@ relative sizes for one engineer: **S** ≤ 1 day · **M** 2–5 days · **L** 1�
 
 ---
 
-## P0 — Must be done before real-patient use
+## P0 — Required before any customer or real-patient use
 
 ### T-01 · Validate every AI feature with real models — **L** · needs a GPU endpoint
 **Now:** all AI parts are marked 🧪 in FEATURES.md. The test AI returns well-formed, predictable output; real models
@@ -64,7 +65,8 @@ The Indian market has many thousands of brands and combinations; unrecognised me
 - Choose and **license** a source (e.g. a national formulary / commercial drug database) and build an importer
   with versioning and a monthly update process.
 - Expand: injectables and IV, units (IU, mcg, mg/kg), topicals, inhalers, tapering and loading doses,
-  **paediatric weight-based dosing**, pregnancy and **lactation** categories, more interactions with
+  **paediatric weight-based limits** (present today for 44 of 114 generics; the engine already asks for the
+  child's weight when it is missing) and **lactation** categories, more interactions with
   severity and mechanism, food/alcohol interactions, drug–disease and drug–lab rules.
 - Schedule H/H1/X and narcotic flags.
 - A **rule test-bank** (≥ 300 prescriptions with expected findings) reviewed and signed off by a clinical
@@ -142,6 +144,25 @@ Today there is a health page and plain logs.
 
 ---
 
+## P0-C — Required to sell: commercial platform and doctor workflow
+
+Verified absent in the code. These are what a buyer notices in the first hour (see PRODUCT_READINESS §5).
+
+| ID | Gap | What to build | Size |
+|---|---|---|---|
+| T-31 | **No prescription templates, favourites or protocol sets.** Doctors repeat the same prescriptions daily; without reuse the product is slower than paper. | Per-doctor and shared templates; "repeat last prescription"; sets per diagnosis; one-click apply with the safety checks still run against the patient | M |
+| T-32 | **No clinical letters.** No medical certificate, fitness or sick-leave note, referral letter, or patient-friendly visit summary. | Letter templates filled from the chart, editable, printable/PDF, audited | M |
+| T-33 | **No patient import or merge.** No import from spreadsheets or another system; no duplicate-patient warning at registration. | CSV/Excel import with column mapping, dry run and error report; duplicate detection (name + DOB + phone) and an audited merge | M–L |
+| T-34 | **Print is fixed.** One letterhead layout. | Clinic-editable header/footer, logo placement, paper sizes (A4/A5), fields shown, language | M |
+| T-35 | **No patient communication.** Nothing can be sent to the patient. | PDF/WhatsApp/SMS/email delivery with consent and a delivery log; appointment reminders and recalls (overlaps T-13, T-22) | M–L |
+| T-36 | **No installer.** Installation is Docker/CLI commands. | Guided installer or appliance image, pre-flight checks (GPU, disk, ports, DNS), offline install bundle, signed container images | L |
+| T-37 | **No update, rollback or support tooling.** Updates are manual and unsupported. | Version check, signed releases, automatic backup before migration, rollback, release channels; admin "support bundle" (redacted logs and config) and opt-in health reporting | L |
+| T-38 | **No licensing or metering.** Nothing ties an install to a customer, seats or an expiry. | Licence file tied to the organisation, seats and expiry with a grace period, validation that works offline, usage metering you can invoice from | M–L |
+| T-39 | **Single clinic per install; no tenant isolation.** One database for one organisation. | *Branches* under one organisation (calendars, reports, access scopes) for chains; **true multi-tenancy** (tenant isolation, per-tenant keys) only if you choose hosted SaaS — a large rework | L / XL |
+| T-40 | **No in-product onboarding or training mode.** | Guided first-run tour, role checklists, a sandbox "training clinic" that cannot touch real data, keyboard cheat sheet | M |
+
+---
+
 ## P1 — Functional gaps against the specification
 
 | ID | Gap | What to build | Size |
@@ -203,6 +224,9 @@ Grouped by what each needs. Nothing here requires waiting for a person unless st
 | T-19 (scaffold) | i18n framework and string extraction (translations need review) |
 | T-26–T-30 | Demo reset, warm-up, the missing docs, film end-card fix and re-render, repo tidy |
 | T-12 | Structured logs, metrics endpoint |
+| T-31, T-32, T-33, T-34 | Prescription templates and favourites, letters and certificates, import and merge, letterhead customisation |
+| T-36, T-37, T-38 | Installer, update/rollback/support bundle, licensing and metering |
+| T-40 | Onboarding tour and training-clinic mode |
 
 ### B · I can do it, but need something from you
 | Item | Needs |
@@ -210,6 +234,9 @@ Grouped by what each needs. Nothing here requires waiting for a person unless st
 | T-01, T-02 (answer metrics), T-25 | A running endpoint for the real models (or a GPU machine) |
 | T-03, T-04 | A licensed drug database and guideline content; a pharmacist and clinical reviewer to sign off |
 | T-13 | Doctors' registration data and the clinic's print details |
+| T-35 | Choice of messaging provider (WhatsApp Business / SMS gateway) and their accounts; consent wording |
+| T-38 | Your pricing and licence terms |
+| T-39 | Your deployment-model decision (PRODUCT_READINESS §3) |
 | T-14 (ABDM) | ABDM sandbox credentials and a decision to pursue it |
 | T-17 | Model download size and (ideally) a GPU |
 | T-19 | Translation review by native-speaking clinicians |
@@ -221,7 +248,7 @@ Regulatory classification, certifications, privacy and legal documents, clinical
 approvals, insurance, trademarks, support contracts, training. See [PENDING_MANAGEMENT.md](PENDING_MANAGEMENT.md).
 
 ### Suggested order
-1. **Hardening release** (group A): T-06, T-05, T-08, T-10, T-11 — makes the build safe to put in front of a pilot site.
+1. **Hardening release** (group A): T-06, T-05, T-08, T-10, T-11 — the base every customer deployment stands on.
 2. **Measure it** : T-02 harness now; T-01 as soon as a model endpoint exists.
 3. **Content**: T-03 and T-04 in parallel with the clinical reviewer.
 4. **Pilot features**: T-13, T-15, T-16, T-20.

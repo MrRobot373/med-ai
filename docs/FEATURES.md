@@ -1,7 +1,8 @@
 # GMS Clinical AI — Features
 
 What the product does today, how each part works, and the technology behind it. Everything here
-was checked against the code in this repository (version 2.0.0). What is **not** done is in
+was checked against the code in this repository (version 2.0.0). What is **not** done, and what stands between this
+and a product that can be sold, is in [PRODUCT_READINESS.md](PRODUCT_READINESS.md),
 [PENDING_TECHNICAL.md](PENDING_TECHNICAL.md) and [PENDING_MANAGEMENT.md](PENDING_MANAGEMENT.md).
 
 **Status key**
