@@ -17,7 +17,7 @@ from app.core import storage
 from app.core.config import get_settings
 from app.core.errors import AppError, Conflict
 from app.core.logging import get_logger
-from app.db import SessionLocal
+from app.db import SessionLocal, utcnow
 from app.ingestion import chunking, identity, labs, parsers
 from app.models import Chunk, Document, Observation, Patient, User
 from app.rag import indexing
@@ -186,6 +186,24 @@ def create(
         details={"filename": doc.filename, "size": doc.size_bytes, "mime": mime},
     )
     return doc
+
+
+def stuck_ids(older_than_seconds: int = 120) -> list[str]:
+    """Documents that were mid-processing when the server stopped (not touched for a couple of minutes)."""
+    from datetime import timedelta
+
+    cutoff = utcnow() - timedelta(seconds=older_than_seconds)
+    db = SessionLocal()
+    try:
+        return list(
+            db.scalars(
+                select(Document.id)
+                .where(Document.status == "processing", Document.updated_at < cutoff)
+                .order_by(Document.created_at)
+            )
+        )
+    finally:
+        db.close()
 
 
 async def process(document_id: str) -> None:

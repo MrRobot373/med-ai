@@ -127,6 +127,43 @@ async def health(db: DB, _: CurrentUser, refresh: bool = False):
     return data
 
 
+def _backup_items(db, s) -> list[dict]:
+    from app.services import backup
+
+    st = backup.status(db)
+    now = datetime.now(UTC)
+    last = datetime.fromisoformat(st["last_ok_at"]) if st.get("last_ok_at") else None
+    verified = datetime.fromisoformat(st["last_verify_at"]) if st.get("last_verify_at") else None
+    fresh = bool(last) and (now - last) < timedelta(hours=30)
+    tested = bool(verified) and st.get("last_verify_ok") is True and (now - verified) < timedelta(days=35)
+    return [
+        {
+            "id": "backup",
+            "label": "Recent backup",
+            "ok": fresh,
+            "detail": f"Last backup {last:%d %b %Y %H:%M} UTC."
+            if last
+            else "No backup has been taken yet. Settings → Backup.",
+        },
+        {
+            "id": "backup_encrypted",
+            "label": "Backups encrypted",
+            "ok": st["encrypted"],
+            "detail": "Backups are encrypted (AES-256-GCM)."
+            if st["encrypted"]
+            else "Set BACKUP_ENCRYPTION_KEY so backups cannot be read if the copy is lost or stolen.",
+        },
+        {
+            "id": "backup_tested",
+            "label": "Backup restore tested",
+            "ok": tested,
+            "detail": f"A backup was opened and checked on {verified:%d %b %Y}."
+            if tested and verified
+            else "Verify a backup at least monthly: an untested backup is only a hope.",
+        },
+    ]
+
+
 @router.get("/system/security")
 def security_posture(db: DB, _: AdminUser):
     """A plain checklist of the protections that matter, for the administrator's status page."""
@@ -185,6 +222,7 @@ def security_posture(db: DB, _: AdminUser):
             if s.clamav_host
             else "No scanner configured (CLAMAV_HOST).",
         },
+        *_backup_items(db, s),
         {
             "id": "audit",
             "label": "Audit log intact",
@@ -597,3 +635,94 @@ def attention(db: DB, _: ClinicalUser, limit: int = 6):
         )
     ranked.sort(key=lambda r: r["severity"], reverse=True)
     return ranked[: min(limit, 50)]
+
+
+# ---- licence and usage ---------------------------------------------------------------------------------------------
+@router.get("/system/licence")
+def licence_state(db: DB, _: AdminUser):
+    from app.services import licensing
+
+    return licensing.state(db)
+
+
+@router.post("/system/licence")
+def install_licence(body: dict, db: DB, admin: AdminUser):
+    from app.services import licensing
+
+    payload = licensing.save(db, body, admin)
+    audit.record(
+        db, admin, "licence.install", f"Installed licence {payload.get('licence_id')} for {payload.get('customer')}"
+    )
+    return licensing.state(db)
+
+
+@router.delete("/system/licence", status_code=204)
+def remove_licence(db: DB, admin: AdminUser):
+    from app.services import licensing
+
+    licensing.remove(db)
+    audit.record(db, admin, "licence.remove", "Removed the installed licence")
+
+
+@router.get("/system/usage-report")
+def usage_report(db: DB, admin: AdminUser):
+    """Counts only (people, branches, patients, storage, AI runs) — nothing identifying — for the supplier."""
+    from fastapi.responses import JSONResponse
+
+    from app.services import licensing
+
+    return JSONResponse(
+        licensing.usage_report(db), headers={"Content-Disposition": 'attachment; filename="usage-report.json"'}
+    )
+
+
+# ---- backups --------------------------------------------------------------------------------------------------------
+@router.get("/system/backup")
+def backup_status(db: DB, _: AdminUser):
+    from app.services import backup
+
+    return backup.status(db)
+
+
+@router.post("/system/backup/run")
+def backup_now(db: DB, admin: AdminUser):
+    from app.services import backup
+
+    cfg = runtime_config.load(db).backup
+    r = backup.run_and_record(db, include_vectors=cfg.include_vectors, keep=cfg.keep, by=admin.email)
+    audit.record(
+        db,
+        admin,
+        "backup.create",
+        f"Took a backup ({r['file']})",
+        details={"size": r["size"], "encrypted": r["encrypted"]},
+    )
+    return backup.status(db)
+
+
+@router.post("/system/backup/verify")
+def backup_verify(body: dict, db: DB, admin: AdminUser):
+    from app.services import backup
+
+    r = backup.verify_and_record(db, str(body.get("file", "")))
+    audit.record(db, admin, "backup.verify", f"Verified backup {r['file']}")
+    return r
+
+
+@router.get("/system/backup/download/{name}")
+def backup_download(name: str, db: DB, admin: AdminUser):
+    from fastapi.responses import FileResponse
+
+    from app.services import backup
+
+    path = backup.path_of(name)
+    audit.record(db, admin, "backup.download", f"Downloaded backup {name}")
+    return FileResponse(path, media_type="application/octet-stream", filename=name)
+
+
+@router.delete("/system/backup/{name}", status_code=204)
+def backup_delete(name: str, db: DB, admin: AdminUser):
+    from app.services import backup
+
+    backup.path_of(name).unlink()
+    audit.record(db, admin, "backup.delete", f"Deleted backup {name}")

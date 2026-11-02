@@ -198,6 +198,13 @@ class PrintConfig(BaseModel):
     public_base_url: str = ""  # makes the QR code a link, e.g. https://clinic.example.org
 
 
+class BackupConfig(BaseModel):
+    enabled: bool = True
+    time: str = Field("02:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")  # clinic-local time of the daily backup
+    keep: int = Field(14, ge=1, le=365)  # how many backups to keep before the oldest is removed
+    include_vectors: bool = True  # the search index can be rebuilt, but restoring it is much faster
+
+
 class RuntimeConfig(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     vision: VisionConfig = Field(default_factory=VisionConfig)
@@ -210,6 +217,7 @@ class RuntimeConfig(BaseModel):
     branding: BrandingConfig = Field(default_factory=BrandingConfig)
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     print: PrintConfig = Field(default_factory=PrintConfig)
+    backup: BackupConfig = Field(default_factory=BackupConfig)
     # Fingerprint of the embedding setup the vector index was built with. When the
     # current embedding config no longer matches, the UI asks for a re-index.
     index_signature: str | None = None
@@ -228,6 +236,7 @@ SECTIONS = (
     "branding",
     "security",
     "print",
+    "backup",
 )
 # (section, field) pairs holding secrets.
 SECRET_FIELDS: tuple[tuple[str, str], ...] = (

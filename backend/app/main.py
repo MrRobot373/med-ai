@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -84,6 +86,47 @@ def bootstrap() -> None:
         db.close()
 
 
+async def _recover_documents() -> None:
+    """After a crash or power cut, documents left half-processed are processed again (one at a time)."""
+    from app.services import documents
+
+    try:
+        ids = await asyncio.to_thread(documents.stuck_ids)
+        for doc_id in ids:
+            logger.info("Resuming processing of document %s", doc_id)
+            await documents.process(doc_id)
+    except Exception:
+        logger.warning("Could not resume interrupted documents", exc_info=True)
+
+
+async def _backup_scheduler() -> None:
+    """Takes the daily backup at the clinic's configured time. Checked once a minute."""
+    from zoneinfo import ZoneInfo
+
+    from app.services import backup
+
+    tz = ZoneInfo(get_settings().timezone)
+    while True:
+        await asyncio.sleep(60)
+        try:
+
+            def tick() -> None:
+                db = SessionLocal()
+                try:
+                    if backup.due(db, datetime.now(tz)):
+                        cfg = runtime_config.load(db).backup
+                        r = backup.run_and_record(db, include_vectors=cfg.include_vectors, keep=cfg.keep, by="schedule")
+                        logger.info("Scheduled backup written: %s (%d bytes)", r["file"], r["size"])
+                finally:
+                    db.close()
+
+            await asyncio.to_thread(tick)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.warning("Scheduled backup failed", exc_info=True)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     s = get_settings()
@@ -101,7 +144,15 @@ async def lifespan(app: FastAPI):
     if getattr(app.state, "skip_migrations", False) is False:
         run_migrations()
     bootstrap()
-    yield
+    tasks: list[asyncio.Task] = []
+    if getattr(app.state, "skip_migrations", False) is False:
+        tasks.append(asyncio.create_task(_recover_documents()))
+        tasks.append(asyncio.create_task(_backup_scheduler()))
+    try:
+        yield
+    finally:
+        for t in tasks:
+            t.cancel()
 
 
 def create_app(*, skip_migrations: bool = False) -> FastAPI:

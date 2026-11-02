@@ -199,12 +199,11 @@ command(
 
 
 def main(argv: list[str] | None = None) -> int:
-    # Command groups register themselves on import.
-    for mod in ("app.services.backup_cli", "app.services.licensing_cli"):
-        try:
-            __import__(mod)
-        except ModuleNotFoundError:
-            pass
+    # Command groups register themselves on import. When run as `python -m app.cli` this file is `__main__`;
+    # make the same module answer to its real name so that they register into this table, not a second copy.
+    sys.modules.setdefault("app.cli", sys.modules[__name__])
+    for mod in ("app.services.backup_cli",):
+        __import__(mod)
     ap = argparse.ArgumentParser(
         prog="python -m app.cli", description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )

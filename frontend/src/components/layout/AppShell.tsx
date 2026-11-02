@@ -8,6 +8,7 @@ import { ForcePasswordChange, MfaEnrolmentRequired } from "@/features/auth/Secur
 import { useAppearance } from "@/app/appearance";
 import { Button, Select, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Kbd, SheetContent, Spinner, Tooltip } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { AdminBanner } from "./AdminBanner";
 import { BrandMark } from "./BrandMark";
 import { CommandPaletteProvider, usePalette } from "./CommandPalette";
 import { NAV, PRIMARY_NAV, RAIL_NAV, visibleFor } from "./nav";
@@ -202,6 +203,7 @@ export function AppShell() {
         <div className="mx-auto flex w-full max-w-[1680px] gap-4 px-3 pb-6 md:px-6">
           <Rail />
           <main className={cn("min-w-0 flex-1", !fullBleed && "pb-2")}>
+            {me.role === "admin" && !fullBleed && <AdminBanner />}
             <Outlet />
             {!fullBleed && <footer className="no-print mt-8 text-[0.7rem] text-muted-foreground">{branding?.disclaimer}</footer>}
           </main>

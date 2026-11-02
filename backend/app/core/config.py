@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     # Protection of data at rest and of uploads.
     data_encryption_key: str | None = Field(default=None, alias="DATA_ENCRYPTION_KEY")
     encryption_at_rest_attested: bool = Field(default=False, alias="ENCRYPTION_AT_REST_ATTESTED")
+    backup_encryption_key: str | None = Field(default=None, alias="BACKUP_ENCRYPTION_KEY")
+    backup_dir_override: Path | None = Field(default=None, alias="BACKUP_DIR")
     allow_insecure_http: bool = Field(default=False, alias="ALLOW_INSECURE_HTTP")
     clamav_host: str | None = Field(default=None, alias="CLAMAV_HOST")
     clamav_port: int = Field(default=3310, alias="CLAMAV_PORT")
@@ -88,6 +90,10 @@ class Settings(BaseSettings):
     @property
     def uploads_dir(self) -> Path:
         return self.data_dir / "uploads"
+
+    @property
+    def backup_dir(self) -> Path:
+        return self.backup_dir_override or (self.data_dir / "backups")
 
     @property
     def vector_dir(self) -> Path:
