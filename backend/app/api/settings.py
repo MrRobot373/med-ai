@@ -189,3 +189,31 @@ async def start_reindex(admin: AdminUser, db: DB):
 @router.get("/reindex")
 def reindex_status(_: AdminUser):
     return _reindex_state
+
+
+class PrintPreviewIn(BaseModel):
+    overrides: dict = {}
+    branch_id: str | None = None
+
+
+@router.post("/print/preview")
+def print_preview(body: PrintPreviewIn, db: DB, admin: AdminUser):
+    """First page of a sample prescription rendered with the (unsaved) print settings, as a PNG."""
+    from fastapi.responses import Response
+
+    from app.models import Branch
+    from app.services import branches, pdfgen, printing
+
+    cfg = runtime_config.load(db).print
+    try:
+        trial = runtime_config.PrintConfig(
+            **{**cfg.model_dump(), **{k: v for k, v in body.overrides.items() if k in cfg.model_dump()}}
+        )
+    except ValidationError as exc:
+        raise HTTPException(
+            422, "; ".join(f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in exc.errors())
+        ) from exc
+    branch = db.get(Branch, body.branch_id) if body.branch_id else branches.ensure_default(db)
+    sheet = printing.sheet_for(db, branch, admin, trial)
+    pdf = pdfgen.prescription_pdf(printing.sample_view(trial), sheet)
+    return Response(pdfgen.render_first_page_png(pdf), media_type="image/png")

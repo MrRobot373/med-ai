@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 
-from app.api import ai, audit, auth, care, documents, knowledge, patients, settings, system
+from app.api import ai, audit, auth, care, documents, knowledge, org, patients, settings, system, verify
 from app.core import passwords
 from app.core.config import PROJECT_ROOT, get_settings
 from app.core.errors import AppError
@@ -19,7 +19,7 @@ from app.core.security import hash_password
 from app.db import SessionLocal
 from app.middleware import SecurityMiddleware
 from app.models import User
-from app.services import runtime_config
+from app.services import branches, runtime_config
 
 logger = get_logger(__name__)
 
@@ -61,6 +61,10 @@ def bootstrap() -> None:
                 "Created first administrator %s — change the password after signing in.", s.bootstrap_admin_email
             )
         runtime_config.load(db)
+        branches.ensure_default(db)
+        for u in db.scalars(select(User)):
+            branches.ensure_membership(db, u)
+        db.commit()
     finally:
         db.close()
 
@@ -116,7 +120,7 @@ def create_app(*, skip_migrations: bool = False) -> FastAPI:
             msgs.append(f"{loc}: {e['msg']}" if loc else e["msg"])
         return JSONResponse({"detail": "; ".join(msgs), "code": "validation_error"}, status_code=422)
 
-    for r in (auth, patients, documents, care, knowledge, ai, settings, system, audit):
+    for r in (auth, org, patients, documents, care, knowledge, ai, settings, system, audit, verify):
         app.include_router(r.router)
 
     @app.get("/api/health", tags=["system"])

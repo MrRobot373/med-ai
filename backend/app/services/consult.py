@@ -22,7 +22,7 @@ from app.db import utcnow
 from app.formulary import catalog, engine
 from app.formulary import facts as facts_mod
 from app.models import AIRun, Appointment, Document, Encounter, Observation, Order, Patient, Prescription, User
-from app.services import audit, documents, runtime_config
+from app.services import audit, branches, documents, runtime_config
 
 RULES = (
     "You support a licensed doctor in India during an outpatient consultation. The doctor is responsible for every "
@@ -294,6 +294,7 @@ def start_consultation(
         reason=reason or (appt.reason if appt else None),
         clinician_id=user.id,
         diagnoses=[],
+        branch_id=(appt.branch_id if appt and appt.branch_id else branches.active(db, user).id),
     )
     if existing is None:
         db.add(enc)

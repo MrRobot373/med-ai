@@ -5,3 +5,7 @@ from __future__ import annotations
 
 def assert_can_add_user(db, role: str, *, excluding: str | None = None) -> None:  # pragma: no cover - replaced later
     return None
+
+
+def assert_can_add_branch(db) -> None:  # pragma: no cover - replaced later
+    return None

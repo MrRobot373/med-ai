@@ -36,6 +36,7 @@ from app.schemas.common import (
     UserUpdate,
 )
 from app.services import audit, runtime_config
+from app.services import branches as branches_service
 from app.services.rate_limit import login_limiter
 
 router = APIRouter(prefix="/api", tags=["auth"])
@@ -63,6 +64,10 @@ _TOO_MANY = "Too many sign-in attempts. Please wait a few minutes and try again.
 def user_out(user: User, db) -> UserOut:
     out = UserOut.model_validate(user)
     out.mfa_required = mfa_required_for(user, db)
+    out.has_signature = bool(user.signature_data_url)
+    options = branches_service.accessible(db, user)
+    out.branches = [{"id": b.id, "name": b.name, "code": b.code} for b in options]
+    out.branch_id = branches_service.active(db, user).id
     return out
 
 
@@ -288,6 +293,29 @@ def change_password(body: PasswordIn, user: CurrentUser, db: DB, request: Reques
     )
 
 
+@router.get("/auth/me/signature")
+def my_signature(user: CurrentUser):
+    return {"data_url": user.signature_data_url}
+
+
+@router.put("/auth/me/signature", status_code=204)
+def set_signature(body: dict, request: Request, user: CurrentUser, db: DB):
+    url = body.get("data_url")
+    if url is not None and (
+        not isinstance(url, str) or not url.startswith("data:image/png;base64,") or len(url) > 400_000
+    ):
+        raise AppError("Use a PNG image under 300 KB.", status_code=422)
+    user.signature_data_url = url or None
+    db.commit()
+    audit.record(
+        db,
+        user,
+        "user.signature",
+        "Updated own signature image" if url else "Removed own signature image",
+        ip=client_ip(request),
+    )
+
+
 # ---- sessions ---------------------------------------------------------------
 @router.get("/auth/sessions")
 def my_sessions(request: Request, user: CurrentUser, db: DB):
@@ -410,6 +438,8 @@ def create_user(body: UserCreate, admin: AdminUser, db: DB):
         password_changed_at=_now(),
     )
     db.add(user)
+    db.flush()
+    branches_service.ensure_membership(db, user)
     db.commit()
     audit.record(db, admin, "user.create", f"Created user {email} ({body.role})", entity_type="user", entity_id=user.id)
     return user_out(user, db)
@@ -421,6 +451,7 @@ def update_user(user_id: str, body: UserUpdate, admin: AdminUser, db: DB):
     if user is None:
         raise HTTPException(404, "User not found")
     changes = body.model_dump(exclude_unset=True)
+    branch_ids = changes.pop("branch_ids", None)
     if user.id == admin.id and (changes.get("role", "admin") != "admin" or changes.get("is_active") is False):
         raise HTTPException(400, "You can't remove your own administrator access.")
     from app.services import licensing
@@ -431,6 +462,9 @@ def update_user(user_id: str, body: UserUpdate, admin: AdminUser, db: DB):
         licensing.assert_can_add_user(db, new_role, excluding=user.id)
     for k, v in changes.items():
         setattr(user, k, v)
+    if branch_ids is not None:
+        branches_service.assign(db, user, branch_ids)
+        changes["branch_ids"] = branch_ids
     if changes.get("is_active") is False:
         _revoke_sessions(user, db)
     db.commit()

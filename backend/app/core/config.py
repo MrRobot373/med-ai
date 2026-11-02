@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     login_rate_limit_attempts: int = Field(default=8, alias="LOGIN_RATE_LIMIT_ATTEMPTS")
     login_rate_limit_window_seconds: int = Field(default=600, alias="LOGIN_RATE_LIMIT_WINDOW_SECONDS")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
+    timezone: str = Field(default="Asia/Kolkata", alias="APP_TIMEZONE")  # clinic-local dates on printed documents
 
     # Protection of data at rest and of uploads.
     data_encryption_key: str | None = Field(default=None, alias="DATA_ENCRYPTION_KEY")

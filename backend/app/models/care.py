@@ -26,6 +26,7 @@ class Appointment(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(16), default="expected")  # expected | arrived | seen | cancelled
     encounter_id: Mapped[str | None] = mapped_column(ForeignKey("encounters.id", ondelete="SET NULL"))
     created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    branch_id: Mapped[str | None] = mapped_column(ForeignKey("branches.id", ondelete="SET NULL"), index=True)
 
 
 class Prescription(TimestampMixin, Base):
@@ -36,6 +37,7 @@ class Prescription(TimestampMixin, Base):
     encounter_id: Mapped[str | None] = mapped_column(ForeignKey("encounters.id", ondelete="SET NULL"), index=True)
     clinician_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     status: Mapped[str] = mapped_column(String(16), default="draft")  # draft | final | cancelled
+    branch_id: Mapped[str | None] = mapped_column(ForeignKey("branches.id", ondelete="SET NULL"))
     diagnosis: Mapped[str | None] = mapped_column(String(500))
     advice: Mapped[str | None] = mapped_column(Text)
     follow_up_date: Mapped[date | None] = mapped_column(Date)

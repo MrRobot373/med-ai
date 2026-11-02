@@ -5,12 +5,13 @@ from datetime import date, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from app.api.deps import DB, AIUser, ClinicalUser, CurrentUser, StaffUser, WriteUser
 from app.clinical.context import age
+from app.core.config import get_settings
 from app.db import utcnow
 from app.formulary import dosing, images
 from app.models import (
@@ -25,7 +26,8 @@ from app.models import (
     PrescriptionItem,
     User,
 )
-from app.services import audit, consult, orders, runtime_config
+from app.services import audit, consult, orders, printing, runtime_config
+from app.services import branches as branch_svc
 
 router = APIRouter(prefix="/api", tags=["care"])
 
@@ -37,6 +39,7 @@ router = APIRouter(prefix="/api", tags=["care"])
 
 class AppointmentIn(BaseModel):
     patient_id: str
+    branch_id: str | None = None
     day: date | None = None
     time: str | None = Field(None, pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
     reason: str | None = Field(None, max_length=300)
@@ -59,6 +62,7 @@ def appointment_out(db, a: Appointment) -> dict:
         "status": a.status,
         "encounter_id": a.encounter_id,
         "patient_id": a.patient_id,
+        "branch_id": a.branch_id,
         "patient": {
             "id": p.id,
             "name": p.full_name,
@@ -72,13 +76,26 @@ def appointment_out(db, a: Appointment) -> dict:
     }
 
 
+def _in_branches(db, user, branch_id: str | None):
+    """SQL condition limiting appointments to one branch (default: the person's current one) or `all`
+    of the ones they may work in. Appointments from before branches existed belong to the main branch."""
+    options = branch_svc.accessible(db, user) if branch_id == "all" else [branch_svc.active(db, user, branch_id)]
+    ids = [b.id for b in options]
+    clause = Appointment.branch_id.in_(ids)
+    if any(b.is_default for b in options):
+        clause = or_(clause, Appointment.branch_id.is_(None))
+    return clause
+
+
 @router.get("/appointments")
-def list_appointments(db: DB, _: CurrentUser, day: date | None = None, patient_id: str | None = None):
+def list_appointments(
+    db: DB, user: CurrentUser, day: date | None = None, patient_id: str | None = None, branch_id: str | None = None
+):
     stmt = select(Appointment)
     if patient_id:
         stmt = stmt.where(Appointment.patient_id == patient_id, Appointment.day >= date.today() - timedelta(days=1))
     else:
-        stmt = stmt.where(Appointment.day == (day or date.today()))
+        stmt = stmt.where(Appointment.day == (day or date.today()), _in_branches(db, user, branch_id))
     rows = db.scalars(
         stmt.order_by(Appointment.day, Appointment.time.is_(None), Appointment.time, Appointment.created_at)
     ).all()
@@ -98,6 +115,7 @@ def add_appointment(body: AppointmentIn, db: DB, user: StaffUser):
         raise HTTPException(409, f"{p.full_name} is already on the list for {day.isoformat()}")
     a = Appointment(
         patient_id=p.id,
+        branch_id=branch_svc.active(db, user, body.branch_id).id,
         day=day,
         time=body.time,
         reason=body.reason,
@@ -374,7 +392,12 @@ def open_prescription(encounter_id: str, db: DB, user: WriteUser):
     if rx is None:
         dx = "; ".join(d.get("name", "") for d in enc.diagnoses or []) or None
         rx = Prescription(
-            patient_id=enc.patient_id, encounter_id=enc.id, clinician_id=user.id, status="draft", diagnosis=dx
+            patient_id=enc.patient_id,
+            encounter_id=enc.id,
+            clinician_id=user.id,
+            status="draft",
+            diagnosis=dx,
+            branch_id=enc.branch_id,
         )
         db.add(rx)
         db.commit()
@@ -443,6 +466,33 @@ def save_prescription(rx_id: str, body: RxIn, db: DB, user: WriteUser):
     return data
 
 
+@router.get("/prescriptions/{rx_id}/pdf")
+def prescription_pdf_file(rx_id: str, db: DB, user: ClinicalUser, download: bool = False):
+    from app.models import Branch
+    from app.services import pdfgen
+
+    rx = _rx(db, rx_id)
+    doctor = db.get(User, rx.clinician_id) if rx.clinician_id else None
+    branch = db.get(Branch, rx.branch_id) if rx.branch_id else branch_svc.ensure_default(db)
+    view = printing.prescription_view(db, rx)
+    sheet = printing.sheet_for(db, branch, doctor)
+    data = pdfgen.prescription_pdf(view, sheet)
+    audit.record(
+        db,
+        user,
+        "prescription.print",
+        f"Opened the prescription PDF for {view['patient']['name']}",
+        entity_type="prescription",
+        entity_id=rx.id,
+        patient_id=rx.patient_id,
+    )
+    name = f"prescription-{view['patient']['mrn']}-{rx.id[:8]}.pdf"
+    disposition = "attachment" if download else "inline"
+    return Response(
+        data, media_type="application/pdf", headers={"Content-Disposition": f'{disposition}; filename="{name}"'}
+    )
+
+
 @router.post("/prescriptions/check")
 def check_prescription(body: RxCheckIn, db: DB, _: ClinicalUser):
     p = consult.patient_or_404(db, body.patient_id)
@@ -461,6 +511,13 @@ def finalize_prescription(rx_id: str, body: RxFinalize, db: DB, user: WriteUser)
         raise HTTPException(409, "Already finalised")
     if not rx.items:
         raise HTTPException(400, "The prescription has no medicines")
+    pcfg = runtime_config.load(db).print
+    if pcfg.require_registration_no and get_settings().is_production and not user.registration_no:
+        raise HTTPException(
+            422,
+            "Add your medical registration number to your profile before finalising prescriptions. "
+            "It is printed on every prescription.",
+        )
     patient = db.get(Patient, rx.patient_id)
     result = consult.run_checks(db, patient, [consult._item_dict(i) for i in rx.items], rx.id)
     missing = []
@@ -789,12 +846,12 @@ def mark_reviewed(order_id: str, body: OrderReviewed, db: DB, user: WriteUser):
 
 
 @router.get("/today")
-def today_list(db: DB, user: CurrentUser):
+def today_list(db: DB, user: CurrentUser, branch_id: str | None = None):
     from app.clinical.context import latest_observations
 
     rows = db.scalars(
         select(Appointment)
-        .where(Appointment.day == date.today(), Appointment.status != "cancelled")
+        .where(Appointment.day == date.today(), Appointment.status != "cancelled", _in_branches(db, user, branch_id))
         .order_by(Appointment.time.is_(None), Appointment.time, Appointment.created_at)
     ).all()
     out = []

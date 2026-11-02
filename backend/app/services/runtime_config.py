@@ -170,6 +170,34 @@ class SecurityConfig(BaseModel):
     mfa_required_roles: list[Literal["admin", "clinician", "viewer", "front_desk"]] = ["admin"]
 
 
+class PrintConfig(BaseModel):
+    """What prescriptions and letters look like on paper. Branches override the contact details."""
+
+    paper: Literal["A4", "A5", "Letter"] = "A4"
+    font_size: Literal["small", "medium", "large"] = "medium"
+    accent: str = "#16233B"  # header rule and table heading colour
+    show_logo: bool = True
+    title: str = ""  # blank → the organisation name from Branding
+    subtitle: str = ""  # blank → the tagline from Branding
+    address: str = ""
+    phone: str = ""
+    email: str = ""
+    website: str = ""
+    clinic_registration: str = ""
+    tax_id: str = ""
+    footer_text: str = ""
+    disclaimer: str = ""
+    show_generic: bool = True
+    show_vitals: bool = True
+    show_complaint: bool = True
+    show_qr: bool = True
+    show_registration_no: bool = True
+    require_registration_no: bool = True  # a doctor cannot finalise without one (enforced in production)
+    signature_label: str = "Doctor's signature"
+    follow_up_note: str = "Please bring your reports."
+    public_base_url: str = ""  # makes the QR code a link, e.g. https://clinic.example.org
+
+
 class RuntimeConfig(BaseModel):
     llm: LLMConfig = Field(default_factory=LLMConfig)
     vision: VisionConfig = Field(default_factory=VisionConfig)
@@ -181,6 +209,7 @@ class RuntimeConfig(BaseModel):
     vector_store: VectorStoreConfig = Field(default_factory=VectorStoreConfig)
     branding: BrandingConfig = Field(default_factory=BrandingConfig)
     security: SecurityConfig = Field(default_factory=SecurityConfig)
+    print: PrintConfig = Field(default_factory=PrintConfig)
     # Fingerprint of the embedding setup the vector index was built with. When the
     # current embedding config no longer matches, the UI asks for a re-index.
     index_signature: str | None = None
@@ -198,6 +227,7 @@ SECTIONS = (
     "vector_store",
     "branding",
     "security",
+    "print",
 )
 # (section, field) pairs holding secrets.
 SECRET_FIELDS: tuple[tuple[str, str], ...] = (

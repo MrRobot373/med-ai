@@ -27,6 +27,13 @@ class UserOut(ORM):
     preferences: dict
     last_login_at: datetime | None
     created_at: datetime
+    phone: str | None = None
+    qualifications: str | None = None
+    registration_no: str | None = None
+    registration_council: str | None = None
+    has_signature: bool = False
+    branches: list[dict] = []  # branches this person may work in: [{id, name, code}]
+    branch_id: str | None = None  # the one they are working in now
     must_change_password: bool = False
     mfa_enabled: bool = False
     mfa_required: bool = False  # filled in by the API from the security settings
@@ -37,6 +44,10 @@ class ProfileIn(BaseModel):
     full_name: str | None = Field(None, min_length=1, max_length=200)
     title: str | None = Field(None, max_length=80)
     specialty: str | None = Field(None, max_length=120)
+    phone: str | None = Field(None, max_length=60)
+    qualifications: str | None = Field(None, max_length=200)
+    registration_no: str | None = Field(None, max_length=80)
+    registration_council: str | None = Field(None, max_length=120)
 
 
 class PasswordIn(BaseModel):
@@ -71,6 +82,11 @@ class UserUpdate(BaseModel):
     full_name: str | None = None
     title: str | None = None
     specialty: str | None = None
+    phone: str | None = None
+    qualifications: str | None = None
+    registration_no: str | None = None
+    registration_council: str | None = None
+    branch_ids: list[str] | None = None
     role: Literal["admin", "clinician", "viewer", "front_desk"] | None = None
     is_active: bool | None = None
 

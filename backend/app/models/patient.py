@@ -27,6 +27,10 @@ class Patient(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(16), default="active", index=True)
     synthetic: Mapped[bool] = mapped_column(Boolean, default=False)
     created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    registered_branch_id: Mapped[str | None] = mapped_column(ForeignKey("branches.id", ondelete="SET NULL"))
+    merged_into_id: Mapped[str | None] = mapped_column(
+        String(32), index=True
+    )  # set when this chart was merged into another
 
     encounters: Mapped[list[Encounter]] = relationship(back_populates="patient", cascade="all, delete-orphan")
     conditions: Mapped[list[Condition]] = relationship(back_populates="patient", cascade="all, delete-orphan")
@@ -58,6 +62,7 @@ class Encounter(TimestampMixin, Base):
     diagnoses: Mapped[list] = mapped_column(JSON, default=list)  # [{"name": str, "code": str | None}]
     plan: Mapped[str | None] = mapped_column(Text)
     clinician_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    branch_id: Mapped[str | None] = mapped_column(ForeignKey("branches.id", ondelete="SET NULL"))
 
     patient: Mapped[Patient] = relationship(back_populates="encounters")
 

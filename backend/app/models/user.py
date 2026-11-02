@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base, TimestampMixin, UTCDateTime, utcnow
@@ -32,6 +32,12 @@ class User(TimestampMixin, Base):
     mfa_secret: Mapped[str | None] = mapped_column(String(255))  # encrypted; set while enrolling and once enabled
     mfa_recovery: Mapped[list] = mapped_column(JSON, default=list)  # SHA-256 of unused recovery codes
     mfa_last_step: Mapped[int | None] = mapped_column(Integer)
+    # Legal identity of a practising doctor, printed on prescriptions and letters.
+    phone: Mapped[str | None] = mapped_column(String(60))
+    qualifications: Mapped[str | None] = mapped_column(String(200))  # "MD (Medicine), DNB"
+    registration_no: Mapped[str | None] = mapped_column(String(80))
+    registration_council: Mapped[str | None] = mapped_column(String(120))
+    signature_data_url: Mapped[str | None] = mapped_column(Text)  # small PNG, optional
 
     sessions: Mapped[list[UserSession]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
