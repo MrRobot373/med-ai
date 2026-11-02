@@ -180,6 +180,10 @@ def create_patient(body: PatientIn, db: DB, user: StaffUser):
         **data, mrn=mrn or dedupe.next_mrn(db), created_by=user.id, registered_branch_id=branch_svc.active(db, user).id
     )
     db.add(p)
+    db.flush()
+    from app.services import integration
+
+    integration.emit(db, "patient.created", p.id, patient_id=p.id, builder=lambda: integration.patient_brief(p))
     db.commit()
     audit.record(
         db,

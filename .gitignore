@@ -61,3 +61,4 @@ video/film/assets/shots/
 video/film/renders/
 video/film/node_modules/
 video/film/.hyperframes/
+dist/

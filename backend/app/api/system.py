@@ -17,7 +17,7 @@ from app.services import audit, runtime_config
 
 router = APIRouter(prefix="/api", tags=["system"])
 _health_cache: dict = {"at": 0.0, "data": None}
-APP_VERSION = "2.0.0"
+APP_VERSION = "3.0.0"
 
 
 async def _check(name: str, fn) -> dict:

@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db import Base, TimestampMixin, UTCDateTime
+from app.db import Base, TimestampMixin, UTCDateTime, utcnow
 from app.models._ids import new_id
 
 
@@ -69,3 +69,54 @@ class Counter(Base):
 
     key: Mapped[str] = mapped_column(String(40), primary_key=True)
     value: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class ApiToken(Base):
+    """A key another system (billing, pharmacy) uses to read what it is allowed to. Only a hash is stored."""
+
+    __tablename__ = "api_tokens"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    name: Mapped[str] = mapped_column(String(120))
+    prefix: Mapped[str] = mapped_column(String(12), index=True)  # first characters, to recognise it in a list
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    scopes: Mapped[list] = mapped_column(JSON, default=list)
+    created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    expires_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    last_used_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    last_used_ip: Mapped[str | None] = mapped_column(String(64))
+    revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+
+
+class Webhook(TimestampMixin, Base):
+    __tablename__ = "webhooks"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    name: Mapped[str] = mapped_column(String(120))
+    url: Mapped[str] = mapped_column(String(500))
+    secret_enc: Mapped[str] = mapped_column(Text)  # encrypted under APP_SECRET_KEY
+    events: Mapped[list] = mapped_column(JSON, default=list)
+    payload: Mapped[str] = mapped_column(String(10), default="minimal")  # minimal | full
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    last_status: Mapped[str | None] = mapped_column(String(200))
+    last_delivery_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+
+
+class WebhookDelivery(Base):
+    """One message to send to one webhook (an outbox row, written in the same transaction as the event)."""
+
+    __tablename__ = "webhook_deliveries"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    webhook_id: Mapped[str] = mapped_column(ForeignKey("webhooks.id", ondelete="CASCADE"), index=True)
+    event: Mapped[str] = mapped_column(String(40))
+    body: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(10), default="pending", index=True)  # pending | delivered | failed
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    next_attempt_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, index=True)
+    response_code: Mapped[int | None] = mapped_column(Integer)
+    error: Mapped[str | None] = mapped_column(String(300))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    delivered_at: Mapped[datetime | None] = mapped_column(UTCDateTime())

@@ -1,4 +1,4 @@
-import { Activity, Binary, Building2, BadgeCheck, DatabaseBackup, GitBranch, Printer, Cpu, Database, Lock, Palette, SlidersHorizontal, UserRound, Users, type LucideIcon } from "lucide-react";
+import { Activity, Binary, Building2, BadgeCheck, DatabaseBackup, Plug, GitBranch, Printer, Cpu, Database, Lock, Palette, SlidersHorizontal, UserRound, Users, type LucideIcon } from "lucide-react";
 import { Navigate, NavLink, useParams } from "react-router";
 import { useMe } from "@/api/hooks";
 import { PageHeader } from "@/components/ui";
@@ -8,6 +8,7 @@ import { EmbeddingsSection } from "./sections/EmbeddingsSection";
 import { ModelsSection } from "./sections/ModelsSection";
 import { BrandingSection, SecuritySection, SystemSection, UsersSection } from "./sections/OrgSections";
 import { BranchesSection, PrintSection } from "./sections/PrintSections";
+import { IntegrationsSection } from "./sections/IntegrationsSection";
 import { BackupSection, LicenceSection } from "./sections/OpsSections";
 import { ProfileSection } from "./sections/ProfileSection";
 import { RetrievalSection, VectorSection } from "./sections/RetrievalSection";
@@ -30,6 +31,7 @@ const GROUPS: { group: string; items: Item[] }[] = [
     { id: "branches", label: "Branches", icon: GitBranch, admin: true, render: () => <BranchesSection />, description: "Sites, their contact details and who works where." },
     { id: "users", label: "Users & roles", icon: Users, admin: true, render: () => <UsersSection />, description: "Accounts and permissions." },
     { id: "security", label: "Security", icon: Lock, admin: true, render: () => <SecuritySection />, description: "Sessions and access policy." },
+    { id: "integrations", label: "Integrations", icon: Plug, admin: true, render: () => <IntegrationsSection />, description: "API keys, webhooks and spreadsheet exports for billing and pharmacy." },
     { id: "licence", label: "Licence & usage", icon: BadgeCheck, admin: true, render: () => <LicenceSection />, description: "Your licence, seats and what the system is using." },
     { id: "backup", label: "Backups", icon: DatabaseBackup, admin: true, render: () => <BackupSection />, description: "Daily encrypted backups, checks and restore." },
     { id: "system", label: "System status", icon: Activity, render: () => <SystemSection />, description: "Service health and deployment details." },

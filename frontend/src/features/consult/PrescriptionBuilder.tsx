@@ -131,6 +131,7 @@ export function PrescriptionBuilder({ rx, review, canWrite, onFinalised }: {
         actions={<>
           {editable && <span className="text-[0.7rem] text-muted-foreground">{saving === "saving" ? <span className="flex items-center gap-1"><Spinner className="size-3" /> Checking…</span> : saving === "saved" ? "Saved" : ""}</span>}
           {filled.length > 0 && <SeverityBadge severity={status} label={status === "ok" ? "Checks passed" : `${check?.summary.critical ?? 0} critical · ${check?.summary.warning ?? 0} caution`} />}
+          {rx.dispensed_at && <Badge tone="success" title={`Handed over on ${fmtDate(rx.dispensed_at)}`}>Dispensed · {rx.dispensed_by}</Badge>}
           {rx.status === "final" && <Button size="sm" variant="secondary" className="rounded-full" asChild><a href={`/api/prescriptions/${rx.id}/pdf`} target="_blank" rel="noreferrer"><Printer /> Print</a></Button>}
         </>}
       />

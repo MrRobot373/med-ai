@@ -42,6 +42,10 @@ class Prescription(TimestampMixin, Base):
     advice: Mapped[str | None] = mapped_column(Text)
     follow_up_date: Mapped[date | None] = mapped_column(Date)
     finalized_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    # Set by a pharmacy (through the integration API) when the medicines were handed over.
+    dispensed_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    dispensed_by: Mapped[str | None] = mapped_column(String(200))
+    dispense_note: Mapped[str | None] = mapped_column(String(300))
     # Patient facts the checks were run against (age, weight, eGFR…) — kept for the record.
     context: Mapped[dict] = mapped_column(JSON, default=dict)
 

@@ -1,0 +1,30 @@
+# HTTPS in front of the application. Nothing else is reachable from the network.
+#
+#   SITE_ADDRESS  the name or address people type, e.g. clinic.local or 192.168.1.10 (default: localhost)
+#   TLS_ARGS      "internal"                      a certificate from Caddy's own local authority (install its root
+#                                                 certificate on the clinic's computers once — see the install guide)
+#                 "/certs/clinic.crt /certs/clinic.key"   your own certificate files, placed in ./certs
+{
+	# No internet lookups for certificates: this server may have none.
+	auto_https disable_redirects
+	servers {
+		timeouts {
+			read_body 5m
+		}
+	}
+}
+
+http://{$SITE_ADDRESS:localhost} {
+	redir https://{host}{uri} permanent
+}
+
+https://{$SITE_ADDRESS:localhost} {
+	tls {$TLS_ARGS:internal}
+	encode zstd gzip
+	reverse_proxy app:8000 {
+		flush_interval -1
+		transport http {
+			response_header_timeout 10m
+		}
+	}
+}

@@ -18,6 +18,7 @@ from app.api import (
     auth,
     care,
     documents,
+    integrations,
     knowledge,
     letters,
     org,
@@ -99,6 +100,27 @@ async def _recover_documents() -> None:
         logger.warning("Could not resume interrupted documents", exc_info=True)
 
 
+async def _webhook_worker() -> None:
+    """Sends queued webhook messages (and retries the ones that failed) every few seconds."""
+    from app.services import integration
+
+    def tick() -> int:
+        db = SessionLocal()
+        try:
+            return integration.deliver_due(db)
+        finally:
+            db.close()
+
+    while True:
+        await asyncio.sleep(5)
+        try:
+            await asyncio.to_thread(tick)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.warning("Webhook delivery pass failed", exc_info=True)
+
+
 async def _backup_scheduler() -> None:
     """Takes the daily backup at the clinic's configured time. Checked once a minute."""
     from zoneinfo import ZoneInfo
@@ -148,6 +170,7 @@ async def lifespan(app: FastAPI):
     if getattr(app.state, "skip_migrations", False) is False:
         tasks.append(asyncio.create_task(_recover_documents()))
         tasks.append(asyncio.create_task(_backup_scheduler()))
+        tasks.append(asyncio.create_task(_webhook_worker()))
     try:
         yield
     finally:
@@ -203,6 +226,8 @@ def create_app(*, skip_migrations: bool = False) -> FastAPI:
         rxlib,
     ):
         app.include_router(r.router)
+    for sub in (integrations.admin, integrations.partner, integrations.exports):
+        app.include_router(sub)
 
     @app.get("/api/health", tags=["system"])
     def liveness():

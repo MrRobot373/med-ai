@@ -233,6 +233,20 @@ def issue(db: Session, letter: Letter) -> Letter:
     letter.number = next_number(db, letter.kind, printing.local_date().year)
     letter.status = "final"
     letter.finalized_at = utcnow()
+    from app.services import integration
+
+    integration.emit(
+        db,
+        "letter.issued",
+        letter.id,
+        patient_id=letter.patient_id,
+        builder=lambda: {
+            "id": letter.id,
+            "type": letter.kind,
+            "number": letter.number,
+            "issued_at": letter.finalized_at.isoformat(),
+        },
+    )
     db.commit()
     return letter
 

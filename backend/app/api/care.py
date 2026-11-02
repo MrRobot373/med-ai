@@ -26,7 +26,7 @@ from app.models import (
     PrescriptionItem,
     User,
 )
-from app.services import audit, consult, orders, printing, runtime_config
+from app.services import audit, consult, integration, orders, printing, runtime_config
 from app.services import branches as branch_svc
 
 router = APIRouter(prefix="/api", tags=["care"])
@@ -320,6 +320,9 @@ def complete_consultation(encounter_id: str, body: ConsultComplete, db: DB, user
                 patient_id=enc.patient_id, day=follow, reason="Follow-up", created_by=user.id, clinician_id=user.id
             )
         )
+    integration.emit(
+        db, "visit.completed", enc.id, patient_id=enc.patient_id, builder=lambda: integration.visit_api(db, enc)
+    )
     db.commit()
     p = db.get(Patient, enc.patient_id)
     audit.record(
@@ -570,6 +573,13 @@ def finalize_prescription(rx_id: str, body: RxFinalize, db: DB, user: WriteUser)
         "summary": result["summary"],
         "status": result["status"],
     }
+    integration.emit(
+        db,
+        "prescription.finalized",
+        rx.id,
+        patient_id=rx.patient_id,
+        builder=lambda: integration.prescription_api(db, rx),
+    )
     db.commit()
     audit.record(
         db,

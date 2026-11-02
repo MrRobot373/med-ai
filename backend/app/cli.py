@@ -18,6 +18,7 @@ import getpass
 import sys
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import OperationalError
 
 from app.core import passwords
 from app.core.config import get_settings
@@ -214,7 +215,16 @@ def main(argv: list[str] | None = None) -> int:
             sp.add_argument(*a, **kw)
     args = ap.parse_args(argv)
     get_settings().data_dir.mkdir(parents=True, exist_ok=True)
-    return COMMANDS[args.cmd][0](args)
+    try:
+        return COMMANDS[args.cmd][0](args)
+    except OperationalError as exc:
+        if "no such table" in str(exc) or "unable to open database" in str(exc):
+            print(
+                "The database has not been set up yet. Start the application once so that it can create it, then run this again.",
+                file=sys.stderr,
+            )
+            return 3
+        raise
 
 
 if __name__ == "__main__":

@@ -158,3 +158,112 @@ def cmd_licence(_args) -> int:
     finally:
         db.close()
     return 0
+
+
+@command("doctor", "check this installation's configuration and surroundings before (or after) going live")
+def cmd_doctor(_args) -> int:
+    import shutil
+    import socket
+    import sqlite3
+    from zoneinfo import ZoneInfo
+
+    import httpx
+
+    from app.core.config import get_settings
+
+    st = get_settings()
+    results: list[tuple[str, str, str]] = []  # (level, what, detail)  level: ok | warn | fail
+
+    def add(level, what, detail=""):
+        results.append((level, what, detail))
+
+    for p in st.production_problems():
+        add("fail", "Configuration", p)
+    add(
+        "ok" if st.is_production else "warn",
+        "Environment",
+        f"APP_ENV={st.app_env}" + ("" if st.is_production else " (not production)"),
+    )
+    try:
+        st.data_dir.mkdir(parents=True, exist_ok=True)
+        probe = st.data_dir / ".doctor"
+        probe.write_text("x")
+        probe.unlink()
+        free = shutil.disk_usage(st.data_dir).free / 1024**3
+        add(
+            "ok" if free >= 10 else ("warn" if free >= 3 else "fail"),
+            "Disk space",
+            f"{free:.1f} GB free in {st.data_dir}",
+        )
+    except OSError as exc:
+        add("fail", "Data folder", f"not writable: {exc}")
+    dbpath = st.resolved_database_url.removeprefix("sqlite:///")
+    if st.resolved_database_url.startswith("sqlite:///") and Path(dbpath).exists():
+        try:
+            c = sqlite3.connect(dbpath)
+            r = c.execute("PRAGMA quick_check").fetchone()[0]
+            c.close()
+            add("ok" if r == "ok" else "fail", "Database", "integrity check passed" if r == "ok" else r)
+        except sqlite3.Error as exc:
+            add("fail", "Database", str(exc))
+    try:
+        ZoneInfo(st.timezone)
+        add("ok", "Time zone", st.timezone)
+    except Exception:
+        add("fail", "Time zone", f"APP_TIMEZONE={st.timezone} is not a valid time zone name")
+    add(
+        "ok" if st.cookie_secure else ("fail" if st.is_production and not st.allow_insecure_http else "warn"),
+        "HTTPS cookies",
+        "COOKIE_SECURE is on" if st.cookie_secure else "COOKIE_SECURE is off",
+    )
+    add(
+        "ok" if st.data_encryption_key else "warn",
+        "Encrypted uploads",
+        "DATA_ENCRYPTION_KEY is set" if st.data_encryption_key else "uploads are stored unencrypted",
+    )
+    add(
+        "ok" if st.backup_encryption_key else ("fail" if st.is_production else "warn"),
+        "Encrypted backups",
+        "BACKUP_ENCRYPTION_KEY is set" if st.backup_encryption_key else "BACKUP_ENCRYPTION_KEY is not set",
+    )
+    add(
+        "ok" if st.encryption_at_rest_attested else "warn",
+        "Disk encryption",
+        "recorded as encrypted"
+        if st.encryption_at_rest_attested
+        else "not recorded; encrypt the data volume and set ENCRYPTION_AT_REST_ATTESTED=true",
+    )
+    db = SessionLocal()
+    try:
+        url = runtime_config.load(db).llm.base_url
+    except Exception:
+        url = None
+        add("warn", "AI model server", "not checked: the database has not been set up yet")
+    finally:
+        db.close()
+    if url:
+        try:
+            httpx.get(url, timeout=4)
+            add("ok", "AI model server", f"reachable at {url}")
+        except Exception:
+            add(
+                "warn",
+                "AI model server",
+                f"cannot reach {url}. The app runs, but AI features will not until it is reachable.",
+            )
+    if st.clamav_host:
+        try:
+            with socket.create_connection((st.clamav_host, st.clamav_port), timeout=3):
+                add("ok", "Virus scanner", f"{st.clamav_host}:{st.clamav_port}")
+        except OSError:
+            add(
+                "fail" if st.clamav_fail_closed else "warn",
+                "Virus scanner",
+                f"cannot reach {st.clamav_host}:{st.clamav_port}",
+            )
+    mark = {"ok": "  OK ", "warn": " WARN", "fail": " FAIL"}
+    for level, what, detail in results:
+        print(f"{mark[level]}  {what}: {detail}")
+    failed = sum(1 for r in results if r[0] == "fail")
+    print(f"\n{failed} blocking problem(s)." if failed else "\nNo blocking problems.")
+    return 1 if failed else 0

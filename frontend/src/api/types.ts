@@ -192,6 +192,7 @@ export interface CheckResult {
 export interface Prescription {
   id: string; patient_id: string; encounter_id: string | null; status: "draft" | "final" | "cancelled"; diagnosis: string | null; advice: string | null;
   follow_up_date: string | null; finalized_at: string | null; date: string; clinician_id: string | null; items: RxItem[];
+  dispensed_at?: string | null; dispensed_by?: string | null;
   context?: { patient?: CheckResult["patient"]; summary?: CheckResult["summary"]; status?: Severity }; created_at?: string; check?: CheckResult;
 }
 export interface PrescriptionDetail extends Prescription {

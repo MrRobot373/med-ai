@@ -454,6 +454,8 @@ def prescription_out(rx: Prescription, brief: bool = False) -> dict:
         "finalized_at": rx.finalized_at.isoformat() if rx.finalized_at else None,
         "date": (rx.finalized_at or rx.created_at).date().isoformat(),
         "clinician_id": rx.clinician_id,
+        "dispensed_at": rx.dispensed_at.isoformat() if rx.dispensed_at else None,
+        "dispensed_by": rx.dispensed_by,
         "items": [
             {
                 "id": i.id,

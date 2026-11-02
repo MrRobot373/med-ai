@@ -10,3 +10,8 @@ data
 .git
 .env
 video
+dist
+deploy
+docs
+tools
+scripts
