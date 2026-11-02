@@ -1,0 +1,42 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #finalise-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #finalise-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #finalise-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #finalise-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #finalise-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #finalise-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="finalise" data-width="1920" data-height="1080">
+    <div id="finalise-ground"></div>
+    <div id="finalise-win">
+      <div id="finalise-cam">
+        <video id="finalise-video" class="clip" data-start="0" data-duration="4.601" data-track-index="1" muted playsinline src="assets/shots/finalise.mp4"></video>
+        <div id="finalise-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    
+    <audio id="finalise-a0" class="clip" data-hf-media-start-basis="local" data-start="1.31" data-duration="0.36" data-track-index="10" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="finalise-a1" class="clip" data-hf-media-start-basis="local" data-start="3.61" data-duration="0.36" data-track-index="10" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#finalise-win", { y: 0, scale: 1, opacity: 1 }, 0);
+    tl.set("#finalise-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.set("#finalise-cursor", { x: 1012.387, y: 434.156, scale: 1 }, 0);
+    tl.to("#finalise-cursor", { x: 1685.613, y: 667.236, duration: 0.7, ease: "power3.inOut" }, 0.5);
+    tl.to("#finalise-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 1.28);
+    tl.to("#finalise-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 1.36);
+    tl.to("#finalise-cursor", { x: 1615.006, y: 568.081, duration: 0.7, ease: "power3.inOut" }, 2.8);
+    tl.to("#finalise-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 3.58);
+    tl.to("#finalise-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 3.66);
+    tl.set({}, {}, 4.601);
+    window.__timelines["finalise"] = tl;
+  </script>
+</template>

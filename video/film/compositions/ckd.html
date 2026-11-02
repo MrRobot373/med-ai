@@ -1,0 +1,55 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #ckd-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #ckd-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #ckd-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #ckd-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #ckd-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #ckd-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="ckd" data-width="1920" data-height="1080">
+    <div id="ckd-ground"></div>
+    <div id="ckd-win">
+      <div id="ckd-cam">
+        <video id="ckd-video" class="clip" data-start="0" data-duration="9.701" data-track-index="1" muted playsinline src="assets/shots/ckd.mp4"></video>
+        <div id="ckd-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="ckd-cap0" class="clip cap" data-start="0.7" data-duration="3.4" data-track-index="3"><div class="cap-in" id="ckd-cap0-in"><span class="w" id="ckd-cap0-w0">CKD</span> <span class="w" id="ckd-cap0-w1">stage</span> <span class="w" id="ckd-cap0-w2">G3b</span> <span class="w" id="ckd-cap0-w3">A3,</span> <span class="w" id="ckd-cap0-w4">worked</span> <span class="w" id="ckd-cap0-w5">out</span> <span class="w" id="ckd-cap0-w6">from</span> <span class="w" id="ckd-cap0-w7">her</span> <span class="w" id="ckd-cap0-w8">own</span> <span class="w" id="ckd-cap0-w9">reports</span></div></div>
+    <audio id="ckd-a0" class="clip" data-hf-media-start-basis="local" data-start="0.55" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="ckd-a1" class="clip" data-hf-media-start-basis="local" data-start="6.41" data-duration="0.36" data-track-index="10" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#ckd-win", { y: 0, scale: 1, opacity: 1 }, 0);
+    tl.set("#ckd-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.to("#ckd-cam", { x: -1760, y: -38.225, scale: 2, duration: 1, ease: "power2.inOut" }, 0.5);
+    tl.to("#ckd-cam", { x: -1760, y: -319.619, scale: 2, duration: 0.9, ease: "power2.inOut" }, 3.1);
+    tl.to("#ckd-cam", { x: -1760, y: -38.225, scale: 2, duration: 0.8, ease: "power2.inOut" }, 5.7);
+    tl.to("#ckd-cam", { x: -1577.4, y: -333.163, scale: 2, duration: 0.9, ease: "power2.inOut" }, 6.7);
+    tl.set("#ckd-cursor", { x: 199.315, y: 619.455, scale: 1 }, 0);
+    tl.to("#ckd-cursor", { x: 1087.109, y: 287.495, duration: 0.6, ease: "power3.inOut" }, 5.7);
+    tl.to("#ckd-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 6.38);
+    tl.to("#ckd-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 6.46);
+    tl.fromTo("#ckd-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 0.7);
+    tl.fromTo("#ckd-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.75);
+    tl.fromTo("#ckd-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.81);
+    tl.fromTo("#ckd-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.87);
+    tl.fromTo("#ckd-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.93);
+    tl.fromTo("#ckd-cap0-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.99);
+    tl.fromTo("#ckd-cap0-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.05);
+    tl.fromTo("#ckd-cap0-w6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.11);
+    tl.fromTo("#ckd-cap0-w7", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.17);
+    tl.fromTo("#ckd-cap0-w8", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.23);
+    tl.fromTo("#ckd-cap0-w9", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.29);
+    tl.to("#ckd-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 3.86);
+    tl.set({}, {}, 9.701);
+    window.__timelines["ckd"] = tl;
+  </script>
+</template>

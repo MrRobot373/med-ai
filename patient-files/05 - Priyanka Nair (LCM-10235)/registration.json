@@ -1,0 +1,105 @@
+{
+  "uhid": "LCM-10235",
+  "honorific": "Mrs.",
+  "first_name": "Priyanka",
+  "last_name": "Nair",
+  "date_of_birth": "1992-04-08",
+  "sex": "female",
+  "phone": "+91 99230 61542",
+  "email": null,
+  "address": "C-9, Aditya Garden City, Warje, Pune 411058",
+  "blood_group": "O+",
+  "tags": [
+    "pregnancy",
+    "thyroid"
+  ],
+  "summary": "34-year-old software engineer, second pregnancy, about 20 weeks; hypothyroid on levothyroxine. Mild anaemia. Today: cough and cold for 4 days.",
+  "conditions": [
+    {
+      "name": "Pregnancy, second trimester (G2P1, LMP 03/06/2026)",
+      "code": "Z34.82",
+      "since": "2026-06-03",
+      "status": "active"
+    },
+    {
+      "name": "Primary hypothyroidism",
+      "code": "E03.9",
+      "since": "2021-01-01",
+      "status": "active"
+    },
+    {
+      "name": "Anaemia in pregnancy (mild)",
+      "code": "O99.01",
+      "since": "2026-06-20",
+      "status": "active"
+    }
+  ],
+  "allergies": [],
+  "medications": [
+    {
+      "name": "Thyronorm 50",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Hypothyroidism",
+      "since": "2021-02-01"
+    },
+    {
+      "name": "Folvite 5",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Pregnancy",
+      "since": "2026-06-10"
+    },
+    {
+      "name": "Orofer XT",
+      "dose": "1 tab",
+      "frequency": "OD",
+      "indication": "Anaemia in pregnancy",
+      "since": "2026-06-25"
+    },
+    {
+      "name": "Shelcal 500",
+      "dose": "1 tab",
+      "frequency": "BD",
+      "indication": "Pregnancy",
+      "since": "2026-08-01"
+    }
+  ],
+  "visits": [],
+  "orders": [],
+  "today": {
+    "time": "11:00",
+    "reason": "Cough and cold for 4 days",
+    "status": "expected"
+  },
+  "documents": [
+    {
+      "file": "Lab reports/2026-06-20 Antenatal profile - Sanvita.pdf",
+      "title": "Antenatal profile",
+      "kind": "lab_report",
+      "date": "2026-06-20",
+      "load": true
+    },
+    {
+      "file": "Pregnancy/2026-10-09 Fetal head - anomaly scan image.jpg",
+      "title": "Anomaly scan — fetal head (HC)",
+      "kind": "imaging",
+      "date": "2026-10-09",
+      "load": true
+    },
+    {
+      "file": "Pregnancy/2026-10-09 Obstetric USG - Level II (anomaly) scan report - Medisight.pdf",
+      "title": "Obstetric USG - Level II (anomaly) scan report",
+      "kind": "imaging",
+      "date": "2026-10-09",
+      "load": true
+    },
+    {
+      "file": "Prescriptions/2026-10-09 Prescription - Dr. Neha Gokhale.pdf",
+      "title": "Prescription - Dr. Neha Gokhale",
+      "kind": "prescription",
+      "date": "2026-10-09",
+      "load": true
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #consult-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #consult-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #consult-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #consult-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #consult-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #consult-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="consult" data-width="1920" data-height="1080">
+    <div id="consult-ground"></div>
+    <div id="consult-win">
+      <div id="consult-cam">
+        <video id="consult-video" class="clip" data-start="0" data-duration="21.795" data-track-index="1" muted playsinline src="assets/shots/consult.mp4"></video>
+        <div id="consult-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="consult-cap0" class="clip cap" data-start="0.3" data-duration="3.2" data-track-index="3"><div class="cap-in" id="consult-cap0-in"><span class="w" id="consult-cap0-w0">Notes</span> <span class="w" id="consult-cap0-w1">and</span> <span class="w" id="consult-cap0-w2">vitals,</span> <span class="w" id="consult-cap0-w3">as</span> <span class="w" id="consult-cap0-w4">the</span> <span class="w" id="consult-cap0-w5">doctor</span> <span class="w" id="consult-cap0-w6">works</span></div></div>
+    <div id="consult-cap1" class="clip cap" data-start="19.424" data-duration="2.321" data-track-index="3"><div class="cap-in" id="consult-cap1-in"><span class="w" id="consult-cap1-w0">A</span> <span class="w" id="consult-cap1-w1">second</span> <span class="w" id="consult-cap1-w2">look</span> <span class="w" id="consult-cap1-w3">at</span> <span class="w" id="consult-cap1-w4">the</span> <span class="w" id="consult-cap1-w5">diagnosis</span></div></div>
+    <audio id="consult-a0" class="clip" data-hf-media-start-basis="local" data-start="2.21" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="consult-a1" class="clip" data-hf-media-start-basis="local" data-start="15.604" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="consult-a2" class="clip" data-hf-media-start-basis="local" data-start="19.124" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="consult-a3" class="clip" data-hf-media-start-basis="local" data-start="1.126" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="consult-a4" class="clip" data-hf-media-start-basis="local" data-start="2.726" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="consult-a5" class="clip" data-hf-media-start-basis="local" data-start="7.385" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="consult-a6" class="clip" data-hf-media-start-basis="local" data-start="8.21" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="consult-a7" class="clip" data-hf-media-start-basis="local" data-start="8.788" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="consult-a8" class="clip" data-hf-media-start-basis="local" data-start="9.444" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="consult-a9" class="clip" data-hf-media-start-basis="local" data-start="10.048" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="consult-a10" class="clip" data-hf-media-start-basis="local" data-start="10.943" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="consult-a11" class="clip" data-hf-media-start-basis="local" data-start="14.079" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="consult-a12" class="clip" data-hf-media-start-basis="local" data-start="16.92" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+    <audio id="consult-a13" class="clip" data-hf-media-start-basis="local" data-start="15.074" data-duration="0.43" data-track-index="12" data-volume="0.5" src="assets/sfx/key-press.mp3"></audio>
+    <audio id="consult-a14" class="clip" data-hf-media-start-basis="local" data-start="2.88" data-duration="1.5" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a15" class="clip" data-hf-media-start-basis="local" data-start="4.38" data-duration="1.5" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a16" class="clip" data-hf-media-start-basis="local" data-start="5.88" data-duration="0.98" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a17" class="clip" data-hf-media-start-basis="local" data-start="7.499" data-duration="0.418" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a18" class="clip" data-hf-media-start-basis="local" data-start="8.324" data-duration="0.174" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a19" class="clip" data-hf-media-start-basis="local" data-start="8.902" data-duration="0.256" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a20" class="clip" data-hf-media-start-basis="local" data-start="9.558" data-duration="0.171" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a21" class="clip" data-hf-media-start-basis="local" data-start="10.162" data-duration="0.162" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a22" class="clip" data-hf-media-start-basis="local" data-start="11.057" data-duration="1.5" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a23" class="clip" data-hf-media-start-basis="local" data-start="12.557" data-duration="1.13" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+    <audio id="consult-a24" class="clip" data-hf-media-start-basis="local" data-start="14.193" data-duration="0.957" data-track-index="13" data-volume="0.32" src="assets/sfx/typing.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#consult-win", { y: 0, scale: 1, opacity: 1 }, 0);
+    tl.set("#consult-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.to("#consult-cam", { x: -77, y: -407, scale: 2, duration: 0.72, ease: "power2.inOut" }, 2.16);
+    tl.to("#consult-cam", { x: 0, y: 0, scale: 1, duration: 0.56, ease: "power2.inOut" }, 15.554);
+    tl.to("#consult-cam", { x: 0, y: -633.326, scale: 1.765, duration: 0.72, ease: "power2.inOut" }, 19.074);
+    tl.set("#consult-cursor", { x: 202.374, y: 825.344, scale: 1 }, 0);
+    tl.to("#consult-cursor", { x: 1074.691, y: 322.042, duration: 0.56, ease: "power3.inOut" }, 0.48);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 1.0959999999999999);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 1.176);
+    tl.to("#consult-cursor", { x: 479.54, y: 326.064, duration: 0.48, ease: "power3.inOut" }, 2.16);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 2.696);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 2.7760000000000002);
+    tl.to("#consult-cursor", { x: 168.91, y: 447.202, duration: 0.28, ease: "power3.inOut" }, 7.019);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 7.3549999999999995);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 7.435);
+    tl.to("#consult-cursor", { x: 320.418, y: 447.202, duration: 0.28, ease: "power3.inOut" }, 7.844);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 8.180000000000001);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 8.26);
+    tl.to("#consult-cursor", { x: 471.857, y: 447.202, duration: 0.28, ease: "power3.inOut" }, 8.422);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 8.758000000000001);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 8.838);
+    tl.to("#consult-cursor", { x: 618.148, y: 447.202, duration: 0.28, ease: "power3.inOut" }, 9.078);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 9.414000000000001);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 9.494);
+    tl.to("#consult-cursor", { x: 763.237, y: 447.202, duration: 0.28, ease: "power3.inOut" }, 9.682);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 10.018);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 10.097999999999999);
+    tl.to("#consult-cursor", { x: 479.54, y: 552.252, duration: 0.36, ease: "power3.inOut" }, 10.497);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 10.913);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 10.992999999999999);
+    tl.to("#consult-cursor", { x: 479.54, y: 657.439, duration: 0.4, ease: "power3.inOut" }, 13.593);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 14.049000000000001);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 14.129);
+    tl.to("#consult-cursor", { x: 213.409, y: 850.506, duration: 0.56, ease: "power3.inOut" }, 16.274);
+    tl.to("#consult-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 16.89);
+    tl.to("#consult-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 16.97);
+    tl.fromTo("#consult-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 0.3);
+    tl.fromTo("#consult-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.35);
+    tl.fromTo("#consult-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.41);
+    tl.fromTo("#consult-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.47);
+    tl.fromTo("#consult-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.53);
+    tl.fromTo("#consult-cap0-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.59);
+    tl.fromTo("#consult-cap0-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.65);
+    tl.fromTo("#consult-cap0-w6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.71);
+    tl.to("#consult-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 3.26);
+    tl.fromTo("#consult-cap1-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 19.424);
+    tl.fromTo("#consult-cap1-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 19.474);
+    tl.fromTo("#consult-cap1-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 19.534);
+    tl.fromTo("#consult-cap1-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 19.594);
+    tl.fromTo("#consult-cap1-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 19.654);
+    tl.fromTo("#consult-cap1-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 19.714);
+    tl.fromTo("#consult-cap1-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 19.774);
+    tl.to("#consult-cap1-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 21.505);
+    tl.set({}, {}, 21.795);
+    window.__timelines["consult"] = tl;
+  </script>
+</template>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #e9eef6; }
+      #bg { position: absolute; inset: 0; background: #e9eef6; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="197.094" data-width="1920" data-height="1080">
+      <div id="bg"></div>
+      <div id="hook" data-composition-id="hook" data-composition-src="compositions/hook.html" data-start="0" data-duration="8.5" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="title" data-composition-id="title" data-composition-src="compositions/title.html" data-start="8.5" data-duration="5" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="login" data-composition-id="login" data-composition-src="compositions/login.html" data-start="13.5" data-duration="8.617" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="dashboard" data-composition-id="dashboard" data-composition-src="compositions/dashboard.html" data-start="22.117" data-duration="6.201" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="overview" data-composition-id="overview" data-composition-src="compositions/overview.html" data-start="28.318" data-duration="11.601" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="brief" data-composition-id="brief" data-composition-src="compositions/brief.html" data-start="39.919" data-duration="12.001" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="consult" data-composition-id="consult" data-composition-src="compositions/consult.html" data-start="51.92" data-duration="21.795" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="rx" data-composition-id="rx" data-composition-src="compositions/rx.html" data-start="73.715" data-duration="28.325" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="finalise" data-composition-id="finalise" data-composition-src="compositions/finalise.html" data-start="102.04" data-duration="4.601" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="print" data-composition-id="print" data-composition-src="compositions/print.html" data-start="106.641" data-duration="4.001" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="order" data-composition-id="order" data-composition-src="compositions/order.html" data-start="110.642" data-duration="9.084" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="later" data-composition-id="later" data-composition-src="compositions/later.html" data-start="119.726" data-duration="2.2" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="result" data-composition-id="result" data-composition-src="compositions/result.html" data-start="121.926" data-duration="10.401" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="kavita" data-composition-id="kavita" data-composition-src="compositions/kavita.html" data-start="132.327" data-duration="3" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="trends" data-composition-id="trends" data-composition-src="compositions/trends.html" data-start="135.327" data-duration="11.101" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="ckd" data-composition-id="ckd" data-composition-src="compositions/ckd.html" data-start="146.428" data-duration="9.701" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="ask" data-composition-id="ask" data-composition-src="compositions/ask.html" data-start="156.129" data-duration="14.013" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="harish" data-composition-id="harish" data-composition-src="compositions/harish.html" data-start="170.142" data-duration="2.6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="heart" data-composition-id="heart" data-composition-src="compositions/heart.html" data-start="172.742" data-duration="7.901" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="ct" data-composition-id="ct" data-composition-src="compositions/ct.html" data-start="180.643" data-duration="4.551" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="claim" data-composition-id="claim" data-composition-src="compositions/claim.html" data-start="185.194" data-duration="5.4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+      <div id="end" data-composition-id="end" data-composition-src="compositions/end.html" data-start="190.594" data-duration="6.5" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.set({}, {}, 197.094);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

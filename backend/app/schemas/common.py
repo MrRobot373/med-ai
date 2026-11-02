@@ -1,0 +1,388 @@
+from __future__ import annotations
+
+from datetime import date, datetime
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class ORM(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ---- Auth / users -----------------------------------------------------------
+class LoginIn(BaseModel):
+    email: str
+    password: str
+
+
+class UserOut(ORM):
+    id: str
+    email: str
+    full_name: str
+    title: str | None
+    specialty: str | None
+    role: str
+    is_active: bool
+    preferences: dict
+    last_login_at: datetime | None
+    created_at: datetime
+    phone: str | None = None
+    qualifications: str | None = None
+    registration_no: str | None = None
+    registration_council: str | None = None
+    has_signature: bool = False
+    branches: list[dict] = []  # branches this person may work in: [{id, name, code}]
+    branch_id: str | None = None  # the one they are working in now
+    must_change_password: bool = False
+    mfa_enabled: bool = False
+    mfa_required: bool = False  # filled in by the API from the security settings
+    locked_until: datetime | None = None
+
+
+class ProfileIn(BaseModel):
+    full_name: str | None = Field(None, min_length=1, max_length=200)
+    title: str | None = Field(None, max_length=80)
+    specialty: str | None = Field(None, max_length=120)
+    phone: str | None = Field(None, max_length=60)
+    qualifications: str | None = Field(None, max_length=200)
+    registration_no: str | None = Field(None, max_length=80)
+    registration_council: str | None = Field(None, max_length=120)
+
+
+class PasswordIn(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=1, max_length=200)  # strength is checked against the security settings
+
+
+class MfaVerifyIn(BaseModel):
+    mfa_token: str
+    code: str = Field(min_length=4, max_length=32)
+
+
+class MfaEnableIn(BaseModel):
+    code: str = Field(min_length=6, max_length=8)
+
+
+class MfaDisableIn(BaseModel):
+    password: str
+    code: str = Field(min_length=4, max_length=32)
+
+
+class UserCreate(BaseModel):
+    email: str = Field(pattern=r"^[^@\s]+@[^@\s]+$", max_length=255)
+    full_name: str = Field(min_length=1, max_length=200)
+    title: str | None = None
+    specialty: str | None = None
+    role: Literal["admin", "clinician", "viewer", "front_desk"] = "clinician"
+    password: str = Field(min_length=1, max_length=200)
+
+
+class UserUpdate(BaseModel):
+    full_name: str | None = None
+    title: str | None = None
+    specialty: str | None = None
+    phone: str | None = None
+    qualifications: str | None = None
+    registration_no: str | None = None
+    registration_council: str | None = None
+    branch_ids: list[str] | None = None
+    role: Literal["admin", "clinician", "viewer", "front_desk"] | None = None
+    is_active: bool | None = None
+
+
+class ResetPasswordIn(BaseModel):
+    new_password: str = Field(min_length=1, max_length=200)
+
+
+# ---- Patients ---------------------------------------------------------------
+Sex = Literal["male", "female", "other", "unknown"]
+
+
+class PatientIn(BaseModel):
+    mrn: str | None = Field(None, max_length=64)  # blank → the next automatic number
+    allow_duplicate: bool = False  # register even though a very similar patient exists
+    first_name: str = Field(min_length=1, max_length=120)
+    last_name: str = Field(min_length=1, max_length=120)
+    date_of_birth: date | None = None
+    sex: Sex = "unknown"
+    phone: str | None = None
+    email: str | None = None
+    address: str | None = None
+    blood_group: str | None = None
+    notes: str | None = None
+    tags: list[str] = Field(default_factory=list)
+
+
+class PatientUpdate(BaseModel):
+    mrn: str | None = Field(None, min_length=1, max_length=64)
+    first_name: str | None = None
+    last_name: str | None = None
+    date_of_birth: date | None = None
+    sex: Sex | None = None
+    phone: str | None = None
+    email: str | None = None
+    address: str | None = None
+    blood_group: str | None = None
+    notes: str | None = None
+    tags: list[str] | None = None
+    status: Literal["active", "archived"] | None = None
+
+
+class PatientOut(ORM):
+    id: str
+    mrn: str
+    first_name: str
+    last_name: str
+    full_name: str
+    date_of_birth: date | None
+    age: int | None = None
+    sex: str
+    phone: str | None
+    email: str | None
+    address: str | None
+    blood_group: str | None
+    notes: str | None
+    tags: list[str]
+    status: str
+    synthetic: bool
+    merged_into_id: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class PatientListItem(PatientOut):
+    active_conditions: list[str] = []
+    last_encounter_at: datetime | None = None
+    open_alerts: int = 0
+    document_count: int = 0
+
+
+class ConditionIn(BaseModel):
+    name: str = Field(min_length=1, max_length=300)
+    code: str | None = None
+    status: Literal["active", "resolved", "inactive", "suspected"] = "active"
+    onset_date: date | None = None
+    notes: str | None = None
+    encounter_id: str | None = None
+
+
+class ConditionOut(ORM, ConditionIn):
+    id: str
+    patient_id: str
+    created_at: datetime
+
+
+class AllergyIn(BaseModel):
+    substance: str = Field(min_length=1, max_length=200)
+    reaction: str | None = None
+    severity: Literal["mild", "moderate", "severe", "unknown"] = "unknown"
+    status: Literal["active", "inactive", "refuted"] = "active"
+    notes: str | None = None
+
+
+class AllergyOut(ORM, AllergyIn):
+    id: str
+    patient_id: str
+    created_at: datetime
+
+
+class MedicationIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    dose: str | None = None
+    route: str | None = None
+    frequency: str | None = None
+    indication: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    status: Literal["active", "stopped", "on_hold"] = "active"
+    notes: str | None = None
+    encounter_id: str | None = None
+
+
+class MedicationOut(ORM, MedicationIn):
+    id: str
+    patient_id: str
+    source: str
+    source_document_id: str | None
+    prescription_id: str | None = None
+    generic: str | None = None
+    created_at: datetime
+
+
+class EncounterIn(BaseModel):
+    type: Literal["outpatient", "inpatient", "emergency", "telehealth", "follow_up", "procedure"] = "outpatient"
+    status: Literal["planned", "in_progress", "completed", "cancelled"] = "in_progress"
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    reason: str | None = None
+    notes: str | None = None
+    vitals: dict[str, Any] = Field(default_factory=dict)
+
+
+class EncounterOut(ORM):
+    id: str
+    patient_id: str
+    type: str
+    status: str
+    started_at: datetime
+    ended_at: datetime | None
+    reason: str | None
+    notes: str | None
+    vitals: dict
+    clinician_id: str | None
+    created_at: datetime
+    history: str | None = None
+    examination: str | None = None
+    assessment: str | None = None
+    diagnoses: list = []
+    plan: str | None = None
+
+
+class ObservationIn(BaseModel):
+    name: str = Field(min_length=1, max_length=160)
+    code: str | None = None
+    value_num: float | None = None
+    value_text: str | None = None
+    unit: str | None = None
+    ref_low: float | None = None
+    ref_high: float | None = None
+    observed_at: datetime | None = None
+
+
+class ObservationOut(ORM):
+    id: str
+    patient_id: str
+    document_id: str | None
+    name: str
+    code: str
+    value_num: float | None
+    value_text: str | None
+    unit: str | None
+    ref_low: float | None
+    ref_high: float | None
+    ref_text: str | None
+    flag: str | None
+    observed_at: datetime
+    source_page: int | None
+    source_excerpt: str | None
+    method: str
+    acknowledged: bool
+
+
+# ---- Documents --------------------------------------------------------------
+class DocumentOut(ORM):
+    id: str
+    scope: str
+    patient_id: str | None
+    encounter_id: str | None
+    title: str
+    filename: str
+    mime_type: str
+    size_bytes: int
+    kind: str
+    domain: str | None
+    source_org: str | None
+    version: str | None
+    document_date: date | None
+    status: str
+    is_active: bool
+    error: str | None
+    identity_status: str
+    identity_detail: str | None
+    review_status: str
+    page_count: int
+    chunk_count: int
+    extraction: dict
+    created_at: datetime
+    updated_at: datetime
+
+
+class DocumentUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=300)
+    kind: str | None = None
+    domain: str | None = None
+    source_org: str | None = None
+    version: str | None = None
+    document_date: date | None = None
+    review_status: Literal["pending", "reviewed"] | None = None
+    identity_status: Literal["match", "mismatch", "unverified", "confirmed"] | None = None
+    is_active: bool | None = None
+
+
+class ChunkOut(ORM):
+    id: str
+    ordinal: int
+    page: int | None
+    section: str | None
+    text: str
+    token_count: int
+
+
+# ---- Chat / AI --------------------------------------------------------------
+class ConversationIn(BaseModel):
+    patient_id: str | None = None
+    title: str | None = None
+
+
+class ConversationUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=200)
+    pinned: bool | None = None
+
+
+class ConversationOut(ORM):
+    id: str
+    patient_id: str | None
+    scope: str
+    title: str
+    pinned: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class AskIn(BaseModel):
+    content: str = Field(min_length=1, max_length=8000)
+
+
+class FeedbackIn(BaseModel):
+    rating: Literal["up", "down"] | None
+    note: str | None = Field(None, max_length=2000)
+
+
+class ToolRunIn(BaseModel):
+    patient_id: str | None = None
+    encounter_id: str | None = None
+    document_id: str | None = None
+    prior_document_id: str | None = None
+    current_document_id: str | None = None
+    presentation: str | None = None
+    question: str | None = None
+    domains: list[str] | None = None
+    extra_notes: str | None = None
+
+
+class AIRunOut(ORM):
+    id: str
+    tool: str
+    patient_id: str | None
+    encounter_id: str | None
+    input: dict
+    output: dict | None
+    citations: list
+    status: str
+    error: str | None
+    model: str | None
+    latency_ms: int | None
+    created_at: datetime
+    reviewed_at: datetime | None
+
+
+class ReviewIn(BaseModel):
+    decision: Literal["accepted", "discarded", "draft"]
+
+
+class RetrievalTestIn(BaseModel):
+    query: str = Field(min_length=1, max_length=2000)
+    patient_id: str | None = None
+    include_knowledge: bool = True
+    domains: list[str] | None = None

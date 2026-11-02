@@ -1,0 +1,53 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #ct-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #ct-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #ct-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #ct-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #ct-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #ct-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="ct" data-width="1920" data-height="1080">
+    <div id="ct-ground"></div>
+    <div id="ct-win">
+      <div id="ct-cam">
+        <video id="ct-video" class="clip" data-start="0" data-duration="4.551" data-track-index="1" muted playsinline src="assets/shots/ct.mp4"></video>
+        <div id="ct-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="ct-cap0" class="clip cap" data-start="0.4" data-duration="3" data-track-index="3"><div class="cap-in" id="ct-cap0-in"><span class="w" id="ct-cap0-w0">CT</span> <span class="w" id="ct-cap0-w1">and</span> <span class="w" id="ct-cap0-w2">MRI</span> <span class="w" id="ct-cap0-w3">straight</span> <span class="w" id="ct-cap0-w4">from</span> <span class="w" id="ct-cap0-w5">the</span> <span class="w" id="ct-cap0-w6">scanner</span></div></div>
+    <audio id="ct-a0" class="clip" data-hf-media-start-basis="local" data-start="0.65" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="ct-a1" class="clip" data-hf-media-start-basis="local" data-start="2.01" data-duration="0.36" data-track-index="10" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+    <audio id="ct-a2" class="clip" data-hf-media-start-basis="local" data-start="3.06" data-duration="0.36" data-track-index="10" data-volume="0.55" src="assets/sfx/click-soft.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#ct-win", { y: 0, scale: 1, opacity: 1 }, 0);
+    tl.set("#ct-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.to("#ct-cam", { x: -202.38, y: -540.784, scale: 1.573, duration: 1, ease: "power2.inOut" }, 0.6);
+    tl.set("#ct-cursor", { x: 1091.2, y: 1108.8, scale: 1 }, 0);
+    tl.to("#ct-cursor", { x: 1242.588, y: 836.842, duration: 0.7, ease: "power3.inOut" }, 1.2);
+    tl.to("#ct-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 1.98);
+    tl.to("#ct-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 2.06);
+    tl.to("#ct-cursor", { x: 1242.588, y: 836.842, duration: 0.25, ease: "power3.inOut" }, 2.7);
+    tl.to("#ct-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 3.03);
+    tl.to("#ct-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 3.11);
+    tl.fromTo("#ct-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 0.4);
+    tl.fromTo("#ct-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.45);
+    tl.fromTo("#ct-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.51);
+    tl.fromTo("#ct-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.57);
+    tl.fromTo("#ct-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.63);
+    tl.fromTo("#ct-cap0-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.69);
+    tl.fromTo("#ct-cap0-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.75);
+    tl.fromTo("#ct-cap0-w6", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.81);
+    tl.to("#ct-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 3.16);
+    tl.set({}, {}, 4.551);
+    window.__timelines["ct"] = tl;
+  </script>
+</template>

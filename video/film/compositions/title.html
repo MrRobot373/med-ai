@@ -1,0 +1,35 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #ffffff; font-family: Inter, sans-serif; }
+    #title-lock { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    #title-logo { position: absolute; left: 470px; top: 360px; width: 400px; }
+    #title-word { position: absolute; left: 900px; top: 386px; font-size: 118px; font-weight: 700; letter-spacing: -0.04em; color: #0f1b3d; white-space: nowrap; }
+    #title-tag { position: absolute; left: 0; width: 1920px; top: 640px; text-align: center; font-size: 44px; font-weight: 500; letter-spacing: -0.02em; color: #475569; }
+    .l, .w { display: inline-block; }
+    .accent { color: #246bfd; }
+  </style>
+  <div id="root" data-composition-id="title" data-width="1920" data-height="1080">
+    <div id="title-lock">
+      <img id="title-logo" src="assets/brand-mark.webp" alt="GMS" />
+      <div id="title-word"><span class="l" id="title-c0">C</span><span class="l" id="title-c1">l</span><span class="l" id="title-c2">i</span><span class="l" id="title-c3">n</span><span class="l" id="title-c4">i</span><span class="l" id="title-c5">c</span><span class="l" id="title-c6">a</span><span class="l" id="title-c7">l</span><span class="l" id="title-c8">&nbsp;</span><span class="l accent" id="title-c9">A</span><span class="l accent" id="title-c10">I</span></div>
+      <div id="title-tag"><span class="w" id="title-w0">Every</span> <span class="w" id="title-w1">report,</span> <span class="w" id="title-w2">read</span> <span class="w" id="title-w3">before</span> <span class="w" id="title-w4">the</span> <span class="w" id="title-w5">doctor</span> <span class="w" id="title-w6">decides.</span></div>
+    </div>
+    <audio id="title-a1" class="clip" data-hf-media-start-basis="local" data-start="0.25" data-duration="2.1" data-track-index="10" data-volume="0.4" src="assets/sfx/impact-bass-1.mp3"></audio>
+    <audio id="title-a2" class="clip" data-hf-media-start-basis="local" data-start="4.45" data-duration="0.57" data-track-index="11" data-volume="0.3" src="assets/sfx/whoosh-short.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // The striped mark wipes in along its stripes.
+    tl.fromTo("#title-logo", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "power3.out" }, 0.25);
+    for (let i = 0; i <= 10; i++) {
+      tl.fromTo(`#title-c${i}`, { opacity: 0.0, filter: "blur(6px)", y: 10 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.2, ease: "power2.out" }, 0.75 + i * 0.045);
+    }
+    for (let i = 0; i <= 6; i++) {
+      tl.fromTo(`#title-w${i}`, { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 1.7 + i * 0.08);
+    }
+    // Zoom through the lockup into the product.
+    tl.to("#title-lock", { scale: 1.6, opacity: 0, filter: "blur(12px)", duration: 0.5, ease: "power3.in" }, 4.5);
+    tl.set({}, {}, 5.0);
+    window.__timelines["title"] = tl;
+  </script>
+</template>

@@ -1,97 +1,91 @@
-"""DICOM support — spec §62. Detection, metadata summary, best-effort preview
-generation, and a de-identification utility for demo workflows.
-
-Scoped deliberately: this is metadata reading + a flat preview image, not a PACS
-viewer. Pixel-data decoding is wrapped in a broad try/except because compressed
-transfer syntaxes need optional codec packages (pylibjpeg/gdcm) this project doesn't
-bundle — "safe preview generation when supported" (spec §62) means exactly that: it
-degrades to "not available" rather than crashing ingestion.
-"""
+"""DICOM (radiology) support: header metadata as searchable text, and pixel data
+rendered to an 8-bit PNG for previews and vision-model description."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from io import BytesIO
+import io
 
-import pydicom
+from PIL import Image
 
-# Tags cleared by `deidentify()` — deliberately narrow (direct identifiers only) rather
-# than a full DICOM PS3.15 de-identification profile, which is out of scope for a demo
-# utility. Never claim this output is suitable for real clinical de-identification.
-IDENTIFYING_TAGS = (
-    "PatientName",
-    "PatientID",
-    "PatientBirthDate",
-    "PatientAddress",
-    "PatientTelephoneNumbers",
-    "OtherPatientIDs",
-    "OtherPatientNames",
-    "InstitutionName",
-    "InstitutionAddress",
-    "ReferringPhysicianName",
-)
+_META_FIELDS = [
+    ("Modality", "Modality"),
+    ("BodyPartExamined", "Body part"),
+    ("StudyDescription", "Study"),
+    ("SeriesDescription", "Series"),
+    ("StudyDate", "Study date"),
+    ("InstitutionName", "Institution"),
+    ("PatientName", "Patient name"),
+    ("PatientID", "Patient ID"),
+    ("SliceThickness", "Slice thickness"),
+    ("ImageComments", "Comments"),
+]
 
 
-@dataclass
-class DicomSummary:
-    modality: str | None
-    study_description: str | None
-    series_description: str | None
-    rows: int | None
-    columns: int | None
-    contains_identifiers: bool
+def is_dicom(data: bytes) -> bool:
+    return len(data) > 132 and data[128:132] == b"DICM"
 
 
-def is_dicom(head_bytes: bytes) -> bool:
-    return head_bytes[128:132] == b"DICM"
+def _read(data: bytes):
+    import pydicom
+
+    return pydicom.dcmread(io.BytesIO(data), force=True)
 
 
-def read_summary(content: bytes) -> DicomSummary:
-    dataset = pydicom.dcmread(BytesIO(content), force=True)
-    contains_identifiers = any(
-        getattr(dataset, tag, None) not in (None, "") for tag in IDENTIFYING_TAGS
-    )
-    return DicomSummary(
-        modality=_str_or_none(getattr(dataset, "Modality", None)),
-        study_description=_str_or_none(getattr(dataset, "StudyDescription", None)),
-        series_description=_str_or_none(getattr(dataset, "SeriesDescription", None)),
-        rows=int(dataset.Rows) if hasattr(dataset, "Rows") else None,
-        columns=int(dataset.Columns) if hasattr(dataset, "Columns") else None,
-        contains_identifiers=contains_identifiers,
-    )
+def metadata_text(data: bytes) -> str:
+    ds = _read(data)
+    lines = ["## DICOM study"]
+    for tag, label in _META_FIELDS:
+        value = getattr(ds, tag, None)
+        if value not in (None, ""):
+            if tag == "StudyDate" and len(str(value)) == 8:
+                value = f"{str(value)[:4]}-{str(value)[4:6]}-{str(value)[6:]}"
+            if tag == "PatientID":
+                lines.append(f"MRN: {value}")
+            else:
+                lines.append(f"{label}: {value}")
+    return "\n".join(lines)
 
 
-def render_preview_png(content: bytes) -> bytes | None:
+def study_date(data: bytes) -> str | None:
+    value = str(getattr(_read(data), "StudyDate", "") or "")
+    return f"{value[:4]}-{value[4:6]}-{value[6:]}" if len(value) == 8 and value.isdigit() else None
+
+
+def pixel_count(data: bytes) -> int:
+    """Rows × columns × frames from the header alone, so an absurd image is refused before it is decoded."""
+    import pydicom
+
+    ds = pydicom.dcmread(io.BytesIO(data), force=True, stop_before_pixels=True)
+    rows, cols = int(getattr(ds, "Rows", 0) or 0), int(getattr(ds, "Columns", 0) or 0)
+    frames = int(getattr(ds, "NumberOfFrames", 1) or 1)
+    return rows * cols * max(frames, 1)
+
+
+def render_png(data: bytes, max_dim: int = 1600) -> bytes:
+    import numpy as np
+
+    ds = _read(data)
+    arr = ds.pixel_array.astype("float32")
+    if arr.ndim == 3 and arr.shape[-1] not in (3, 4):  # multi-frame: middle frame
+        arr = arr[arr.shape[0] // 2]
     try:
-        dataset = pydicom.dcmread(BytesIO(content), force=True)
-        pixels = dataset.pixel_array.astype("float32")
-    except Exception:  # noqa: BLE001 - any decode failure just means "no preview"
-        return None
+        from pydicom.pixels import apply_modality_lut, apply_voi_lut
 
-    from PIL import Image  # local import: keep dicom.py usable without Pillow present
-
-    pixels -= pixels.min()
-    peak = pixels.max()
-    if peak > 0:
-        pixels = pixels / peak * 255.0
-    image = Image.fromarray(pixels.astype("uint8"))
-    buffer = BytesIO()
-    image.save(buffer, format="PNG")
-    return buffer.getvalue()
-
-
-def deidentify(content: bytes) -> bytes:
-    dataset = pydicom.dcmread(BytesIO(content), force=True)
-    for tag in IDENTIFYING_TAGS:
-        if hasattr(dataset, tag):
-            setattr(dataset, tag, "")
-    buffer = BytesIO()
-    dataset.save_as(buffer)
-    return buffer.getvalue()
-
-
-def _str_or_none(value: object) -> str | None:
-    if value is None:
-        return None
-    text = str(value).strip()
-    return text or None
+        # Stored values → real units (e.g. Hounsfield) first; the window is defined in those units.
+        arr = apply_modality_lut(arr, ds).astype("float32")
+        arr = apply_voi_lut(arr, ds).astype("float32")
+    except Exception:
+        center, width = getattr(ds, "WindowCenter", None), getattr(ds, "WindowWidth", None)
+        if center is not None and width is not None:
+            c = float(center[0] if hasattr(center, "__len__") else center)
+            w = float(width[0] if hasattr(width, "__len__") else width)
+            arr = np.clip(arr, c - w / 2, c + w / 2)
+    lo, hi = float(arr.min()), float(arr.max())
+    arr = (arr - lo) / (hi - lo or 1.0) * 255.0
+    if getattr(ds, "PhotometricInterpretation", "") == "MONOCHROME1":
+        arr = 255.0 - arr
+    img = Image.fromarray(arr.astype("uint8"))
+    img.thumbnail((max_dim, max_dim))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()

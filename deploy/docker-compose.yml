@@ -1,0 +1,86 @@
+# GMS Clinical AI — production stack for one clinic's own server.
+#
+#   ./install.sh                         first time (checks the machine, creates keys, starts everything)
+#   docker compose up -d                 start / apply changes after editing .env
+#   docker compose logs -f app           watch the application
+#   ./update.sh gms-clinical-ai-X.tar.gz upgrade with automatic backup and rollback
+#
+# Optional parts are switched on with profiles (set COMPOSE_PROFILES in .env, e.g. COMPOSE_PROFILES=clamav,qdrant):
+#   clamav   virus scanning of every uploaded file          qdrant   dedicated vector database
+#   ollama   run the AI models in a container (needs an NVIDIA GPU)
+#
+# Local changes go in docker-compose.override.yml (never edited by updates).
+
+name: gms
+
+services:
+  app:
+    image: gms-clinical-ai:${GMS_TAG:-current}
+    env_file: [.env]
+    environment:
+      DATA_DIR: /data
+      BACKUP_DIR: /data/backups
+      FORWARDED_ALLOW_IPS: "*"        # only the proxy below can reach this container
+      DEFAULT_LLM_BASE_URL: ${DEFAULT_LLM_BASE_URL:-http://host.docker.internal:11434}
+      DEFAULT_EMBEDDING_BASE_URL: ${DEFAULT_EMBEDDING_BASE_URL:-http://host.docker.internal:11434}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes:
+      - ${DATA_PATH:-./data}:/data
+      - ${OFFSITE_PATH:-./offsite}:/offsite
+    restart: unless-stopped
+    stop_grace_period: 30s
+    networks: [internal]
+    logging: { driver: json-file, options: { max-size: "20m", max-file: "5" } }
+
+  proxy:
+    image: caddy:2.8-alpine
+    depends_on:
+      app: { condition: service_healthy }
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
+      TLS_ARGS: ${TLS_ARGS:-internal}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/certs:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    restart: unless-stopped
+    networks: [internal]
+
+  clamav:
+    profiles: [clamav]
+    image: clamav/clamav:1.4
+    restart: unless-stopped
+    networks: [internal]
+    volumes: [clamav-db:/var/lib/clamav]
+
+  qdrant:
+    profiles: [qdrant]
+    image: qdrant/qdrant:v1.12.4
+    restart: unless-stopped
+    networks: [internal]
+    volumes: [qdrant-data:/qdrant/storage]
+
+  ollama:
+    profiles: [ollama]
+    image: ollama/ollama:0.12.6
+    restart: unless-stopped
+    networks: [internal]
+    volumes: [ollama-data:/root/.ollama]
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+networks:
+  internal:
+
+volumes:
+  caddy-data:
+  caddy-config:
+  clamav-db:
+  qdrant-data:
+  ollama-data:

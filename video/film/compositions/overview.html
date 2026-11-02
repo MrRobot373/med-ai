@@ -1,0 +1,62 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #overview-ground { position: absolute; inset: 0; background: #e9eef6; }
+    #overview-win { position: absolute; left: 80px; top: 45px; width: 1760px; height: 990px; border-radius: 22px; overflow: hidden; background: #f3f6fb;
+      box-shadow: 0 40px 90px -40px rgba(15, 27, 61, 0.45), 0 0 0 1px rgba(15, 27, 61, 0.07); }
+    #overview-cam { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; transform-origin: 0 0; }
+    #overview-video { position: absolute; left: 0; top: 0; width: 1760px; height: 990px; object-fit: cover; }
+    #overview-cursor { position: absolute; left: 0; top: 0; width: 30.8px; height: 35.2px; transform-origin: 3px 3px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+    #overview-cursor svg { width: 100%; height: 100%; display: block; }
+    .cap { position: absolute; left: 192px; bottom: 112px; }
+    .cap-in { display: inline-block; padding: 18px 28px; border-radius: 14px; background: #0f1b3d; color: #ffffff; font-family: Inter, sans-serif; font-weight: 600;
+      font-size: 34px; letter-spacing: -0.015em; box-shadow: 0 18px 40px -18px rgba(15, 27, 61, 0.6); }
+    .w { display: inline-block; }
+  </style>
+  <div id="root" data-composition-id="overview" data-width="1920" data-height="1080">
+    <div id="overview-ground"></div>
+    <div id="overview-win">
+      <div id="overview-cam">
+        <video id="overview-video" class="clip" data-start="0" data-duration="11.601" data-track-index="1" muted playsinline src="assets/shots/overview.mp4"></video>
+        <div id="overview-cursor"><svg viewBox="0 0 28 32" width="28" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v23.2l6.1-5.6 3.9 9.1 4.3-1.9-3.9-8.9 8.4-.6L3 2.5z" fill="#0f172a" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/></svg></div>
+      </div>
+    </div>
+    <div id="overview-cap0" class="clip cap" data-start="0.7" data-duration="3" data-track-index="3"><div class="cap-in" id="overview-cap0-in"><span class="w" id="overview-cap0-w0">Every</span> <span class="w" id="overview-cap0-w1">report,</span> <span class="w" id="overview-cap0-w2">already</span> <span class="w" id="overview-cap0-w3">read</span></div></div>
+    <div id="overview-cap1" class="clip cap" data-start="5.15" data-duration="3.2" data-track-index="3"><div class="cap-in" id="overview-cap1-in"><span class="w" id="overview-cap1-w0">Out-of-range</span> <span class="w" id="overview-cap1-w1">values,</span> <span class="w" id="overview-cap1-w2">flagged</span> <span class="w" id="overview-cap1-w3">from</span> <span class="w" id="overview-cap1-w4">the</span> <span class="w" id="overview-cap1-w5">source</span></div></div>
+    <audio id="overview-a0" class="clip" data-hf-media-start-basis="local" data-start="0.85" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="overview-a1" class="clip" data-hf-media-start-basis="local" data-start="7.35" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="overview-a2" class="clip" data-hf-media-start-basis="local" data-start="9.05" data-duration="0.57" data-track-index="10" data-volume="0.14" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="overview-a3" class="clip" data-hf-media-start-basis="local" data-start="8.41" data-duration="0.36" data-track-index="11" data-volume="0.55" src="assets/sfx/click.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#overview-win", { y: 0, scale: 1, opacity: 1 }, 0);
+    tl.set("#overview-cam", { x: 0, y: 0, scale: 1 }, 0);
+    tl.to("#overview-cam", { x: -1760, y: -38.225, scale: 2, duration: 1.1, ease: "power2.inOut" }, 0.8);
+    tl.to("#overview-cam", { x: -1760, y: -305.8, scale: 2, duration: 0.9, ease: "power2.inOut" }, 2.8);
+    tl.to("#overview-cam", { x: -1760, y: -692.416, scale: 2, duration: 0.9, ease: "power2.inOut" }, 4.8);
+    tl.to("#overview-cam", { x: 0, y: 0, scale: 1, duration: 0.8, ease: "power2.inOut" }, 7.3);
+    tl.to("#overview-cam", { x: 0, y: -154, scale: 2, duration: 1.1, ease: "power2.inOut" }, 9);
+    tl.set("#overview-cursor", { x: 1117.488, y: 463.633, scale: 1 }, 0);
+    tl.to("#overview-cursor", { x: 1096.58, y: 588.964, duration: 0.7, ease: "power3.inOut" }, 4.8);
+    tl.to("#overview-cursor", { x: 1490.715, y: 423.139, duration: 0.7, ease: "power3.inOut" }, 7.6);
+    tl.to("#overview-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in" }, 8.38);
+    tl.to("#overview-cursor", { scale: 1, duration: 0.16, ease: "power2.out" }, 8.459999999999999);
+    tl.fromTo("#overview-cap0-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 0.7);
+    tl.fromTo("#overview-cap0-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.75);
+    tl.fromTo("#overview-cap0-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.81);
+    tl.fromTo("#overview-cap0-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.87);
+    tl.fromTo("#overview-cap0-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 0.93);
+    tl.to("#overview-cap0-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 3.46);
+    tl.fromTo("#overview-cap1-in", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "expo.out" }, 5.15);
+    tl.fromTo("#overview-cap1-w0", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.2);
+    tl.fromTo("#overview-cap1-w1", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.26);
+    tl.fromTo("#overview-cap1-w2", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.32);
+    tl.fromTo("#overview-cap1-w3", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.38);
+    tl.fromTo("#overview-cap1-w4", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.44);
+    tl.fromTo("#overview-cap1-w5", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 5.5);
+    tl.to("#overview-cap1-in", { opacity: 0, filter: "blur(6px)", duration: 0.2, ease: "power2.in" }, 8.11);
+    tl.set({}, {}, 11.601);
+    window.__timelines["overview"] = tl;
+  </script>
+</template>

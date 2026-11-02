@@ -1,0 +1,66 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #e9eef6; font-family: Inter, sans-serif; }
+    .doc { position: absolute; background: #ffffff; padding: 10px; border-radius: 10px; box-shadow: 0 30px 60px -28px rgba(15, 27, 61, 0.5), 0 0 0 1px rgba(15, 27, 61, 0.06); }
+    .doc img { display: block; width: 100%; border-radius: 4px; }
+    .doc.dark { background: #0b1020; }
+    .line { position: absolute; left: 192px; color: #0f1b3d; font-weight: 700; letter-spacing: -0.035em; }
+    .w { display: inline-block; }
+    #hook-l1 { top: 330px; font-size: 104px; }
+    #hook-l2 { top: 460px; font-size: 104px; }
+    #hook-l3 { top: 380px; font-size: 70px; line-height: 1.12; width: 760px; }
+    .accent { color: #246bfd; }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1920" data-height="1080">
+    <div id="hook-stack" data-layout-allow-overflow data-layout-allow-overlap>
+      <div class="doc" id="hook-d1" style="left: 1010px; top: 110px; width: 300px"><img src="assets/docs/lab-rohit.png" alt="" /></div>
+      <div class="doc dark" id="hook-d2" style="left: 1400px; top: 70px; width: 300px"><img src="assets/docs/cxr-rohit.jpg" alt="" /></div>
+      <div class="doc" id="hook-d3" style="left: 1200px; top: 420px; width: 290px"><img src="assets/docs/rx-rohit.png" alt="" /></div>
+      <div class="doc" id="hook-d4" style="left: 930px; top: 640px; width: 460px"><img src="assets/docs/ecg-harish.jpg" alt="" /></div>
+      <div class="doc" id="hook-d5" style="left: 1560px; top: 430px; width: 290px"><img src="assets/docs/echo-harish.png" alt="" /></div>
+      <div class="doc dark" id="hook-d6" style="left: 1450px; top: 740px; width: 270px"><img src="assets/docs/ct-suresh.png" alt="" /></div>
+      <div class="doc" id="hook-d7" style="left: 1740px; top: 60px; width: 290px"><img src="assets/docs/kft-kavita.png" alt="" /></div>
+    </div>
+    <div id="hook-t1" class="clip" data-start="0" data-duration="4.4" data-track-index="2">
+      <div class="line" id="hook-l1"><span class="w" id="hook-w1">One</span> <span class="w" id="hook-w2">patient.</span></div>
+      <div class="line" id="hook-l2"><span class="w" id="hook-w3">Dozens</span> <span class="w" id="hook-w4">of</span> <span class="w" id="hook-w5">reports.</span></div>
+    </div>
+    <div id="hook-t2" class="clip" data-start="4.4" data-duration="2.9" data-track-index="2">
+      <div class="line" id="hook-l3"><span class="w" id="hook-w6">The</span> <span class="w" id="hook-w7">answer</span> <span class="w" id="hook-w8">is</span> <span class="w" id="hook-w9">spread</span> <span class="w" id="hook-w10">across</span> <span class="w accent" id="hook-w11">all</span> <span class="w accent" id="hook-w12">of</span> <span class="w accent" id="hook-w13">them.</span></div>
+    </div>
+    <audio id="hook-a1" class="clip" data-hf-media-start-basis="local" data-start="0.3" data-duration="0.57" data-track-index="10" data-volume="0.22" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="hook-a2" class="clip" data-hf-media-start-basis="local" data-start="1.05" data-duration="0.57" data-track-index="11" data-volume="0.2" src="assets/sfx/whoosh.mp3"></audio>
+    <audio id="hook-a3" class="clip" data-hf-media-start-basis="local" data-start="1.8" data-duration="0.57" data-track-index="12" data-volume="0.2" src="assets/sfx/whoosh-short.mp3"></audio>
+    <audio id="hook-a4" class="clip" data-hf-media-start-basis="local" data-start="7.25" data-duration="0.57" data-track-index="13" data-volume="0.35" src="assets/sfx/whoosh.mp3"></audio>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const docs = [
+      ["#hook-d2", 0.55, 5], ["#hook-d3", 0.8, 3], ["#hook-d4", 1.05, -3],
+      ["#hook-d5", 1.3, 7], ["#hook-d6", 1.55, -5], ["#hook-d7", 1.8, -9],
+    ];
+    docs.forEach(([id, t, rot], i) => {
+      tl.fromTo(id, { y: 700, rotation: rot * 3, opacity: 0, filter: "blur(10px)" },
+        { y: 0, rotation: rot, opacity: 1, filter: "blur(0px)", duration: 0.9, ease: "expo.out" }, t);
+    });
+    // The camera drifts slowly across the pile while the words land.
+    tl.fromTo("#hook-stack", { x: 40, scale: 1 }, { x: -30, scale: 1.04, duration: 7.2, ease: "none" }, 0);
+    tl.set("#hook-d1", { rotation: -6 }, 0);
+    [["#hook-w3", 1.6], ["#hook-w4", 1.72], ["#hook-w5", 1.84]].forEach(([id, t]) => {
+      tl.fromTo(id, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, t);
+    });
+    tl.to("#hook-l1, #hook-l2", { opacity: 0, filter: "blur(8px)", duration: 0.22, ease: "power2.in" }, 4.15);
+    for (let i = 6; i <= 13; i++) {
+      tl.fromTo(`#hook-w${i}`, { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, 4.5 + (i - 6) * 0.08);
+    }
+    tl.to("#hook-l3", { opacity: 0, filter: "blur(8px)", duration: 0.22, ease: "power2.in" }, 7.05);
+    // Every report folds into one place.
+    const at = { "#hook-d1": [1010, 110], "#hook-d2": [1400, 70], "#hook-d3": [1200, 420], "#hook-d4": [930, 640], "#hook-d5": [1560, 430], "#hook-d6": [1450, 740], "#hook-d7": [1740, 60] };
+    Object.entries(at).forEach(([id, [l, t]], i) => {
+      tl.to(id, { x: 820 - l, y: 330 - t, rotation: 0, scale: 0.55, duration: 0.7, ease: "power3.in" }, 7.1 + i * 0.03);
+    });
+    tl.to("#hook-stack", { opacity: 0, filter: "blur(14px)", duration: 0.3, ease: "power2.in" }, 8.1);
+    tl.set({}, {}, 8.5);
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

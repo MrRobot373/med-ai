@@ -1,0 +1,692 @@
+{
+ "version": 1,
+ "cases": [
+  {
+   "id": "allergy-sulfa-cotrimoxazole",
+   "title": "Sulfa allergy and co-trimoxazole",
+   "why": "Co-trimoxazole is a sulfonamide; a documented sulfa allergy is a contraindication.",
+   "facts": {
+    "allergies": [
+     "Sulfa drugs"
+    ]
+   },
+   "items": [
+    {
+     "drug": "Septran DS",
+     "dose": "1 tab",
+     "frequency": "BD",
+     "duration_days": 5
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "allergy",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "allergy-penicillin-amoxicillin",
+   "title": "Penicillin allergy and amoxicillin",
+   "why": "Direct allergy to the same class.",
+   "facts": {
+    "allergies": [
+     "Penicillin"
+    ]
+   },
+   "items": [
+    {
+     "drug": "Mox 500",
+     "dose": "1 cap",
+     "frequency": "TDS",
+     "duration_days": 5
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "allergy",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "allergy-penicillin-cefixime",
+   "title": "Penicillin allergy and a cephalosporin",
+   "why": "Cross-reactivity is uncommon but real: warn, do not forbid.",
+   "facts": {
+    "allergies": [
+     "Penicillin"
+    ]
+   },
+   "items": [
+    {
+     "drug": "Taxim-O 200",
+     "dose": "1 tab",
+     "frequency": "BD",
+     "duration_days": 5
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "cross_allergy",
+     "severity": "warning"
+    }
+   ],
+   "forbid": [
+    {
+     "item": 0,
+     "code": "allergy"
+    }
+   ],
+   "clean": false
+  },
+  {
+   "id": "allergy-penicillin-azithromycin",
+   "title": "Penicillin allergy and a macrolide",
+   "why": "A different class: no allergy alert should fire (false-positive control).",
+   "facts": {
+    "allergies": [
+     "Penicillin"
+    ]
+   },
+   "items": [
+    {
+     "drug": "Azithral 500",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 3
+    }
+   ],
+   "expect": [],
+   "forbid": [
+    {
+     "item": 0,
+     "code": "allergy"
+    },
+    {
+     "item": 0,
+     "code": "cross_allergy"
+    }
+   ],
+   "clean": false
+  },
+  {
+   "id": "renal-metformin-egfr25",
+   "title": "Metformin with eGFR 25",
+   "why": "Metformin is contraindicated below eGFR 30 (lactic acidosis).",
+   "facts": {
+    "egfr": 25
+   },
+   "items": [
+    {
+     "drug": "Glycomet 500",
+     "dose": "1 tab",
+     "frequency": "BD",
+     "duration_days": 30
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "renal",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "renal-metformin-normal",
+   "title": "Metformin with normal kidneys",
+   "why": "No renal alert when eGFR is normal (false-positive control).",
+   "facts": {
+    "egfr": 90
+   },
+   "items": [
+    {
+     "drug": "Glycomet 500",
+     "dose": "1 tab",
+     "frequency": "BD",
+     "duration_days": 30
+    }
+   ],
+   "expect": [],
+   "forbid": [],
+   "clean": true
+  },
+  {
+   "id": "renal-nsaid-egfr20",
+   "title": "Ibuprofen with eGFR 20",
+   "why": "NSAIDs should be avoided in advanced CKD.",
+   "facts": {
+    "egfr": 20
+   },
+   "items": [
+    {
+     "drug": "Brufen 400",
+     "dose": "1 tab",
+     "frequency": "TDS",
+     "duration_days": 5
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "renal",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "renal-nitrofurantoin-egfr25",
+   "title": "Nitrofurantoin with eGFR 25",
+   "why": "Ineffective and toxic when eGFR is below about 30–45.",
+   "facts": {
+    "egfr": 25
+   },
+   "items": [
+    {
+     "drug": "Nitrofurantoin 100",
+     "dose": "1 cap",
+     "frequency": "BD",
+     "duration_days": 5
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "renal",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "pregnancy-enalapril",
+   "title": "ACE inhibitor in pregnancy",
+   "why": "ACE inhibitors are contraindicated (fetal renal toxicity).",
+   "facts": {
+    "sex": "female",
+    "age": 28,
+    "pregnant": true
+   },
+   "items": [
+    {
+     "drug": "Envas 5",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 30
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "pregnancy",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "pregnancy-paracetamol",
+   "title": "Paracetamol in pregnancy",
+   "why": "Acceptable analgesic: no pregnancy alert (false-positive control).",
+   "facts": {
+    "sex": "female",
+    "age": 28,
+    "pregnant": true
+   },
+   "items": [
+    {
+     "drug": "Dolo 650",
+     "dose": "1 tab",
+     "frequency": "TDS",
+     "duration_days": 3
+    }
+   ],
+   "expect": [],
+   "forbid": [
+    {
+     "item": 0,
+     "code": "pregnancy"
+    }
+   ],
+   "clean": false
+  },
+  {
+   "id": "elderly-lorazepam",
+   "title": "Benzodiazepine in a 78-year-old",
+   "why": "Beers criteria: avoid benzodiazepines in older adults (falls, delirium).",
+   "facts": {
+    "age": 78
+   },
+   "items": [
+    {
+     "drug": "Ativan 1",
+     "dose": "1 tab",
+     "frequency": "HS",
+     "duration_days": 10
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "elderly",
+     "severity": "warning"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "dose-paracetamol-5g",
+   "title": "Paracetamol above 4 g a day",
+   "why": "1300 mg four times a day is 5.2 g: hepatotoxic.",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Dolo 650",
+     "dose": "2 tab",
+     "frequency": "QID",
+     "duration_days": 3
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "dose_daily_high",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "dose-paracetamol-usual",
+   "title": "Paracetamol at the usual dose",
+   "why": "650 mg three times a day is standard (false-positive control).",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Dolo 650",
+     "dose": "1 tab",
+     "frequency": "TDS",
+     "duration_days": 3
+    }
+   ],
+   "expect": [],
+   "forbid": [],
+   "clean": true
+  },
+  {
+   "id": "dose-methotrexate-daily",
+   "title": "Methotrexate taken daily",
+   "why": "Daily methotrexate is a classic fatal error: it is weekly.",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Folitrax 7.5",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 7
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "weekly_only",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "dose-methotrexate-weekly",
+   "title": "Methotrexate weekly",
+   "why": "Correct schedule: no weekly-only alert.",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Folitrax 7.5",
+     "dose": "1 tab",
+     "frequency": "Weekly",
+     "duration_days": 28
+    }
+   ],
+   "expect": [],
+   "forbid": [
+    {
+     "item": 0,
+     "code": "weekly_only"
+    }
+   ],
+   "clean": false
+  },
+  {
+   "id": "duplicate-paracetamol-brands",
+   "title": "Two brands of paracetamol",
+   "why": "Same ingredient twice doubles the dose without anyone noticing.",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Dolo 650",
+     "dose": "1 tab",
+     "frequency": "TDS",
+     "duration_days": 3
+    },
+    {
+     "drug": "Crocin 650",
+     "dose": "1 tab",
+     "frequency": "TDS",
+     "duration_days": 3
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "duplicate",
+     "severity": "critical"
+    },
+    {
+     "item": 1,
+     "code": "duplicate",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "duplicate-none",
+   "title": "Two different diabetes medicines",
+   "why": "Metformin with a sulfonylurea is standard (false-positive control).",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Glycomet 500",
+     "dose": "1 tab",
+     "frequency": "BD",
+     "duration_days": 30
+    },
+    {
+     "drug": "Amaryl 2",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 30
+    }
+   ],
+   "expect": [],
+   "forbid": [],
+   "clean": true
+  },
+  {
+   "id": "interaction-ace-arb",
+   "title": "ACE inhibitor with an ARB",
+   "why": "Dual RAAS blockade: hyperkalaemia and renal injury.",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Envas 5",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 30
+    },
+    {
+     "drug": "Losar 50",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 30
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "interaction",
+     "severity": "critical"
+    },
+    {
+     "item": 1,
+     "code": "interaction",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "interaction-nsaid-aspirin",
+   "title": "NSAID with aspirin",
+   "why": "Bleeding risk and blunted antiplatelet effect.",
+   "facts": {
+    "current_meds": [
+     "Ecosprin 75"
+    ]
+   },
+   "items": [
+    {
+     "drug": "Voveran 50",
+     "dose": "1 tab",
+     "frequency": "BD",
+     "duration_days": 5
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "interaction",
+     "severity": "warning"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "interaction-clarithro-statin",
+   "title": "Clarithromycin with atorvastatin",
+   "why": "CYP3A4 inhibition raises statin levels: myopathy.",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Clarithromycin 500",
+     "dose": "1 tab",
+     "frequency": "BD",
+     "duration_days": 7
+    },
+    {
+     "drug": "Atorva 40",
+     "dose": "1 tab",
+     "frequency": "HS",
+     "duration_days": 30
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "interaction",
+     "severity": "warning"
+    },
+    {
+     "item": 1,
+     "code": "interaction",
+     "severity": "warning"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "condition-nsaid-ulcer",
+   "title": "NSAID with peptic ulcer disease",
+   "why": "Risk of re-bleeding and perforation.",
+   "facts": {
+    "conditions": [
+     "Peptic ulcer disease"
+    ]
+   },
+   "items": [
+    {
+     "drug": "Brufen 400",
+     "dose": "1 tab",
+     "frequency": "TDS",
+     "duration_days": 5
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "condition",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "condition-betablocker-asthma",
+   "title": "Beta-blocker with asthma",
+   "why": "Can trigger bronchospasm.",
+   "facts": {
+    "conditions": [
+     "Asthma"
+    ]
+   },
+   "items": [
+    {
+     "drug": "Metolar 50",
+     "dose": "1 tab",
+     "frequency": "BD",
+     "duration_days": 30
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "condition",
+     "severity": "warning"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "hepatic-paracetamol-liver",
+   "title": "Paracetamol with liver impairment",
+   "why": "Lower ceiling dose is needed.",
+   "facts": {
+    "hepatic": true
+   },
+   "items": [
+    {
+     "drug": "Dolo 650",
+     "dose": "1 tab",
+     "frequency": "QID",
+     "duration_days": 5
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "hepatic",
+     "severity": "warning"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "paediatric-ibuprofen-400",
+   "title": "Adult ibuprofen tablet in a child",
+   "why": "400 mg three times a day is far above the weight-based dose for 25 kg.",
+   "facts": {
+    "age": 8,
+    "weight_kg": 25
+   },
+   "items": [
+    {
+     "drug": "Brufen 400",
+     "dose": "1 tab",
+     "frequency": "TDS",
+     "duration_days": 3
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "paediatric_dose",
+     "severity": "critical"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "unknown-drug",
+   "title": "A medicine the system does not know",
+   "why": "It must say so rather than stay silent: no checks were possible.",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Zzzxqy 10",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 3
+    }
+   ],
+   "expect": [
+    {
+     "item": 0,
+     "code": "unknown_drug",
+     "severity": "info"
+    }
+   ],
+   "forbid": [],
+   "clean": false
+  },
+  {
+   "id": "clean-pantoprazole",
+   "title": "Pantoprazole once daily",
+   "why": "Ordinary prescription: no alerts (false-positive control).",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Pan 40",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 14
+    }
+   ],
+   "expect": [],
+   "forbid": [],
+   "clean": true
+  },
+  {
+   "id": "clean-amlodipine",
+   "title": "Amlodipine once daily",
+   "why": "Ordinary prescription: no alerts (false-positive control).",
+   "facts": {},
+   "items": [
+    {
+     "drug": "Amlong 5",
+     "dose": "1 tab",
+     "frequency": "OD",
+     "duration_days": 30
+    }
+   ],
+   "expect": [],
+   "forbid": [],
+   "clean": true
+  }
+ ]
+}

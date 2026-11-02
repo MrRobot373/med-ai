@@ -1,44 +1,57 @@
-"""`users` table — spec §15 Authentication.
-
-Roles are `admin` / `doctor` / `viewer` (spec §18). Password hashing (Argon2id) happens in
-the auth service layer added in Phase 03 — this model only ever stores the resulting hash,
-never a plaintext password.
-"""
-
 from __future__ import annotations
 
-import uuid
 from datetime import datetime
-from enum import Enum
 
-from sqlalchemy import Boolean, DateTime, String, func
-from sqlalchemy import Enum as SAEnum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base
+from app.db import Base, TimestampMixin, UTCDateTime, utcnow
+from app.models._ids import new_id
 
-
-class UserRole(str, Enum):
-    ADMIN = "admin"
-    DOCTOR = "doctor"
-    VIEWER = "viewer"
+ROLES = ("admin", "clinician", "viewer", "front_desk")
 
 
-class User(Base):
+class User(TimestampMixin, Base):
     __tablename__ = "users"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
-    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[UserRole] = mapped_column(SAEnum(UserRole, native_enum=False), nullable=False)
-    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    full_name: Mapped[str] = mapped_column(String(200))
+    title: Mapped[str | None] = mapped_column(String(80))
+    specialty: Mapped[str | None] = mapped_column(String(120))
+    role: Mapped[str] = mapped_column(String(20), default="clinician")
+    password_hash: Mapped[str] = mapped_column(String(255))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    preferences: Mapped[dict] = mapped_column(JSON, default=dict)
+    last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False)
+    password_changed_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    mfa_secret: Mapped[str | None] = mapped_column(String(255))  # encrypted; set while enrolling and once enabled
+    mfa_recovery: Mapped[list] = mapped_column(JSON, default=list)  # SHA-256 of unused recovery codes
+    mfa_last_step: Mapped[int | None] = mapped_column(Integer)
+    # Legal identity of a practising doctor, printed on prescriptions and letters.
+    phone: Mapped[str | None] = mapped_column(String(60))
+    qualifications: Mapped[str | None] = mapped_column(String(200))  # "MD (Medicine), DNB"
+    registration_no: Mapped[str | None] = mapped_column(String(80))
+    registration_council: Mapped[str | None] = mapped_column(String(120))
+    signature_data_url: Mapped[str | None] = mapped_column(Text)  # small PNG, optional
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    sessions: Mapped[list[UserSession]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
-    def __repr__(self) -> str:  # pragma: no cover - debug convenience only
-        return f"<User {self.email} role={self.role.value}>"
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    last_seen_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    user_agent: Mapped[str | None] = mapped_column(String(300))
+    ip: Mapped[str | None] = mapped_column(String(64))
+
+    user: Mapped[User] = relationship(back_populates="sessions")

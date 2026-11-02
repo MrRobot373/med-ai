@@ -1,0 +1,194 @@
+{
+ "cxr_consolidation_f58": {
+  "dataset": "NIH ChestX-ray14 (NIH Clinical Center) via huggingface.co/datasets/exalsius/NIH-Chest-XRay-Federated",
+  "license": "Released by the NIH Clinical Center without restriction on use (dataset mirror: MIT)",
+  "citation": "Wang X et al. ChestX-ray8: Hospital-scale chest X-ray database. CVPR 2017.",
+  "row": 152,
+  "split": "train",
+  "config": "hospital_a",
+  "fields": {
+   "label": [
+    "Atelectasis",
+    "Consolidation",
+    "Fibrosis"
+   ],
+   "Patient Age": 56,
+   "Patient Gender": "F",
+   "View Position": "PA",
+   "Patient ID": 12053
+  },
+  "file": "cxr_consolidation_f58.jpg"
+ },
+ "cxr_cardiomegaly_m74": {
+  "dataset": "NIH ChestX-ray14 (NIH Clinical Center) via huggingface.co/datasets/exalsius/NIH-Chest-XRay-Federated",
+  "license": "Released by the NIH Clinical Center without restriction on use (dataset mirror: MIT)",
+  "citation": "Wang X et al. ChestX-ray8: Hospital-scale chest X-ray database. CVPR 2017.",
+  "row": 881,
+  "split": "train",
+  "config": "hospital_a",
+  "fields": {
+   "label": [
+    "Cardiomegaly"
+   ],
+   "Patient Age": 71,
+   "Patient Gender": "M",
+   "View Position": "PA",
+   "Patient ID": 18686
+  },
+  "file": "cxr_cardiomegaly_m74.jpg"
+ },
+ "cxr_normal_f26": {
+  "dataset": "NIH ChestX-ray14 (NIH Clinical Center) via huggingface.co/datasets/exalsius/NIH-Chest-XRay-Federated",
+  "license": "Released by the NIH Clinical Center without restriction on use (dataset mirror: MIT)",
+  "citation": "Wang X et al. ChestX-ray8: Hospital-scale chest X-ray database. CVPR 2017.",
+  "row": 60,
+  "split": "train",
+  "config": "hospital_a",
+  "fields": {
+   "label": [
+    "No Finding"
+   ],
+   "Patient Age": 29,
+   "Patient Gender": "F",
+   "View Position": "PA",
+   "Patient ID": 28044
+  },
+  "file": "cxr_normal_f26.jpg"
+ },
+ "cxr_normal_m52": {
+  "dataset": "NIH ChestX-ray14 (NIH Clinical Center) via huggingface.co/datasets/exalsius/NIH-Chest-XRay-Federated",
+  "license": "Released by the NIH Clinical Center without restriction on use (dataset mirror: MIT)",
+  "citation": "Wang X et al. ChestX-ray8: Hospital-scale chest X-ray database. CVPR 2017.",
+  "row": 44,
+  "split": "train",
+  "config": "hospital_a",
+  "fields": {
+   "label": [
+    "No Finding"
+   ],
+   "Patient Age": 57,
+   "Patient Gender": "M",
+   "View Position": "PA",
+   "Patient ID": 21975
+  },
+  "file": "cxr_normal_m52.jpg"
+ },
+ "cxr_paediatric_pneumonia": {
+  "dataset": "Kermany D, Zhang K, Goldbaum M. Labeled OCT and chest X-ray images (Mendeley Data v2) via huggingface.co/datasets/hf-vision/chest-xray-pneumonia",
+  "license": "CC BY 4.0",
+  "citation": "Kermany DS et al. Cell 2018;172(5):1122-1131.",
+  "row": 3000,
+  "split": "train",
+  "config": "default",
+  "fields": {
+   "label": 1
+  },
+  "file": "cxr_paediatric_pneumonia.jpg"
+ },
+ "us_breast_benign": {
+  "dataset": "Breast Ultrasound Images Dataset (BUSI) via huggingface.co/datasets/gymprathap/Breast-Cancer-Ultrasound-Images-Dataset",
+  "license": "CC BY 4.0",
+  "citation": "Al-Dhabyani W et al. Dataset of breast ultrasound images. Data in Brief 2020;28:104863.",
+  "row": 2,
+  "split": "train",
+  "config": "default",
+  "fields": {
+   "label": "benign"
+  },
+  "file": "us_breast_benign.png"
+ },
+ "us_fetal_head": {
+  "dataset": "HC18 fetal head ultrasound challenge via huggingface.co/datasets/MedOtter/HC18",
+  "license": "CC BY 4.0",
+  "citation": "van den Heuvel TLA et al. Automated measurement of fetal head circumference using 2D ultrasound images. PLoS One 2018;13(8):e0200412.",
+  "row": 238,
+  "split": "train",
+  "config": "default",
+  "fields": {
+   "filename": "193_2HC.png",
+   "subject_id": 193,
+   "frame_idx": 2,
+   "pixel_size_mm": 0.20213130116462708,
+   "head_circumference_mm": 160.0
+  },
+  "file": "us_fetal_head.png"
+ },
+ "xr_fracture_adult": {
+  "dataset": "FracAtlas via huggingface.co/datasets/tirandazdylan/open-radiograph-findings",
+  "license": "CC BY 4.0",
+  "citation": "Abedeen I et al. FracAtlas: a dataset for fracture classification, localization and segmentation of musculoskeletal radiographs. Sci Data 2023;10:521.",
+  "row": 1104,
+  "split": "train",
+  "config": "default",
+  "fields": {
+   "image_id": "IMG0001198",
+   "objects": {
+    "label": [
+     "fractured"
+    ],
+    "box": [
+     [
+      0.579312,
+      0.311056,
+      0.665402,
+      0.372112
+     ]
+    ]
+   }
+  },
+  "file": "xr_fracture_adult.jpg"
+ },
+ "cxr_tuberculosis": {
+  "dataset": "Shenzhen Hospital chest X-ray set (U.S. National Library of Medicine), image CHNCXR_0350_1",
+  "license": "Publicly available from the U.S. National Library of Medicine for research and education",
+  "reading": "male 55yrs, PTB in the left upper field",
+  "citation": "Jaeger S et al. Two public chest X-ray datasets for computer-aided screening of pulmonary diseases. Quant Imaging Med Surg 2014;4(6):475-477.",
+  "file": "cxr_tuberculosis.jpg"
+ },
+ "ct_brain_ischaemic": {
+  "dataset": "TEKNOFEST 2021 brain stroke CT dataset (Republic of Türkiye Ministry of Health) via huggingface.co/datasets/BTX24/tekno21-brain-stroke-dataset-multi, row 1204 (label: ischaemic)",
+  "license": "Apache 2.0 (dataset mirror); released openly by the Ministry of Health",
+  "citation": "Koç U et al. Artificial intelligence in healthcare competition (TEKNOFEST-2021): stroke data set. Eurasian J Med 2022;54(3):248-258.",
+  "file": "ct_brain_ischaemic.png"
+ },
+ "ct_chest_covid_slices": {
+  "file": "ct_chest_covid_slices.npz",
+  "dataset": "COVID-19 CT Lung and Infection Segmentation Dataset (Ma J et al., Zenodo 3757476), case coronacases_003, via huggingface.co/datasets/MedOtter/covid19-ct-seg; axial slices 95, 105, 118",
+  "license": "CC BY 4.0",
+  "citation": "Ma J et al. Towards data-efficient learning: a benchmark for COVID-19 CT lung and infection segmentation. Med Phys 2021;48(3):1197-1210."
+ },
+ "ecg_00330_hr": {
+  "file": "ecg_00330_hr.dat",
+  "dataset": "PTB-XL ECG database v1.0.3 (PhysioNet), record 00330_hr — atrial fibrillation, otherwise no definite pathology",
+  "license": "CC BY 4.0",
+  "citation": "Wagner P et al. PTB-XL, a large publicly available electrocardiography dataset. Sci Data 2020;7:154. Goldberger AL et al. PhysioNet. Circulation 2000;101(23):e215-e220."
+ },
+ "ecg_00167_hr": {
+  "file": "ecg_00167_hr.dat",
+  "dataset": "PTB-XL ECG database v1.0.3 (PhysioNet), record 00167_hr — sinus rhythm, T-wave changes as in high lateral ischaemia",
+  "license": "CC BY 4.0",
+  "citation": "Wagner P et al. PTB-XL, a large publicly available electrocardiography dataset. Sci Data 2020;7:154. Goldberger AL et al. PhysioNet. Circulation 2000;101(23):e215-e220."
+ },
+ "mri_brain_meningioma_coronal": {
+  "file": "mri_brain_meningioma_coronal.jpg",
+  "dataset": "Brain Tumor MRI Dataset via huggingface.co/datasets/Dharamanand/BrainTumorMRI",
+  "row": 1508,
+  "split": "train",
+  "fields": {
+   "label": "meningioma"
+  },
+  "license": "CC0 1.0",
+  "citation": "Nickparvar M. Brain Tumor MRI Dataset (Kaggle, 2021)."
+ },
+ "mri_brain_meningioma_sagittal": {
+  "file": "mri_brain_meningioma_sagittal.jpg",
+  "dataset": "Brain Tumor MRI Dataset via huggingface.co/datasets/Dharamanand/BrainTumorMRI",
+  "row": 1533,
+  "split": "train",
+  "fields": {
+   "label": "meningioma"
+  },
+  "license": "CC0 1.0",
+  "citation": "Nickparvar M. Brain Tumor MRI Dataset (Kaggle, 2021)."
+ }
+}

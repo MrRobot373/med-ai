@@ -1,40 +1,19 @@
 import js from "@eslint/js";
-import tseslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
+import tseslint from "typescript-eslint";
 
-export default [
-  js.configs.recommended,
+export default tseslint.config(
+  { ignores: ["dist", "node_modules", "playwright-report", "test-results"] },
   {
-    files: ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-        ecmaFeatures: { jsx: true },
-      },
-      globals: {
-        ...globals.browser,
-        ...globals.es2021,
-      },
-    },
-    plugins: {
-      "@typescript-eslint": tseslint,
-      "react-hooks": reactHooks,
-    },
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: { ecmaVersion: 2022, globals: globals.browser },
+    plugins: { "react-hooks": reactHooks },
     rules: {
-      ...tseslint.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      // TypeScript itself (`tsc -b` in `npm run build`) already catches genuinely
-      // undefined identifiers; no-undef produces false positives on ambient/global TS
-      // types (RequestInit, HTMLElement, ...) that only exist in the type system.
-      "no-undef": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },
-  {
-    ignores: ["dist/**", "node_modules/**"],
-  },
-];
+);

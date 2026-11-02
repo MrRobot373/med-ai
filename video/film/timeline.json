@@ -1,0 +1,90 @@
+[
+ {
+  "id": "hook",
+  "start": 0
+ },
+ {
+  "id": "title",
+  "start": 8.5
+ },
+ {
+  "id": "login",
+  "start": 13.5
+ },
+ {
+  "id": "dashboard",
+  "start": 22.117
+ },
+ {
+  "id": "overview",
+  "start": 28.318
+ },
+ {
+  "id": "brief",
+  "start": 39.919
+ },
+ {
+  "id": "consult",
+  "start": 51.92
+ },
+ {
+  "id": "rx",
+  "start": 73.715
+ },
+ {
+  "id": "finalise",
+  "start": 102.04
+ },
+ {
+  "id": "print",
+  "start": 106.641
+ },
+ {
+  "id": "order",
+  "start": 110.642
+ },
+ {
+  "id": "later",
+  "start": 119.726
+ },
+ {
+  "id": "result",
+  "start": 121.926
+ },
+ {
+  "id": "kavita",
+  "start": 132.327
+ },
+ {
+  "id": "trends",
+  "start": 135.327
+ },
+ {
+  "id": "ckd",
+  "start": 146.428
+ },
+ {
+  "id": "ask",
+  "start": 156.129
+ },
+ {
+  "id": "harish",
+  "start": 170.142
+ },
+ {
+  "id": "heart",
+  "start": 172.742
+ },
+ {
+  "id": "ct",
+  "start": 180.643
+ },
+ {
+  "id": "claim",
+  "start": 185.194
+ },
+ {
+  "id": "end",
+  "start": 190.594
+ }
+]

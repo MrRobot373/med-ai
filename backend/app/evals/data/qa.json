@@ -1,0 +1,21 @@
+{
+  "retrieval": [
+    {"q": "What blood pressure target should be aimed for when treating hypertension?", "expect": "hypertension"},
+    {"q": "When should anticoagulation be started in atrial fibrillation and how is stroke risk scored?", "expect": "atrial-fibrillation"},
+    {"q": "What are the first-line treatments for iron deficiency anaemia?", "expect": "iron-deficiency-anemia"},
+    {"q": "How is hyperkalaemia managed and which ECG changes matter?", "expect": "hyperkalemia"},
+    {"q": "How is hypothyroidism treated with levothyroxine and monitored?", "expect": "hypothyroidism"},
+    {"q": "What HbA1c target applies in type 2 diabetes and is metformin first-line?", "expect": "type-2-diabetes"},
+    {"q": "How are the stages of chronic kidney disease classified by eGFR?", "expect": "chronic-kidney-disease"},
+    {"q": "What is the stepwise approach to asthma treatment with inhaled corticosteroids?", "expect": "asthma"},
+    {"q": "Which drug classes are used in heart failure with reduced ejection fraction?", "expect": "heart-failure"},
+    {"q": "How often should diabetic retinopathy screening be done?", "expect": "eye_conditions"}
+  ],
+  "out_of_scope": [
+    "What is the correct first aid for a venomous snake bite?",
+    "Which biologic drugs are used for severe plaque psoriasis?",
+    "What antibiotic dose is recommended for otitis media in a two-year-old?",
+    "How is a dislocated shoulder reduced?",
+    "What are the criteria for diagnosing multiple sclerosis?"
+  ]
+}
