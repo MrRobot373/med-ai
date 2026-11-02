@@ -56,7 +56,8 @@ if [ "$MEM_KB" -gt 0 ]; then
 fi
 mkdir -p "$DATA_PATH"
 FREE_GB=$(df -Pk "$DATA_PATH" | awk 'NR==2 {print int($4/1024/1024)}')
-if [ "$FREE_GB" -ge 50 ]; then ok "${FREE_GB} GB free for data"; elif [ "$FREE_GB" -ge 15 ]; then warn "${FREE_GB} GB free for data (50 GB or more recommended)"; else fail "Only ${FREE_GB} GB free where data will be stored"; fi
+MIN_GB="${GMS_MIN_DISK_GB:-15}"   # lower only on a test machine
+if [ "$FREE_GB" -ge 50 ]; then ok "${FREE_GB} GB free for data"; elif [ "$FREE_GB" -ge "$MIN_GB" ]; then warn "${FREE_GB} GB free for data (50 GB or more recommended)"; else fail "Only ${FREE_GB} GB free where data will be stored (at least ${MIN_GB} GB needed)"; fi
 # Ports
 for p in 80 443; do
   if ss -ltn 2>/dev/null | awk '{print $4}' | grep -Eq "[:.]${p}$"; then warn "Port $p is already in use (set HTTP_PORT / HTTPS_PORT in .env to use others)"; else ok "Port $p is free"; fi
@@ -121,8 +122,9 @@ if [ "$S" != "healthy" ]; then fail "The application did not become healthy. Run
 ok "Application is healthy"
 echo; echo "Final check"; docker compose exec -T app python -m app.cli doctor || true
 
-SITE_NOW=$(grep '^SITE_ADDRESS=' .env | cut -d= -f2); HTTPS_NOW=$(grep '^HTTPS_PORT=' .env | cut -d= -f2)
-URL="https://${SITE_NOW}$([ "${HTTPS_NOW:-443}" != 443 ] && echo ":${HTTPS_NOW}")"
+SITE_NOW=$(grep '^SITE_ADDRESS=' .env | cut -d= -f2 || true); HTTPS_NOW=$(grep '^HTTPS_PORT=' .env | cut -d= -f2 || true)
+PORT_SUFFIX=""; if [ "${HTTPS_NOW:-443}" != 443 ]; then PORT_SUFFIX=":${HTTPS_NOW}"; fi
+URL="https://${SITE_NOW}${PORT_SUFFIX}"
 echo
 echo "${BLD}${GRN}Installed.${RST}  Open  ${BLD}${URL}${RST}"
 if [ -n "${ADMIN_PASSWORD:-}" ]; then

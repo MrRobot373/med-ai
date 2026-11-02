@@ -4,15 +4,14 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 DEST="${1:?Usage: backup-offsite.sh DESTINATION_FOLDER}"
-SRC="$(grep '^DATA_PATH=' .env | cut -d= -f2)/backups"
-[ -d "$SRC" ] || { echo "No backups folder yet at $SRC"; exit 1; }
 mkdir -p "$DEST"
+# Backups are owned by the application's own user, so they are read through the container (works for any host user).
+docker compose exec -T app test -d /data/backups || { echo "No backups folder yet"; exit 1; }
 n=0
-for f in "$SRC"/gms-backup-*; do
-  [ -f "$f" ] || continue
-  b=$(basename "$f")
-  [ -f "$DEST/$b" ] && cmp -s "$f" "$DEST/$b" && continue
-  cp "$f" "$DEST/$b.part" && mv "$DEST/$b.part" "$DEST/$b"; n=$((n+1))
+for b in $(docker compose exec -T app sh -c 'ls -1 /data/backups | grep "^gms-backup-" | grep -v "\.part$"'); do
+  b=$(echo "$b" | tr -d '\r')
+  [ -f "$DEST/$b" ] && continue
+  docker compose exec -T app cat "/data/backups/$b" > "$DEST/$b.part" && mv "$DEST/$b.part" "$DEST/$b"; n=$((n+1))
 done
 # keep the 30 newest copies there
 ls -1t "$DEST"/gms-backup-* 2>/dev/null | tail -n +31 | xargs -r rm -f

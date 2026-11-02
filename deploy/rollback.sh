@@ -18,6 +18,7 @@ for a in "$@"; do case "$a" in --yes) YES=1;; --auto) AUTO=1;; esac; done
 [ -f .update-state ] || die "There is no update to roll back (no .update-state file)."
 # shellcheck disable=SC1091
 . ./.update-state
+[ -n "${OLD_VERSION:-}" ] && [ -n "${BACKUP_FILE:-}" ] || die "The last update was already rolled back (or there is nothing to roll back)."
 docker image inspect gms-clinical-ai:previous >/dev/null 2>&1 || die "The previous version's image is no longer on this machine."
 if [ "$YES" = 0 ]; then
   echo "This puts version $OLD_VERSION back and restores the backup taken before the update to $NEW_VERSION ($BACKUP_FILE)."

@@ -41,5 +41,5 @@ cp THIRD_PARTY_NOTICES.md "$OUT/" 2>/dev/null || true
 echo "$VERSION" > "$OUT/VERSION"
 (cd "$OUT" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
 mkdir -p dist && tar -czf "dist/${NAME}.tar.gz" -C dist "${NAME}"
-sha256sum "dist/${NAME}.tar.gz" | tee "dist/${NAME}.tar.gz.sha256"
+(cd dist && sha256sum "${NAME}.tar.gz" > "${NAME}.tar.gz.sha256" && cat "${NAME}.tar.gz.sha256")
 du -h "dist/${NAME}.tar.gz"

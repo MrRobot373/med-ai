@@ -199,7 +199,27 @@ command(
 )(cmd_create_admin)
 
 
+def _drop_root() -> None:
+    """Inside the container `docker compose exec` runs as root. Anything written as root (a backup, a database file)
+    could not then be read by the application itself, so operator commands always run as the application's user."""
+    import os
+
+    if getattr(os, "geteuid", lambda: 1)() != 0:
+        return
+    try:
+        import pwd
+
+        u = pwd.getpwnam("gms")
+    except (ImportError, KeyError):
+        return  # not the container: whoever runs the command is trusted to know what they are doing
+    os.setgroups([])
+    os.setgid(u.pw_gid)
+    os.setuid(u.pw_uid)
+    os.environ["HOME"] = u.pw_dir
+
+
 def main(argv: list[str] | None = None) -> int:
+    _drop_root()
     # Command groups register themselves on import. When run as `python -m app.cli` this file is `__main__`;
     # make the same module answer to its real name so that they register into this table, not a second copy.
     sys.modules.setdefault("app.cli", sys.modules[__name__])
