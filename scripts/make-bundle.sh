@@ -13,7 +13,8 @@ while [ $# -gt 0 ]; do case "$1" in --demo) DEMO=1;; --with) WITH="$2"; shift;; 
 
 VERSION=$(sed -n 's/^APP_VERSION = "\(.*\)"/\1/p' backend/app/api/system.py)
 [ -n "$VERSION" ] || { echo "Cannot read APP_VERSION"; exit 1; }
-NAME="gms-clinical-ai-${VERSION}$([ "$DEMO" = 1 ] && echo -demo)"
+SUFFIX=""; [ "$DEMO" = 1 ] && SUFFIX="-demo"
+NAME="gms-clinical-ai-${VERSION}${SUFFIX}"
 OUT="dist/${NAME}"
 rm -rf "$OUT"; mkdir -p "$OUT/images" "$OUT/docs"
 
