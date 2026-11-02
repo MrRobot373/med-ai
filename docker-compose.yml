@@ -1,4 +1,7 @@
-# GMS Clinical AI
+# GMS Clinical AI — DEVELOPMENT / DEMONSTRATION compose file.
+#
+#   ⚠ Not for a clinic. A real installation uses the production kit in deploy/ (HTTPS proxy, generated keys,
+#   installer, updates with rollback) — build it with scripts/make-bundle.sh and see docs/INSTALL.md.
 #
 #   docker compose up -d                      app only (uses Ollama on the host)
 #   docker compose --profile qdrant up -d     + Qdrant server (then Settings → Vector store → Server, http://qdrant:6333)

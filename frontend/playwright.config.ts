@@ -9,6 +9,7 @@ export default defineConfig({
   retries: 0,
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:8000",
+    ignoreHTTPSErrors: !!process.env.E2E_INSECURE_TLS, // the clinic's own certificate authority is not trusted by the test browser
     viewport: { width: 1440, height: 900 },
     trace: "retain-on-failure",
     launchOptions: process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : undefined,

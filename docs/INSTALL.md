@@ -2,6 +2,9 @@
 
 For the technician. Allow **one hour** for the install and **one more** for the first-day checks.
 
+> **Verified:** the installer, a normal update, an update whose new version cannot start (automatic rollback with all data intact),
+> the off-site copy and a command-line restore have each been exercised against real containers.
+
 ## 1. What you need
 
 | | Minimum | Recommended |
@@ -23,7 +26,7 @@ For the technician. Allow **one hour** for the install and **one more** for the 
 The installer: checks CPU, memory, disk, ports 80/443, the clock and disk encryption; asks for the clinic name, the
 administrator's name and email, the address people will type, the time zone and where the AI server is; creates the
 clinic's own secret keys; loads the product; starts it; waits until it is healthy; runs a final check; and prints the
-web address and the administrator's one-time password. Re-running it is safe: it never replaces existing keys.
+web address and the administrator's one-time password. Re-running it is safe: it never replaces existing keys. The data folder (`./data`) is readable only by the application; use `docker compose exec` to look inside.
 
 Non-interactive (for scripted installs):
 `./install.sh --yes --org "Life Care Medico" --admin-email dr@lifecare.in --site clinic.local --disk-encrypted`

@@ -37,7 +37,7 @@ test("a wrong-patient document is quarantined and surfaced in the inbox", async 
 });
 
 test("administrator can test the configured language model", async ({ page }) => {
-  await signIn(page, "admin@lifecaremedico.in", "Admin@2026");
+  await signIn(page, process.env.E2E_ADMIN_EMAIL ?? "admin@lifecaremedico.in", process.env.E2E_ADMIN_PASSWORD ?? "Admin@2026");
   await page.goto("/settings/models");
   await page.getByRole("button", { name: "Test connection" }).click();
   await expect(page.getByText(/Connection (successful|failed)/)).toBeVisible({ timeout: 30_000 });
