@@ -10,11 +10,21 @@ built is in [FEATURES.md](FEATURES.md).
 > qualified regulatory consultant or lawyer before you rely on it. The most valuable first step is a single
 > meeting with a medical-device regulatory consultant and a healthcare lawyer (see [Step 0](#step-0--decisions-only-you-can-make)).
 
-**Where the product stands.** Software with a strong core, never used with real patients, never run against a real
-clinical AI model, with no regulatory classification, no privacy documentation, no clinical validation, no
-contracts or insurance, and no certifications. For a product that will be **sold**, sections 1–8 are *gating*:
-they must be done before the first paying customer, not after. The film and demo are safe to show because every
-patient in them is fictional. See [PRODUCT_READINESS.md](PRODUCT_READINESS.md) for the commercial assessment.
+**Where the product stands (v3.0).** Engineering for a first design-partner deployment is complete and packaged
+(see [PENDING_TECHNICAL.md](PENDING_TECHNICAL.md)). Drafts now exist for the documents a lawyer or consultant must
+finish — the [compliance pack](compliance/README.md), [CLINICAL_GOVERNANCE.md](CLINICAL_GOVERNANCE.md) (who signs the
+medical content), [BILLING_AND_PHARMACY.md](BILLING_AND_PHARMACY.md) and the customer-facing
+[INSTALL](INSTALL.md) / [OPERATIONS](OPERATIONS.md) / [SECURITY_OPERATIONS](SECURITY_OPERATIONS.md) guides. What still
+needs **people, money or time** and cannot be coded: the named Clinical Lead and Pharmacist (retainer + signatures),
+a regulatory classification opinion, a lawyer's review of the terms and privacy documents, insurance, an independent
+penetration test, validation on the real AI model, a pilot clinic, and eventually ISO 27001 (and ISO 13485 if the
+regulator classes the decision-support as a device). For a product that will be **sold**, sections 1–8 are *gating*
+for the first paying customer. The film and demo are safe to show because every patient in them is fictional. See
+[PRODUCT_READINESS.md](PRODUCT_READINESS.md) for the commercial assessment.
+
+**Quick map from this list to the drafts:** 1 → `compliance/DEVICE_REGULATORY_POSITION.md` · 2 → `compliance/HAZARD_LOG.md` ·
+3 → `compliance/DPDP_READINESS.md` · 4 → `CLINICAL_GOVERNANCE.md` · 6 → `SECURITY_OPERATIONS.md` ·
+7 → `compliance/TERMS_DRAFT.md` · 8 → `compliance/INSURANCE_AND_CERTIFICATION.md` · 10 → `OPERATIONS.md`, `compliance/INCIDENT_RESPONSE.md`.
 
 ---
 

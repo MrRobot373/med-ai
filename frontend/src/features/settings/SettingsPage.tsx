@@ -1,4 +1,4 @@
-import { Activity, Binary, Building2, BadgeCheck, DatabaseBackup, Plug, GitBranch, Printer, Cpu, Database, Lock, Palette, SlidersHorizontal, UserRound, Users, type LucideIcon } from "lucide-react";
+import { Activity, Binary, Building2, BadgeCheck, ClipboardCheck, DatabaseBackup, Plug, GitBranch, Printer, Cpu, Database, Lock, Palette, SlidersHorizontal, UserRound, Users, type LucideIcon } from "lucide-react";
 import { Navigate, NavLink, useParams } from "react-router";
 import { useMe } from "@/api/hooks";
 import { PageHeader } from "@/components/ui";
@@ -8,12 +8,13 @@ import { EmbeddingsSection } from "./sections/EmbeddingsSection";
 import { ModelsSection } from "./sections/ModelsSection";
 import { BrandingSection, SecuritySection, SystemSection, UsersSection } from "./sections/OrgSections";
 import { BranchesSection, PrintSection } from "./sections/PrintSections";
+import { ClinicalContentSection } from "./sections/ClinicalContentSection";
 import { IntegrationsSection } from "./sections/IntegrationsSection";
 import { BackupSection, LicenceSection } from "./sections/OpsSections";
 import { ProfileSection } from "./sections/ProfileSection";
 import { RetrievalSection, VectorSection } from "./sections/RetrievalSection";
 
-interface Item { id: string; label: string; icon: LucideIcon; admin?: boolean; render: () => JSX.Element; description: string }
+interface Item { id: string; label: string; icon: LucideIcon; admin?: boolean; clinical?: boolean; render: () => JSX.Element; description: string }
 const GROUPS: { group: string; items: Item[] }[] = [
   { group: "Personal", items: [
     { id: "profile", label: "Profile", icon: UserRound, render: () => <ProfileSection />, description: "Your details, password and sessions." },
@@ -26,6 +27,7 @@ const GROUPS: { group: string; items: Item[] }[] = [
     { id: "vector", label: "Vector store", icon: Database, admin: true, render: () => <VectorSection />, description: "Embedded or server Qdrant." },
   ] },
   { group: "Organisation", items: [
+    { id: "clinical", label: "Clinical content", icon: ClipboardCheck, clinical: true, render: () => <ClinicalContentSection />, description: "Review, sign-off and measured quality of the medical content." },
     { id: "branding", label: "Branding", icon: Building2, admin: true, render: () => <BrandingSection />, description: "Name, logo, colours and disclaimer." },
     { id: "print", label: "Letterhead & print", icon: Printer, admin: true, render: () => <PrintSection />, description: "How prescriptions and letters look on paper." },
     { id: "branches", label: "Branches", icon: GitBranch, admin: true, render: () => <BranchesSection />, description: "Sites, their contact details and who works where." },
@@ -44,7 +46,7 @@ export default function SettingsPage() {
   const isAdmin = me?.role === "admin";
   const items = GROUPS.flatMap((g) => g.items);
   const current = items.find((i) => i.id === section);
-  if (!current || (current.admin && me && !isAdmin)) return <Navigate to="/settings/profile" replace />;
+  if (!current || (current.admin && me && !isAdmin) || (current.clinical && me?.role === "front_desk")) return <Navigate to="/settings/profile" replace />;
 
   return (
     <div>
@@ -52,7 +54,7 @@ export default function SettingsPage() {
       <div className="grid gap-[var(--gap)] lg:grid-cols-[230px_1fr]">
         <nav className="glass h-fit space-y-4 rounded-2xl border border-white/70 p-2.5 shadow-card dark:border-white/[0.06] lg:sticky lg:top-[88px]">
           {GROUPS.map((g) => {
-            const visible = g.items.filter((i) => !i.admin || isAdmin);
+            const visible = g.items.filter((i) => (!i.admin || isAdmin) && !(i.clinical && me?.role === "front_desk"));
             if (!visible.length) return null;
             return (
               <div key={g.group}>

@@ -372,6 +372,20 @@ Per-user light / dark / system theme, **nine accent presets or any hex** (the wh
 
 ---
 
+## 19b. New in version 3.0 — running a clinic on it
+
+- **Prescription speed**: templates (private or clinic-shared), ★ favourite medicines with their usual dose, most-used medicines, "same as last visit". They fill the form; every line is still safety-checked.
+- **Print**: server-made PDFs on the clinic's letterhead (paper size, text size, accent colour, logo, contact details, footer) with a live preview; the doctor's registration number, council, qualifications and signature image; signed **QR verification** page.
+- **Letters**: medical and fitness certificates, referral letters (pre-filled from the chart), and a plain-language **visit summary for the patient** — numbered without gaps per year, immutable once issued, voidable with a reason, verifiable.
+- **Branches**: several sites in one installation, each with its own letterhead details, day list and staff; patients shared.
+- **Patients**: automatic MRN numbers, **duplicate warning** at registration, duplicate review and **audited merge** (records and search vectors move together), Excel/CSV **import** with column mapping and per-row checks.
+- **Operations**: daily encrypted **backups** with a verify step and CLI restore; off-site copy script; crash recovery for half-processed reports; a `doctor` and `status` command.
+- **Install and update**: `install.sh` (preflight, keys, HTTPS proxy), `update.sh` with automatic rollback, `rollback.sh`, offline bundle builder.
+- **Licensing**: signed offline licences bound to the installation; seat and branch limits; never blocks patient care; usage report.
+- **Security**: two-step verification (TOTP + recovery codes), lockout, password policy, security headers and CSRF, encrypted uploads, ClamAV, tamper-evident audit chain, production start-up guards, security checklist.
+- **Integration**: scoped API keys, partner API (prescriptions, visits, patients, "dispensed"), signed webhooks with retry, spreadsheet exports.
+- **Clinical governance**: fingerprint-bound sign-off by a named clinical lead and pharmacist; 27 reviewable clinical test cases; evaluation harness (`python -m app.cli eval`) measuring lab-extraction, retrieval, abstention and grounding.
+
 ## 20. Deployment
 
 | Option | Detail |

@@ -16,8 +16,18 @@ from dataclasses import dataclass
 # code, display, aliases, typical unit (display grouping only)
 REGISTRY: list[tuple[str, str, tuple[str, ...], str | None]] = [
     ("hba1c", "HbA1c", ("hba1c", "hemoglobin a1c", "haemoglobin a1c", "hgb a1c", "glycated hemoglobin", "a1c"), "%"),
-    ("glucose_fasting", "Fasting glucose", ("fasting glucose", "fasting blood glucose", "fbg", "fbs"), "mg/dL"),
-    ("glucose", "Glucose", ("random glucose", "blood glucose", "glucose"), "mg/dL"),
+    (
+        "glucose_fasting",
+        "Fasting glucose",
+        ("fasting glucose", "fasting blood glucose", "fasting blood sugar", "fasting plasma glucose", "fbg", "fbs"),
+        "mg/dL",
+    ),
+    (
+        "glucose",
+        "Glucose",
+        ("random blood glucose", "random blood sugar", "random glucose", "blood glucose", "rbs", "glucose"),
+        "mg/dL",
+    ),
     ("creatinine", "Creatinine", ("serum creatinine", "creatinine"), "mg/dL"),
     (
         "egfr",
@@ -73,6 +83,9 @@ REGISTRY: list[tuple[str, str, tuple[str, ...], str | None]] = [
     ("inr", "INR", ("inr",), None),
     ("bnp", "BNP", ("nt-probnp", "bnp"), "pg/mL"),
     ("troponin", "Troponin", ("high-sensitivity troponin", "troponin i", "troponin t", "troponin"), "ng/L"),
+    ("aec", "Absolute eosinophil count", ("absolute eosinophil count", "eosinophils (absolute)", "aec"), "cells/µL"),
+    ("d_dimer", "D-dimer", ("d-dimer", "d dimer"), "µg/mL FEU"),
+    ("ige", "Total IgE", ("total ige", "serum ige", "ige"), "IU/mL"),
     ("ferritin", "Ferritin", ("ferritin",), "ng/mL"),
     ("vitamin_d", "Vitamin D (25-OH)", ("25-oh vitamin d", "vitamin d", "25(oh)d"), "ng/mL"),
     ("b12", "Vitamin B12", ("vitamin b12", "b12", "cobalamin"), "pg/mL"),

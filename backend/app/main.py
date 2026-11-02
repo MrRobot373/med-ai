@@ -17,6 +17,7 @@ from app.api import (
     audit,
     auth,
     care,
+    clinical_content,
     documents,
     integrations,
     knowledge,
@@ -224,6 +225,7 @@ def create_app(*, skip_migrations: bool = False) -> FastAPI:
         verify,
         letters,
         rxlib,
+        clinical_content,
     ):
         app.include_router(r.router)
     for sub in (integrations.admin, integrations.partner, integrations.exports):

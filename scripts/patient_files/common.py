@@ -136,6 +136,7 @@ class Doc:
     make: Callable[[], bytes]
     pending: bool = False  # kept in "To upload" for a live demo, not loaded by the seed
     source: str | None = None  # key in assets/manifest.json for images taken from an open dataset
+    truth: list | None = None  # for lab reports: the (test, result, unit, range) rows that were printed — ground truth for extraction tests
 
 
 @dataclass
@@ -215,7 +216,8 @@ def lab(
         )
 
     short = org.name.split()[0]
-    return Doc(f"{folder}/{on.isoformat()} {title} - {short}.pdf", title, "lab_report", on, make)
+    rows = [r for _, section_rows in sections for r in section_rows if r[0] != "#"]
+    return Doc(f"{folder}/{on.isoformat()} {title} - {short}.pdf", title, "lab_report", on, make, truth=rows)
 
 
 def asset_bytes(key: str) -> bytes:

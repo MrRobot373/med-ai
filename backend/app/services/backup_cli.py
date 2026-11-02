@@ -267,3 +267,55 @@ def cmd_doctor(_args) -> int:
     failed = sum(1 for r in results if r[0] == "fail")
     print(f"\n{failed} blocking problem(s)." if failed else "\nNo blocking problems.")
     return 1 if failed else 0
+
+
+@command("clinical-selftest", "run the clinical test cases against the prescription safety rules")
+def cmd_clinical_selftest(_args) -> int:
+    from app.clinical import testbank
+
+    r = testbank.run_all()
+    for c in r["cases"]:
+        print(f"  {'PASS' if c['ok'] else 'FAIL'}  {c['title']}")
+        for p in c["problems"]:
+            print(f"        {p}")
+    print(f"\n{r['passed']} of {r['total']} passed.")
+    return 0 if r["ok"] else 1
+
+
+@command(
+    "eval",
+    "measure extraction, retrieval and answer quality against known answers",
+    (("--suite",), {"default": "", "help": "comma separated: extraction,retrieval,abstention,grounding"}),
+)
+def cmd_eval(args) -> int:
+    import asyncio
+
+    from app.evals import runner
+
+    report = asyncio.run(runner.run([s.strip() for s in args.suite.split(",") if s.strip()] or None))
+    print("Models:", ", ".join(f"{k}={v}" for k, v in report["models"].items() if v))
+    for r in report["suites"]:
+        if r["status"] != "ok":
+            print(f"  {r['status'].upper():7} {r['suite']}: {r.get('reason', '')}")
+            continue
+        keys = {
+            k: v
+            for k, v in r.items()
+            if k
+            in (
+                "recall",
+                "precision",
+                "recall_at_5",
+                "top1",
+                "rate",
+                "with_citations",
+                "no_invented_citations",
+                "values_expected",
+                "values_found",
+                "questions",
+                "answered",
+            )
+        }
+        print(f"  {'PASS' if r['pass'] else 'BELOW TARGET':12} {r['suite']:11} {keys}   target: {r['target']}")
+    print("\nSaved to the data/evals folder.")
+    return 0 if report["ok"] else 1

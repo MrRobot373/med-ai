@@ -9,29 +9,44 @@ It replaces the "pilot-grade" framing used in the first version of the pending l
 
 ---
 
-## 1. Verdict
+## 1. Verdict (updated for version 3.0)
 
-**GMS Clinical AI has a strong, differentiated core and is not yet a sellable product.**
+**Engineering is now ready for a design-partner deployment; the product is not yet ready for general sale.**
 
-- **The core is real and well built:** a doctor's AI co-pilot over the patient's *own* documents, with
-  citations, a deterministic India-specific prescription safety engine, automatic matching of results to orders,
-  wrong-patient quarantine, role separation, on-premise operation and white-labelling. About 11,000 lines of
-  backend and 8,000 of frontend, 110 automated tests, a design system, a deployment guide.
-- **Around the core, almost everything a customer pays for beyond the demo is missing:** validated medical
-  content, proof the AI works on real models, security and privacy assurance, regulatory standing, a way to
-  install, license, update and support it at other people's sites, and the everyday workflow features doctors
-  expect from clinic software.
+Version 3.0 closed the engineering gaps found in this assessment — doctor workflow (templates, letters, patient copy,
+registration number, custom letterhead), operations (branches, import, duplicates, backups, installer, updates with
+automatic rollback, licensing), security (MFA, lockout, encryption, tamper-evident audit), integration (billing and
+pharmacy partners) and quality tooling (a clinical test-bank, sign-off workflow and evaluation harness). It ships as
+an on-premise **Docker bundle**. The 2.0 scorecard below is kept for the record; its current state is in the table
+that follows.
 
-Rough shape of the distance to a first sale: **core ≈ built; product ≈ 40–60 engineer-weeks of further
-engineering, plus clinical-content work, regulatory work and a customer-validation phase running in parallel.**
-(An estimate with stated assumptions in §8, not a promise.)
+What still stands between this and the first paying customer is **not code**: validation on the real AI model, a named
+clinical lead and pharmacist signing the medical content, a regulatory classification opinion, a lawyer's review of the
+terms and privacy documents, insurance, an independent penetration test and a pilot clinic. Drafts for each are in the
+[compliance pack](compliance/README.md) and [CLINICAL_GOVERNANCE.md](CLINICAL_GOVERNANCE.md).
 
-A design-partner phase with real clinics is **part of getting to market** — it is how a clinical product is
-validated before general sale — not an alternative to it.
+### Scorecard now
+
+| # | Dimension | 2.0 | **3.0** | What is left |
+|---|---|---|---|---|
+| 1 | Core clinical value | 🟡 | 🟡 | Run on the real model (harness ready: `python -m app.cli eval`) |
+| 2 | Medical content and safety | 🔴 | 🟡 | Signatures by named professionals; formulary growth; licensed library content |
+| 3 | Doctor's daily workflow | 🔴 | 🟢 | Language options |
+| 4 | Clinic operations | 🟡 | 🟢 | — |
+| 5 | Security and privacy engineering | 🔴 | 🟢 | Independent penetration test |
+| 6 | Reliability, scale, operations | 🔴 | 🟡 | Load test at the largest planned size; metrics |
+| 7 | Installability and updates | 🔴 | 🟢 | Native Windows installer |
+| 8 | Commercial platform | 🔴 | 🟢 | Pricing and the first licence issued |
+| 9 | Interoperability | 🔴 | 🟡 | Partner API and webhooks built; FHIR and ABDM are later |
+| 10 | Regulatory and legal standing | 🔴 | 🔴 | Drafts written; needs consultant and lawyer |
+| 11 | Quality engineering | 🟡 | 🟡 | CI pipeline; accessibility audit |
+| 12 | Documentation and support material | 🟡 | 🟢 | User manual and training videos |
+| 13 | UX and design | 🟢 | 🟢 | Tablet/phone verification |
+| 14 | Brand and sales assets | 🟡 | 🟡 | Disclaimers on the film; collateral; pricing |
 
 ---
 
-## 2. Scorecard
+## 2. Scorecard at version 2.0 (historical)
 
 🟢 sellable today · 🟡 present but incomplete · 🔴 missing or unproven
 

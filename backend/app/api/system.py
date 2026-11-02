@@ -127,6 +127,20 @@ async def health(db: DB, _: CurrentUser, refresh: bool = False):
     return data
 
 
+def _content_item(db) -> dict:
+    from app.api import clinical_content
+
+    state = clinical_content.overall(db)
+    return {
+        "id": "clinical_content",
+        "label": "Clinical content signed off",
+        "ok": state == "signed",
+        "detail": "A clinical lead and a pharmacist have approved this exact version of the rules and reference library."
+        if state == "signed"
+        else "The prescription rules and reference library have not been fully approved for this version. Settings → Clinical content.",
+    }
+
+
 def _backup_items(db, s) -> list[dict]:
     from app.services import backup
 
@@ -223,6 +237,7 @@ def security_posture(db: DB, _: AdminUser):
             else "No scanner configured (CLAMAV_HOST).",
         },
         *_backup_items(db, s),
+        _content_item(db),
         {
             "id": "audit",
             "label": "Audit log intact",

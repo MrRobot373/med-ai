@@ -12,10 +12,16 @@ evidence-cited AI — with every model endpoint swappable from the UI.
 
 ## Project status
 
-Strong core, **not yet market-ready.** What exists: [docs/FEATURES.md](docs/FEATURES.md). Whether it can be sold and
-what stands in the way: [docs/PRODUCT_READINESS.md](docs/PRODUCT_READINESS.md). The detailed work lists:
-[docs/PENDING_TECHNICAL.md](docs/PENDING_TECHNICAL.md) (engineering) and
-[docs/PENDING_MANAGEMENT.md](docs/PENDING_MANAGEMENT.md) (regulatory, privacy, clinical governance, legal, operations).
+Version **3.0**. A complete on-premise clinical co-pilot for outpatient clinics: patient records, report ingestion,
+an India-specific prescription safety engine, an evidence-grounded assistant, printed prescriptions and letters,
+branches, backups, licensing and a partner API — delivered as a **Docker bundle** with an installer, safe updates
+and rollback. What remains before general sale is validation, review and regulatory work that code cannot do:
+[docs/PENDING_TECHNICAL.md](docs/PENDING_TECHNICAL.md) · [docs/PENDING_MANAGEMENT.md](docs/PENDING_MANAGEMENT.md) ·
+[docs/compliance/](docs/compliance/README.md).
+
+**Build the delivery package:** `scripts/make-bundle.sh` → `dist/gms-clinical-ai-<version>.tar.gz`
+(`--demo` adds the sample patients). **Install at a clinic:** [docs/INSTALL.md](docs/INSTALL.md). **Run it:**
+[docs/OPERATIONS.md](docs/OPERATIONS.md). **Medical sign-off:** [docs/CLINICAL_GOVERNANCE.md](docs/CLINICAL_GOVERNANCE.md).
 
 ## Highlights
 

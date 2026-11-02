@@ -120,3 +120,24 @@ class WebhookDelivery(Base):
     error: Mapped[str | None] = mapped_column(String(300))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     delivered_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+
+
+class ContentSignoff(Base):
+    """A named professional's approval of one area of clinical content, bound to the exact content (by hash) they reviewed."""
+
+    __tablename__ = "content_signoffs"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    area: Mapped[str] = mapped_column(String(24), index=True)  # formulary | calculators | knowledge
+    content_hash: Mapped[str] = mapped_column(String(64), index=True)
+    role: Mapped[str] = mapped_column(String(16))  # clinical_lead | pharmacist
+    user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    name: Mapped[str] = mapped_column(String(200))  # kept as written at the time of signing
+    registration_no: Mapped[str] = mapped_column(String(80))
+    registration_council: Mapped[str | None] = mapped_column(String(120))
+    statement: Mapped[str] = mapped_column(Text)
+    tests_passed: Mapped[int] = mapped_column(Integer, default=0)
+    tests_total: Mapped[int] = mapped_column(Integer, default=0)
+    signed_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    revoked_reason: Mapped[str | None] = mapped_column(String(300))
