@@ -29,7 +29,6 @@ const ConsultationTab = lazy(() => import("@/features/consult/ConsultationTab"))
 const OrdersTab = lazy(() => import("@/features/workspace/OrdersTab"));
 const PrescriptionsTab = lazy(() => import("@/features/workspace/PrescriptionsTab"));
 const FrontDeskHome = lazy(() => import("@/features/frontdesk/FrontDeskHome"));
-const PrescriptionPrint = lazy(() => import("@/features/print/PrescriptionPrint"));
 
 const page = (el: ReactNode) => (
   <Suspense fallback={<div className="flex justify-center py-24"><Spinner className="size-5" /></div>}>{el}</Suspense>
@@ -49,7 +48,6 @@ function Clinical({ children }: { children: ReactNode }) {
 const clinical = (el: ReactNode) => page(<Clinical>{el}</Clinical>);
 
 export const router = createBrowserRouter([
-  { path: "/print/prescription/:id", element: page(<PrescriptionPrint />), errorElement: <RouteError /> },
   { path: "/login", element: <LoginPage />, errorElement: <RouteError /> },
   {
     path: "/",

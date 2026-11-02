@@ -1,4 +1,4 @@
-import { Activity, Binary, Building2, Cpu, Database, Lock, Palette, SlidersHorizontal, UserRound, Users, type LucideIcon } from "lucide-react";
+import { Activity, Binary, Building2, GitBranch, Printer, Cpu, Database, Lock, Palette, SlidersHorizontal, UserRound, Users, type LucideIcon } from "lucide-react";
 import { Navigate, NavLink, useParams } from "react-router";
 import { useMe } from "@/api/hooks";
 import { PageHeader } from "@/components/ui";
@@ -7,6 +7,7 @@ import { AppearanceSection } from "./sections/AppearanceSection";
 import { EmbeddingsSection } from "./sections/EmbeddingsSection";
 import { ModelsSection } from "./sections/ModelsSection";
 import { BrandingSection, SecuritySection, SystemSection, UsersSection } from "./sections/OrgSections";
+import { BranchesSection, PrintSection } from "./sections/PrintSections";
 import { ProfileSection } from "./sections/ProfileSection";
 import { RetrievalSection, VectorSection } from "./sections/RetrievalSection";
 
@@ -24,6 +25,8 @@ const GROUPS: { group: string; items: Item[] }[] = [
   ] },
   { group: "Organisation", items: [
     { id: "branding", label: "Branding", icon: Building2, admin: true, render: () => <BrandingSection />, description: "Name, logo, colours and disclaimer." },
+    { id: "print", label: "Letterhead & print", icon: Printer, admin: true, render: () => <PrintSection />, description: "How prescriptions and letters look on paper." },
+    { id: "branches", label: "Branches", icon: GitBranch, admin: true, render: () => <BranchesSection />, description: "Sites, their contact details and who works where." },
     { id: "users", label: "Users & roles", icon: Users, admin: true, render: () => <UsersSection />, description: "Accounts and permissions." },
     { id: "security", label: "Security", icon: Lock, admin: true, render: () => <SecuritySection />, description: "Sessions and access policy." },
     { id: "system", label: "System status", icon: Activity, render: () => <SystemSection />, description: "Service health and deployment details." },

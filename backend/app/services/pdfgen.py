@@ -118,15 +118,10 @@ def _flat_png(raw: bytes | None, max_px: int = 600) -> bytes | None:
         return None
 
 
-def default_logo() -> bytes:
-    return (ASSETS / "brand-mark.png").read_bytes()
-
-
 def make_sheet(
     cfg: PrintConfig,
     *,
     organization: str,
-    tagline: str,
     logo_data_url: str | None,
     branch: dict | None,
     doctor: dict | None,
@@ -150,13 +145,13 @@ def make_sheet(
         dlines.append(f"Tel {d['phone']}")
     return Sheet(
         org_title=cfg.title or organization,
-        org_subtitle=cfg.subtitle or tagline,
+        org_subtitle=cfg.subtitle,
         address_lines=[ln.strip() for ln in address.splitlines() if ln.strip()],
         contact_line=contact,
         registration_line=reg,
         footer_text=b.get("footer_text") or cfg.footer_text,
         disclaimer=cfg.disclaimer,
-        logo_png=(_flat_png(_data_url_bytes(logo_data_url)) or default_logo()) if cfg.show_logo else None,
+        logo_png=_flat_png(_data_url_bytes(logo_data_url)) if cfg.show_logo and logo_data_url else None,
         doctor_name=d.get("name", ""),
         doctor_lines=dlines,
         signature_png=_flat_png(_data_url_bytes(d.get("signature_data_url")), 500),
@@ -311,23 +306,34 @@ def _signature_block(sheet: Sheet, st: dict, width: float, code: str | None, rx_
         left.append(Spacer(1, 1.5 * mm))
         left.append(_qr(code))
         left.append(_p("Scan to verify", st["small"]))
-    sig: list = []
+    sig_rows: list = []
     if sheet.signature_png:
         img = Image(io.BytesIO(sheet.signature_png))
         h = 13 * mm
         img.drawHeight, img.drawWidth = h, h * img.imageWidth / img.imageHeight
         img.hAlign = "CENTER"
-        sig.append(img)
+        sig_rows.append([img])
     else:
-        sig.append(Spacer(1, 13 * mm))
-    sig.append(_p(sheet.doctor_name, st["center"]))
-    sig.append(_p(cfg.signature_label, st["center"]))
+        sig_rows.append([Spacer(1, 13 * mm)])
+    sig_rows += [[_p(sheet.doctor_name, st["center"])], [_p(cfg.signature_label, st["center"])]]
+    sig = Table(sig_rows, colWidths=[62 * mm])
+    # the rule sits directly above the doctor's name, whatever the height of the QR block beside it
+    sig.setStyle(
+        TableStyle(
+            [
+                ("LINEABOVE", (0, 1), (0, 1), 0.6, MUTED),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 1),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+            ]
+        )
+    )
     t = Table([[left, sig]], colWidths=[width - 62 * mm, 62 * mm])
     t.setStyle(
         TableStyle(
             [
                 ("VALIGN", (0, 0), (-1, -1), "BOTTOM"),
-                ("LINEABOVE", (1, 0), (1, 0), 0.6, MUTED),
                 ("LEFTPADDING", (0, 0), (-1, -1), 0),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 0),
             ]

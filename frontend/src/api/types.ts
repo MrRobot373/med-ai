@@ -2,6 +2,7 @@ export type Role = "admin" | "clinician" | "viewer" | "front_desk";
 
 export interface Preferences {
   theme?: "light" | "dark" | "system";
+  branch_id?: string;
   accent?: string | null;
   density?: "comfortable" | "compact";
   radius?: "sharp" | "default" | "round";
@@ -17,7 +18,11 @@ export interface User {
   id: string; email: string; full_name: string; title: string | null; specialty: string | null; role: Role;
   is_active: boolean; preferences: Preferences; last_login_at: string | null; created_at: string;
   must_change_password: boolean; mfa_enabled: boolean; mfa_required: boolean; locked_until: string | null;
+  phone: string | null; qualifications: string | null; registration_no: string | null; registration_council: string | null; has_signature: boolean;
+  branches: { id: string; name: string; code: string }[]; branch_id: string | null;
 }
+
+export interface Branch { id: string; code: string; name: string; address: string | null; phone: string | null; email: string | null; registration: string | null; footer_text: string | null; is_default: boolean; is_active: boolean; staff?: number; appointments?: number }
 
 export interface MfaChallenge { mfa_required: true; mfa_token: string }
 

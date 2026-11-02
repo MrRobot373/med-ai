@@ -29,7 +29,7 @@ export default function PrescriptionsTab() {
         ))}
       </Card>
       <div className="min-w-0 space-y-3">
-        {current.status === "final" && <div className="flex justify-end"><Button size="sm" variant="secondary" className="rounded-full" asChild><a href={`/print/prescription/${current.id}`} target="_blank" rel="noreferrer"><Printer /> Print</a></Button></div>}
+        {current.status === "final" && <div className="flex justify-end"><Button size="sm" variant="secondary" className="rounded-full" asChild><a href={`/api/prescriptions/${current.id}/pdf`} target="_blank" rel="noreferrer"><Printer /> Print</a></Button></div>}
         <PrescriptionBuilder key={current.id + current.status} rx={current} review={null} canWrite={canWrite && current.status === "draft"} />
       </div>
     </div>

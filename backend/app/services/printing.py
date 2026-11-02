@@ -60,7 +60,6 @@ def sheet_for(db: Session, branch: Branch | None, doctor: User | None, cfg: Prin
     return pdfgen.make_sheet(
         cfg or rc.print,
         organization=rc.branding.organization,
-        tagline=rc.branding.tagline,
         logo_data_url=rc.branding.logo_data_url,
         branch=branch_dict(branch),
         doctor=doctor_dict(doctor),

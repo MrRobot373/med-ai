@@ -56,6 +56,19 @@ STAFF = [
 ]
 CLINICIAN_EMAIL = STAFF[0][0]
 CLINIC = {"organization": "Life Care Medico", "login_message": "Sign in with your Life Care Medico account."}
+LETTERHEAD = {
+    "address": "14 Lake View Road, Kodihalli, Bengaluru 560008",
+    "phone": "+91 80 4000 1234",
+    "email": "care@lifecaremedico.in",
+    "footer_text": "Open Mon-Sat, 9 am to 8 pm. For emergencies call your nearest hospital.",
+}
+DOCTOR_DETAILS = {
+    CLINICIAN_EMAIL: {
+        "qualifications": "MBBS, MD (Internal Medicine)",
+        "registration_no": "KMC-48213",
+        "registration_council": "Karnataka Medical Council",
+    }
+}
 MIME = {
     ".pdf": "application/pdf",
     ".jpg": "image/jpeg",
@@ -73,6 +86,16 @@ def seed_users(db) -> User:
                     email=email, full_name=name, title=title, specialty=spec, role=role, password_hash=hash_password(pw)
                 )
             )
+    for email, details in DOCTOR_DETAILS.items():
+        user = db.scalars(select(User).where(User.email == email)).first()
+        if user and not user.registration_no:
+            for k, v in details.items():
+                setattr(user, k, v)
+    db.commit()
+    from app.services import branches
+
+    for u in db.scalars(select(User)):
+        branches.ensure_membership(db, u)
     db.commit()
     return (
         db.scalars(select(User).where(User.email == CLINICIAN_EMAIL)).first()
@@ -355,7 +378,8 @@ def main(argv: list[str]) -> int:
         if cmd == "demo":
             from app.services import runtime_config
 
-            runtime_config.save(db, runtime_config.apply_section_update(runtime_config.load(db), "branding", CLINIC))
+            cfg = runtime_config.apply_section_update(runtime_config.load(db), "branding", CLINIC)
+            runtime_config.save(db, runtime_config.apply_section_update(cfg, "print", LETTERHEAD))
             clinician = seed_users(db)
             ids += seed_knowledge(db, admin)
             ids += seed_patients(db, clinician)

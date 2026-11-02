@@ -3,7 +3,7 @@ import { AlertTriangle, Check, ImagePlus, KeyRound, Lock, MoreHorizontal, Palett
 import { useState } from "react";
 import { toast } from "sonner";
 import { useHealth, useMe } from "@/api/hooks";
-import type { User } from "@/api/types";
+import type { Branch, User } from "@/api/types";
 import {
   Avatar, Badge, Button, Card, Dialog, DialogContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
   Field, Input, KeyValue, Segmented, Select, Skeleton, SwitchRow, Table, TBody, TD, TH, THead, TR, Textarea,
@@ -123,6 +123,9 @@ export function UsersSection() {
   const [open, setOpen] = useState(false);
   const [resetFor, setResetFor] = useState<User | null>(null);
   const [pw, setPw] = useState("");
+  const [branchFor, setBranchFor] = useState<User | null>(null);
+  const [chosen, setChosen] = useState<string[]>([]);
+  const { data: allBranches } = useQuery({ queryKey: ["branches", "all"], queryFn: () => api<Branch[]>("/api/branches?all=true") });
   const patch = async (u: User, body: object, msg: string) => {
     try { await api(`/api/users/${u.id}`, { method: "PATCH", body }); toast.success(msg); qc.invalidateQueries({ queryKey: ["users"] }); }
     catch (e) { toast.error(e instanceof ApiError ? e.message : "Failed"); }
@@ -139,7 +142,7 @@ export function UsersSection() {
           <TBody>
             {data?.map((u) => (
               <TR key={u.id}>
-                <TD><div className="flex items-center gap-3"><Avatar name={u.full_name} size="sm" /><div><div className="font-medium">{u.full_name}{u.id === me?.id && <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>}</div><div className="text-xs text-muted-foreground">{u.email}{u.specialty ? ` · ${u.specialty}` : ""}</div></div></div></TD>
+                <TD><div className="flex items-center gap-3"><Avatar name={u.full_name} size="sm" /><div><div className="font-medium">{u.full_name}{u.id === me?.id && <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>}</div><div className="text-xs text-muted-foreground">{u.email}{u.specialty ? ` · ${u.specialty}` : ""}{u.role !== "admin" && u.branches.length > 1 ? ` · ${u.branches.map((b) => b.code).join(", ")}` : ""}</div></div></div></TD>
                 <TD className="w-44"><Select size="sm" value={u.role} disabled={u.id === me?.id} onValueChange={(v) => patch(u, { role: v }, "Role updated")} options={[{ value: "admin", label: "Administrator" }, { value: "clinician", label: "Clinician" }, { value: "viewer", label: "Viewer" }, { value: "front_desk", label: "Front desk" }]} /></TD>
                 <TD><div className="flex flex-wrap gap-1"><Badge tone={u.is_active ? "success" : "neutral"}>{u.is_active ? "Active" : "Deactivated"}</Badge>{u.locked_until && new Date(u.locked_until) > new Date() && <Badge tone="danger">Locked</Badge>}{u.mfa_enabled ? <Badge tone="primary">2-step</Badge> : u.mfa_required ? <Badge tone="warning">No 2-step</Badge> : null}{u.must_change_password && <Badge tone="warning">New password pending</Badge>}</div></TD>
                 <TD className="text-xs text-muted-foreground">{u.last_login_at ? fmtRelative(u.last_login_at) : "Never"}</TD>
@@ -149,6 +152,7 @@ export function UsersSection() {
                       <DropdownMenuTrigger asChild><Button size="icon-xs" variant="ghost" aria-label="User actions"><MoreHorizontal /></Button></DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem onSelect={() => { setResetFor(u); setPw(""); }}><KeyRound /> Reset password</DropdownMenuItem>
+                        {u.role !== "admin" && (allBranches?.length ?? 0) > 1 && <DropdownMenuItem onSelect={() => { setBranchFor(u); setChosen(u.branches.map((b) => b.id)); }}>Branch access…</DropdownMenuItem>}
                         <DropdownMenuItem onSelect={async () => { await api(`/api/users/${u.id}/unlock`, { method: "POST" }); toast.success("Account unlocked"); qc.invalidateQueries({ queryKey: ["users"] }); }}>Unlock account</DropdownMenuItem>
                         {u.mfa_enabled && <DropdownMenuItem onSelect={async () => { await api(`/api/users/${u.id}/mfa/reset`, { method: "POST" }); toast.success("Two-step verification reset"); qc.invalidateQueries({ queryKey: ["users"] }); }}>Reset two-step verification</DropdownMenuItem>}
                         <DropdownMenuItem danger={u.is_active} onSelect={() => patch(u, { is_active: !u.is_active }, u.is_active ? "User deactivated — sessions ended" : "User reactivated")}>{u.is_active ? "Deactivate" : "Reactivate"}</DropdownMenuItem>
@@ -162,6 +166,18 @@ export function UsersSection() {
         </Table>
       )}
       <UserDialog open={open} onOpenChange={setOpen} />
+      <Dialog open={!!branchFor} onOpenChange={(o) => !o && setBranchFor(null)}>
+        <DialogContent size="sm" title={`Branch access · ${branchFor?.full_name}`} description="Branches this person can work in. Administrators always see every branch." footer={<><Button variant="secondary" onClick={() => setBranchFor(null)}>Cancel</Button><Button disabled={chosen.length === 0} onClick={async () => { await patch(branchFor!, { branch_ids: chosen }, "Branch access updated"); setBranchFor(null); }}>Save</Button></>}>
+          <div className="space-y-1">
+            {allBranches?.filter((b) => b.is_active).map((b) => (
+              <label key={b.id} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
+                <input type="checkbox" checked={chosen.includes(b.id)} onChange={(e) => setChosen((c) => e.target.checked ? [...c, b.id] : c.filter((x) => x !== b.id))} />
+                {b.name} <span className="text-xs text-muted-foreground">{b.code}</span>
+              </label>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
       <Dialog open={!!resetFor} onOpenChange={(o) => !o && setResetFor(null)}>
         <DialogContent size="sm" title={`Reset password · ${resetFor?.full_name}`} description="All of their sessions will be signed out and they must choose a new password at next sign-in." footer={<><Button variant="secondary" onClick={() => setResetFor(null)}>Cancel</Button><Button disabled={pw.length < 10} onClick={async () => { try { await api(`/api/users/${resetFor!.id}/reset-password`, { method: "POST", body: { new_password: pw } }); toast.success("Password reset"); setResetFor(null); } catch (e) { toast.error(e instanceof ApiError ? e.message : "Failed"); } }}>Reset password</Button></>}>
           <Field label="Temporary password" hint="At least 12 characters"><Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus /></Field>

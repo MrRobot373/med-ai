@@ -3,10 +3,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Inbox, Menu, MessageSquarePlus, Moon, Plus, Search, Sun, Upload, UserPlus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { useBranding, useInbox, useMe } from "@/api/hooks";
+import { useBranding, useInbox, useMe, useSavePreferences } from "@/api/hooks";
 import { ForcePasswordChange, MfaEnrolmentRequired } from "@/features/auth/SecurityGate";
 import { useAppearance } from "@/app/appearance";
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Kbd, SheetContent, Spinner, Tooltip } from "@/components/ui";
+import { Button, Select, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Kbd, SheetContent, Spinner, Tooltip } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { BrandMark } from "./BrandMark";
 import { CommandPaletteProvider, usePalette } from "./CommandPalette";
@@ -50,6 +50,9 @@ function TopBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const primary = visibleFor(PRIMARY_NAV, me?.role);
   const urgent = inbox?.filter((i) => i.priority !== "low").length ?? 0;
+  const qc = useQueryClient();
+  const savePrefs = useSavePreferences();
+  const saveBranch = (branch_id: string) => savePrefs.mutate({ ...(me?.preferences ?? {}), branch_id }, { onSuccess: () => qc.invalidateQueries() });
   const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
 
   return (
@@ -94,6 +97,10 @@ function TopBar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
+          {me && me.branches.length > 1 && (
+            <Select size="sm" className="hidden w-44 sm:flex" value={me.branch_id ?? undefined} options={me.branches.map((b) => ({ value: b.id, label: b.name }))}
+              onValueChange={(v) => saveBranch(v)} />
+          )}
           <Tooltip content={<span className="flex items-center gap-1">Search <Kbd className="bg-transparent text-background/80">{isMac ? "⌘K" : "Ctrl K"}</Kbd></span>}>
             <button className={iconBtn} onClick={palette.open} aria-label="Search"><Search /></button>
           </Tooltip>
