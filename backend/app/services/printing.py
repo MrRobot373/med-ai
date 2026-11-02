@@ -66,14 +66,14 @@ def sheet_for(db: Session, branch: Branch | None, doctor: User | None, cfg: Prin
     )
 
 
-def verify_sig(rx_id: str) -> str:
-    return hmac.new(get_settings().secret_key.encode(), f"rx:{rx_id}".encode(), hashlib.sha256).hexdigest()[:16]
+def verify_sig(doc_id: str, kind: str = "rx") -> str:
+    return hmac.new(get_settings().secret_key.encode(), f"{kind}:{doc_id}".encode(), hashlib.sha256).hexdigest()[:16]
 
 
-def verify_code(rx_id: str, cfg: PrintConfig) -> str:
-    sig = verify_sig(rx_id)
+def verify_code(doc_id: str, cfg: PrintConfig, kind: str = "rx") -> str:
+    sig = verify_sig(doc_id, kind)
     base = cfg.public_base_url.rstrip("/")
-    return f"{base}/verify/rx/{rx_id}?s={sig}" if base else f"GMSRX:{rx_id}:{sig}"
+    return f"{base}/verify/{kind}/{doc_id}?s={sig}" if base else f"GMS{kind.upper()}:{doc_id}:{sig}"
 
 
 def prescription_view(db: Session, rx: Prescription, cfg: PrintConfig | None = None) -> dict:

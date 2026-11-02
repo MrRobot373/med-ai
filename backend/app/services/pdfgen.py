@@ -297,11 +297,13 @@ def _build(flow: list, sheet: Sheet, *, title: str, running_label: str) -> bytes
     return buf.getvalue()
 
 
-def _signature_block(sheet: Sheet, st: dict, width: float, code: str | None, rx_id: str | None) -> Table:
+def _signature_block(
+    sheet: Sheet, st: dict, width: float, code: str | None, rx_id: str | None, label: str = "Prescription ID"
+) -> Table:
     cfg = sheet.cfg
     left: list = []
     if rx_id:
-        left.append(_p(f"Prescription ID {rx_id[:8].upper()}", st["small"]))
+        left.append(_p(f"{label} {rx_id[:8].upper() if len(rx_id) > 20 else rx_id}", st["small"]))
     if code and cfg.show_qr:
         left.append(Spacer(1, 1.5 * mm))
         left.append(_qr(code))
@@ -440,6 +442,117 @@ def prescription_pdf(rx: dict, sheet: Sheet) -> bytes:
     flow.append(Spacer(1, 10 * mm))
     flow.append(KeepTogether([_signature_block(sheet, st, width, rx.get("verify_code"), rx.get("id"))]))
     return _build(flow, sheet, title=f"Prescription — {pt['name']}", running_label="Prescription")
+
+
+def letter_pdf(doc: dict, sheet: Sheet) -> bytes:
+    """`doc` is the view built by `letters.letter_view`: title, number, date, patient, optional `to` block,
+    paragraphs, sections (heading + lines), an optional medicines table and the verification code."""
+    cfg = sheet.cfg
+    st = _styles(cfg)
+    accent = st["_accent"]
+    page = PAPER[cfg.paper]
+    width = page[0] - 2 * (10 if cfg.paper == "A5" else 14) * mm
+    flow: list = _letterhead(sheet, st, width)
+    head = Table(
+        [[Paragraph(f"<b>{escape(doc['title'].upper())}</b>", st["h"]), Paragraph(_ref_line(doc), st["right"])]],
+        colWidths=[width * 0.6, width * 0.4],
+    )
+    head.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "BOTTOM"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
+    flow += [head, Spacer(1, 2 * mm)]
+    pt = doc["patient"]
+    who = f"<b>{escape(pt['name'])}</b>  ·  {escape(str(pt['age']) + ' y' if pt.get('age') is not None else '—')}  ·  {escape(pt.get('sex') or '')}  ·  {escape(pt['mrn'])}"
+    box = Table([[Paragraph(who, st["body"])]], colWidths=[width])
+    box.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F3F6FB")),
+                ("BOX", (0, 0), (-1, -1), 0.5, HAIRLINE),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]
+        )
+    )
+    flow += [box, Spacer(1, 4 * mm)]
+    if doc.get("to"):
+        flow.append(_p("\n".join(x for x in doc["to"] if x), st["bold"]))
+        flow.append(Spacer(1, 3 * mm))
+    for para in doc.get("paragraphs", []):
+        if para.strip():
+            flow.append(_p(para, st["body"]))
+            flow.append(Spacer(1, 2.5 * mm))
+    for sec in doc.get("sections", []):
+        if sec.get("lines"):
+            flow.append(Paragraph(escape(sec["heading"]), st["h"]))
+            for ln in sec["lines"]:
+                flow.append(_p("•  " + ln, st["body"]))
+    if doc.get("items"):
+        rows = [[Paragraph(h, st["th"]) for h in ("MEDICINE", "HOW MUCH", "WHEN", "FOR")]]
+        for i in doc["items"]:
+            rows.append(
+                [
+                    Paragraph(
+                        f"<b>{escape(i['drug'])}</b>"
+                        + (
+                            f"<br/><font size='{SIZES[cfg.font_size] - 1.6}' color='#5B6B82'>{escape(i['generic'])}</font>"
+                            if i.get("generic")
+                            else ""
+                        ),
+                        st["body"],
+                    ),
+                    Paragraph(escape(i["dose"] or ""), st["body"]),
+                    Paragraph(escape(FREQ.get(i["frequency"], i["frequency"] or "")), st["body"]),
+                    Paragraph(
+                        escape(f"{i['duration_days']} days" if i.get("duration_days") else "As advised"), st["body"]
+                    ),
+                ]
+            )
+        tbl = Table(rows, colWidths=[width * 0.38, width * 0.14, width * 0.26, width * 0.22], repeatRows=1)
+        tbl.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LINEBELOW", (0, 0), (-1, 0), 0.8, accent),
+                    ("LINEBELOW", (0, 1), (-1, -1), 0.4, HAIRLINE),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 3),
+                    ("TOPPADDING", (0, 0), (-1, -1), 3.5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
+                ]
+            )
+        )
+        flow += [Spacer(1, 2 * mm), tbl]
+    for para in doc.get("after", []):
+        if para.strip():
+            flow += [Spacer(1, 2.5 * mm), _p(para, st["body"])]
+    flow.append(Spacer(1, 10 * mm))
+    flow.append(
+        KeepTogether(
+            [
+                _signature_block(
+                    sheet, st, width, doc.get("verify_code"), doc.get("number") or doc.get("id"), "Reference"
+                )
+            ]
+        )
+    )
+    return _build(flow, sheet, title=f"{doc['title']} — {pt['name']}", running_label=doc["title"])
+
+
+def _ref_line(doc: dict) -> str:
+    bits = []
+    if doc.get("number"):
+        bits.append(f"No. <b>{escape(doc['number'])}</b>")
+    else:
+        bits.append("<b>DRAFT</b>")
+    bits.append(f"Date: <b>{escape(doc['date'])}</b>")
+    return "<br/>".join(bits)
 
 
 def render_first_page_png(pdf: bytes, width: int = 900) -> bytes:
