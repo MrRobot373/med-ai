@@ -34,7 +34,7 @@ export interface Branding {
 export interface Patient {
   id: string; mrn: string; first_name: string; last_name: string; full_name: string; date_of_birth: string | null;
   age: number | null; sex: string; phone: string | null; email: string | null; address: string | null;
-  blood_group: string | null; notes: string | null; tags: string[]; status: "active" | "archived"; synthetic: boolean;
+  blood_group: string | null; notes: string | null; tags: string[]; status: "active" | "archived"; synthetic: boolean; merged_into_id?: string | null;
   created_at: string; updated_at: string;
 }
 

@@ -10,7 +10,22 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 
-from app.api import ai, audit, auth, care, documents, knowledge, letters, org, patients, rxlib, settings, system, verify
+from app.api import (
+    ai,
+    audit,
+    auth,
+    care,
+    documents,
+    knowledge,
+    letters,
+    org,
+    patient_tools,
+    patients,
+    rxlib,
+    settings,
+    system,
+    verify,
+)
 from app.core import passwords
 from app.core.config import PROJECT_ROOT, get_settings
 from app.core.errors import AppError
@@ -110,7 +125,7 @@ def create_app(*, skip_migrations: bool = False) -> FastAPI:
 
     @app.exception_handler(AppError)
     async def app_error(_: Request, exc: AppError):
-        return JSONResponse({"detail": exc.message, "code": exc.code}, status_code=exc.status_code)
+        return JSONResponse({"detail": exc.message, "code": exc.code, **exc.extra}, status_code=exc.status_code)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(_: Request, exc: RequestValidationError):
@@ -120,7 +135,22 @@ def create_app(*, skip_migrations: bool = False) -> FastAPI:
             msgs.append(f"{loc}: {e['msg']}" if loc else e["msg"])
         return JSONResponse({"detail": "; ".join(msgs), "code": "validation_error"}, status_code=422)
 
-    for r in (auth, org, patients, documents, care, knowledge, ai, settings, system, audit, verify, letters, rxlib):
+    for r in (
+        auth,
+        org,
+        patient_tools,
+        patients,
+        documents,
+        care,
+        knowledge,
+        ai,
+        settings,
+        system,
+        audit,
+        verify,
+        letters,
+        rxlib,
+    ):
         app.include_router(r.router)
 
     @app.get("/api/health", tags=["system"])

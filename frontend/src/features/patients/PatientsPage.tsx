@@ -1,4 +1,4 @@
-import { AlertTriangle, LayoutGrid, List, Search, UserPlus, Users } from "lucide-react";
+import { AlertTriangle, FileUp, GitMerge, LayoutGrid, List, Search, UserPlus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { Avatar, Badge, Button, Card, EmptyState, Input, PageHeader, Segmented, 
 import { api } from "@/lib/api";
 import { fmtRelative, sexLabel } from "@/lib/utils";
 import { PatientFormDialog } from "./PatientFormDialog";
+import { DuplicatesDialog, ImportDialog } from "./PatientTools";
 
 function ConditionChips({ items, max = 2 }: { items: string[]; max?: number }) {
   if (!items.length) return <span className="text-xs text-muted-foreground">No active problems</span>;
@@ -45,6 +46,8 @@ function PatientCardItem({ p }: { p: PatientListItem }) {
 
 export default function PatientsPage() {
   const [params, setParams] = useSearchParams();
+  const [importOpen, setImportOpen] = useState(false);
+  const [dupOpen, setDupOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
   const [status, setStatus] = useState("active");
@@ -66,7 +69,7 @@ export default function PatientsPage() {
       <PageHeader
         title="Patients"
         description="Search the patient directory, open a chart, or register someone new."
-        actions={me?.role !== "viewer" && <Button onClick={() => setFormOpen(true)}><UserPlus /> Register patient</Button>}
+        actions={me?.role !== "viewer" && <div className="flex flex-wrap gap-2">{(me?.role === "admin" || me?.role === "clinician") && <Button variant="secondary" onClick={() => setDupOpen(true)}><GitMerge /> Duplicates</Button>}<Button variant="secondary" onClick={() => setImportOpen(true)}><FileUp /> Import</Button><Button onClick={() => setFormOpen(true)}><UserPlus /> Register patient</Button></div>}
       />
       <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center">
         <Input icon={<Search />} placeholder="Search by name or MRN…" value={q} onChange={(e) => setQ(e.target.value)} className="lg:max-w-sm" />
@@ -110,6 +113,8 @@ export default function PatientsPage() {
           </Table>
         </Card>
       )}
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <DuplicatesDialog open={dupOpen} onOpenChange={setDupOpen} />
       <PatientFormDialog open={formOpen} onOpenChange={(o) => { setFormOpen(o); if (!o && params.get("new")) { params.delete("new"); setParams(params, { replace: true }); } }} />
     </div>
   );

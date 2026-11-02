@@ -100,7 +100,8 @@ Sex = Literal["male", "female", "other", "unknown"]
 
 
 class PatientIn(BaseModel):
-    mrn: str = Field(min_length=1, max_length=64)
+    mrn: str | None = Field(None, max_length=64)  # blank → the next automatic number
+    allow_duplicate: bool = False  # register even though a very similar patient exists
     first_name: str = Field(min_length=1, max_length=120)
     last_name: str = Field(min_length=1, max_length=120)
     date_of_birth: date | None = None
@@ -145,6 +146,7 @@ class PatientOut(ORM):
     tags: list[str]
     status: str
     synthetic: bool
+    merged_into_id: str | None = None
     created_at: datetime
     updated_at: datetime
 

@@ -48,6 +48,7 @@ export default function PatientWorkspace() {
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-28" /><Skeleton className="h-10" /><Skeleton className="h-96" /></div>;
   if (error || !patient) return <EmptyState icon={<AlertTriangle />} title="Patient not found" description="The chart may have been removed." action={<Button variant="secondary" asChild><Link to="/patients">Back to patients</Link></Button>} />;
 
+  if (patient.merged_into_id) return <EmptyState icon={<AlertTriangle />} title="This chart was merged into another" description={`${patient.full_name} (${patient.mrn}) was a duplicate. All of its records now belong to the chart it was merged into.`} action={<Button asChild><Link to={`/patients/${patient.merged_into_id}`}>Open the merged chart</Link></Button>} />;
   if (frontDesk) return <FrontDeskPatient patient={patient} />;
   const onList = today?.appointments.find((a) => a.patient_id === patient.id && a.status !== "seen" && a.status !== "cancelled");
 

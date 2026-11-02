@@ -158,6 +158,22 @@ class VectorStore:
 
         await self._run(op)
 
+    async def reassign_patient(self, old_id: str, new_id: str) -> None:
+        """Points every vector of one patient at another (used when two charts are merged)."""
+
+        def op():
+            client = _client(self.cfg)
+            name = collection_name(self.cfg, "patient")
+            if client.collection_exists(name):
+                client.set_payload(
+                    name,
+                    payload={"patient_id": new_id},
+                    points=qm.Filter(must=[qm.FieldCondition(key="patient_id", match=qm.MatchValue(value=old_id))]),
+                    wait=True,
+                )
+
+        await self._run(op)
+
     async def drop_all(self) -> None:
         def op():
             client = _client(self.cfg)

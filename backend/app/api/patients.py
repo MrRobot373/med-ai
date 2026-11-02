@@ -1,11 +1,13 @@
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import func, or_, select
 
 from app.api.deps import DB, AdminUser, ClinicalUser, CurrentUser, StaffUser, WriteUser
 from app.clinical.context import age, latest_observations
+from app.core.errors import AppError
 from app.models import AIRun, Allergy, Condition, Document, Encounter, Medication, Observation, Patient
 from app.schemas.common import (
     AllergyIn,
@@ -157,10 +159,26 @@ def list_patients(
 
 @router.post("", response_model=PatientOut, status_code=201)
 def create_patient(body: PatientIn, db: DB, user: StaffUser):
-    if db.scalars(select(Patient).where(func.lower(Patient.mrn) == body.mrn.strip().lower())).first():
-        raise HTTPException(409, f"A patient with MRN {body.mrn} already exists.")
-    p = Patient(**body.model_dump(), created_by=user.id)
-    p.mrn = p.mrn.strip()
+    from app.services import branches as branch_svc
+    from app.services import dedupe
+
+    data = body.model_dump(exclude={"allow_duplicate"})
+    mrn = (data.pop("mrn") or "").strip()
+    if mrn and db.scalars(select(Patient).where(func.lower(Patient.mrn) == mrn.lower())).first():
+        raise HTTPException(409, f"A patient with MRN {mrn} already exists.")
+    if not body.allow_duplicate:
+        strong = [m for m in dedupe.find_matches(db, data) if m["strong"]]
+        if strong:
+            top = strong[0]
+            raise AppError(
+                f"{top['name']} ({top['mrn']}) looks like the same person: {', '.join(top['reasons'])}.",
+                status_code=409,
+                code="possible_duplicate",
+                extra={"matches": jsonable_encoder(strong)},
+            )
+    p = Patient(
+        **data, mrn=mrn or dedupe.next_mrn(db), created_by=user.id, registered_branch_id=branch_svc.active(db, user).id
+    )
     db.add(p)
     db.commit()
     audit.record(
