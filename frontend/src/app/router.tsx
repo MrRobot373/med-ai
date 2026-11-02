@@ -27,6 +27,7 @@ const AuditPage = lazy(() => import("@/features/audit/AuditPage"));
 const SettingsPage = lazy(() => import("@/features/settings/SettingsPage"));
 const ConsultationTab = lazy(() => import("@/features/consult/ConsultationTab"));
 const OrdersTab = lazy(() => import("@/features/workspace/OrdersTab"));
+const LettersTab = lazy(() => import("@/features/workspace/LettersTab"));
 const PrescriptionsTab = lazy(() => import("@/features/workspace/PrescriptionsTab"));
 const FrontDeskHome = lazy(() => import("@/features/frontdesk/FrontDeskHome"));
 
@@ -65,6 +66,7 @@ export const router = createBrowserRouter([
           { path: "consult", element: page(<ConsultationTab />) },
           { path: "orders", element: page(<OrdersTab />) },
           { path: "prescriptions", element: page(<PrescriptionsTab />) },
+          { path: "letters", element: page(<LettersTab />) },
           { path: "timeline", element: page(<TimelineTab />) },
           { path: "documents", element: page(<DocumentsTab />) },
           { path: "results", element: page(<ResultsTab />) },

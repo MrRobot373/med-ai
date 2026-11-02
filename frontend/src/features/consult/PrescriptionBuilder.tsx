@@ -7,6 +7,7 @@ import { Badge, Button, Card, CardHeader, Dialog, DialogContent, Field, Input, S
 import { api, ApiError } from "@/lib/api";
 import { cn, fmtDate } from "@/lib/utils";
 import { MedicineInput, MedicineThumb } from "./MedicineInput";
+import { FavouriteStar, RxShortcuts, type ShortItem } from "./RxShortcuts";
 import { AIEmpty, Bullets, FindingList, MiniHeading, RunError, RunMeta, SEVERITY_META, SeverityBadge } from "./parts";
 
 const FREQUENCIES = ["OD", "BD", "TDS", "QID", "HS", "1-0-1", "1-1-1", "1-0-0", "0-0-1", "SOS", "STAT", "Weekly", "q8h", "q12h"];
@@ -78,6 +79,11 @@ export function PrescriptionBuilder({ rx, review, canWrite, onFinalised }: {
   const reviewFor = (row: Row) => reviewOut?.items.find((i) => i.index === filled.indexOf(row));
   const criticalRows = filled.filter((r) => (checkFor(r)?.status ?? "ok") === "critical");
 
+  const applyShortcut = (items: ShortItem[], extra?: { diagnosis?: string | null; advice?: string | null }) => {
+    setRows((rs) => [...rs.filter((r) => r.drug.trim()), ...items.map((i): Row => ({ key: crypto.randomUUID(), drug: i.drug, dose: i.dose || "1 tab", frequency: i.frequency || "BD", duration_days: i.duration_days ?? null, instructions: i.instructions ?? "", route: i.route ?? null, strength_mg: i.strength_mg ?? null }))]);
+    if (extra?.diagnosis && !diagnosis.trim()) setDiagnosis(extra.diagnosis);
+    if (extra?.advice && !advice.trim()) setAdvice(extra.advice);
+  };
   const update = (key: string, patch: Partial<Row>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
 
   const runReview = async () => {
@@ -148,6 +154,8 @@ export function PrescriptionBuilder({ rx, review, canWrite, onFinalised }: {
           </Field>
         )}
 
+        {editable && <RxShortcuts patientId={rx.patient_id} onApply={applyShortcut} current={() => ({ diagnosis, advice, items: payload().items as ShortItem[] })} />}
+
         <div className="space-y-2.5">
           {rows.map((row, i) => {
             const c = checkFor(row);
@@ -191,6 +199,7 @@ export function PrescriptionBuilder({ rx, review, canWrite, onFinalised }: {
                     )}
                     {row.override_reason && !editable && <p className="text-[0.72rem] text-muted-foreground"><b>Prescriber's reason:</b> {row.override_reason}</p>}
                   </div>
+                  {editable && row.drug.trim() && <FavouriteStar item={row} />}
                   {editable && <Button size="icon-xs" variant="ghost" aria-label="Remove" onClick={() => setRows((rs) => (rs.length > 1 ? rs.filter((r) => r.key !== row.key) : [newRow()]))}><X /></Button>}
                 </div>
               </div>

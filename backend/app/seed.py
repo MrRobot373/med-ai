@@ -62,6 +62,47 @@ LETTERHEAD = {
     "email": "care@lifecaremedico.in",
     "footer_text": "Open Mon-Sat, 9 am to 8 pm. For emergencies call your nearest hospital.",
 }
+# Common outpatient starting points for the demo clinic. They are clinical content: a real clinic's own
+# doctors review and replace them (see docs/CLINICAL-SIGNOFF.md) — they are never created by a production install.
+STARTER_TEMPLATES = [
+    {
+        "name": "Acute gastritis",
+        "diagnosis": "Acute gastritis",
+        "advice": "Avoid spicy and oily food, tea and coffee on an empty stomach. Eat small, frequent meals.",
+        "items": [
+            {
+                "drug": "Pan 40",
+                "dose": "1 tab",
+                "frequency": "OD",
+                "duration_days": 14,
+                "instructions": "Before breakfast",
+            },
+            {"drug": "Digene", "dose": "10 ml", "frequency": "TDS", "duration_days": 5, "instructions": "After food"},
+        ],
+    },
+    {
+        "name": "Viral fever",
+        "diagnosis": "Viral fever",
+        "advice": "Plenty of oral fluids and rest. Return if fever lasts more than 3 days or you develop rash, breathlessness or persistent vomiting.",
+        "items": [
+            {
+                "drug": "Dolo 650",
+                "dose": "1 tab",
+                "frequency": "TDS",
+                "duration_days": 3,
+                "instructions": "After food, if fever",
+            }
+        ],
+    },
+    {
+        "name": "Hypertension follow-up",
+        "diagnosis": "Essential hypertension",
+        "advice": "Low-salt diet, regular walking, and check blood pressure at home. Do not stop tablets without asking.",
+        "items": [
+            {"drug": "Telma 40", "dose": "1 tab", "frequency": "OD", "duration_days": 30, "instructions": "Morning"}
+        ],
+    },
+]
 DOCTOR_DETAILS = {
     CLINICIAN_EMAIL: {
         "qualifications": "MBBS, MD (Internal Medicine)",
@@ -96,6 +137,18 @@ def seed_users(db) -> User:
 
     for u in db.scalars(select(User)):
         branches.ensure_membership(db, u)
+    db.commit()
+    from app.models import RxTemplate
+
+    doctor = db.scalars(select(User).where(User.email == CLINICIAN_EMAIL)).first()
+    for t in STARTER_TEMPLATES:
+        if (
+            doctor
+            and not db.scalars(
+                select(RxTemplate).where(RxTemplate.name == t["name"], RxTemplate.is_shared.is_(True))
+            ).first()
+        ):
+            db.add(RxTemplate(owner_id=doctor.id, is_shared=True, **t))
     db.commit()
     return (
         db.scalars(select(User).where(User.email == CLINICIAN_EMAIL)).first()

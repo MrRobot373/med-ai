@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Activity, AlertTriangle, Archive, ArchiveRestore, CalendarClock, ChevronLeft, Download, FileText, FlaskConical, LayoutDashboard,
-  MessagesSquare, MoreHorizontal, Pill, Pencil, Stethoscope, Trash2, Wand2, HeartPulse, ClipboardPen, Microscope, FileSignature,
+  Mail, MessagesSquare, MoreHorizontal, Pill, Pencil, Stethoscope, Trash2, Wand2, HeartPulse, ClipboardPen, Microscope, FileSignature,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate, useParams } from "react-router";
@@ -25,6 +25,7 @@ const TABS = [
   { to: "results", label: "Results", icon: FlaskConical },
   { to: "orders", label: "Orders", icon: Microscope },
   { to: "prescriptions", label: "Prescriptions", icon: FileSignature },
+  { to: "letters", label: "Letters", icon: Mail },
   { to: "medications", label: "Medications", icon: Pill },
   { to: "problems", label: "Problems", icon: HeartPulse },
   { to: "encounters", label: "Encounters", icon: CalendarClock },
