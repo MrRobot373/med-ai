@@ -17,13 +17,14 @@ Runtime dependencies and their licences. Versions are those resolved in the lock
 | cryptography | Apache-2.0 / BSD |
 | python-multipart | Apache-2.0 |
 | qdrant-client | Apache-2.0 |
-| PyMuPDF | AGPL-3.0 (or Artifex commercial licence) |
+| pypdfium2 (PDFium) | Apache-2.0 / BSD-3-Clause |
+| reportlab | BSD-3-Clause |
 | python-docx | MIT |
 | openpyxl | MIT |
 | Pillow | MIT-CMU |
 | sentence-transformers (optional) | Apache-2.0 |
 
-> **PyMuPDF is AGPL-3.0.** Distributing this application (or offering it as a network service) under terms incompatible with the AGPL requires an Artifex commercial licence, or replacing PDF parsing with a permissively-licensed library (e.g. `pypdf` + `pdfplumber`).
+> The product no longer depends on PyMuPDF (AGPL-3.0). The developer-only patient-file generator in `scripts/patient_files` and the film tooling still use it to *author* sample PDFs; it is not part of the shipped application or image.
 
 ## Frontend (npm)
 

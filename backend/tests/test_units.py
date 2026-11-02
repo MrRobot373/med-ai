@@ -56,21 +56,19 @@ def test_parse_json_response_tolerates_fences():
 
 def test_pdf_column_table_keeps_decimal_values():
     """Lab PDFs lay results out in columns; decimals must survive text extraction."""
-    import pymupdf
-
     from app.ingestion import labs, parsers
+    from tests.pdfutil import make_pdf
 
-    doc = pymupdf.open()
-    page = doc.new_page()
+    items = []
     y = 100
     for row in (
         ("Haemoglobin", "12.9", "g/dL", "13.0 - 17.0", "L"),
         ("Serum Creatinine", "1.36", "mg/dL", "0.70 - 1.30", "H"),
     ):
         for x, cell in zip((50, 220, 300, 380, 480), row, strict=True):
-            page.insert_text((x, y), cell, fontsize=10)
+            items.append((x, y, cell))
         y += 16
-    pages = parsers.parse(doc.tobytes(), "application/pdf").pages
+    pages = parsers.parse(make_pdf(items), "application/pdf").pages
     got = {o.code: (o.value_num, o.unit, o.ref_low, o.ref_high, o.flag) for o in labs.extract(pages)}
     assert got["hemoglobin"] == (12.9, "g/dL", 13.0, 17.0, "low")
     assert got["creatinine"] == (1.36, "mg/dL", 0.7, 1.3, "high")

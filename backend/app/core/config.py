@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     cookie_secure: bool = Field(default=False, alias="COOKIE_SECURE")
     session_cookie_name: str = Field(default="gms_session", alias="SESSION_COOKIE_NAME")
     upload_max_mb: int = Field(default=40, alias="UPLOAD_MAX_MB")
+    upload_max_pdf_pages: int = Field(default=300, alias="UPLOAD_MAX_PDF_PAGES")
+    upload_max_image_pixels: int = Field(default=100_000_000, alias="UPLOAD_MAX_IMAGE_PIXELS")
     login_rate_limit_attempts: int = Field(default=8, alias="LOGIN_RATE_LIMIT_ATTEMPTS")
     login_rate_limit_window_seconds: int = Field(default=600, alias="LOGIN_RATE_LIMIT_WINDOW_SECONDS")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")

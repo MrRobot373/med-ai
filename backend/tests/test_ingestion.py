@@ -81,3 +81,24 @@ def test_failed_ingestion_is_reported(clinician, ai, monkeypatch):
     r = upload(clinician, p["id"], lab_pdf("Alice Tester", "T-100", [("HbA1c", "7.0", "%", "4.0-5.6")]))
     doc = clinician.get(f"/api/documents/{r.json()['id']}").json()
     assert doc["status"] == "failed" and "unreachable" in doc["error"]
+
+
+def test_upload_rejects_oversized_pdf_and_image(clinician, monkeypatch):
+    import io
+
+    from PIL import Image
+
+    from app.core.config import get_settings
+    from tests.pdfutil import lines_pdf
+
+    p = create_patient(clinician)
+    s = get_settings()
+    monkeypatch.setattr(s, "upload_max_pdf_pages", 0)
+    r = upload(clinician, p["id"], lines_pdf(["Report"]), filename="big.pdf")
+    assert r.status_code == 413 and "limit" in r.text
+    monkeypatch.setattr(s, "upload_max_pdf_pages", 300)
+    monkeypatch.setattr(s, "upload_max_image_pixels", 100)
+    buf = io.BytesIO()
+    Image.new("RGB", (50, 50), "white").save(buf, "PNG")
+    r = upload(clinician, p["id"], buf.getvalue(), filename="x.png")
+    assert r.status_code == 413

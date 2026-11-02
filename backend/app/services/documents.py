@@ -110,6 +110,15 @@ def create(
         )
     if not parsers.verify_magic(parsers.SUPPORTED[mime], data):
         raise AppError("File content does not match its extension.", status_code=415)
+    family = parsers.SUPPORTED[mime]
+    if family == "pdf":
+        from app.ingestion import pdf as pdf_io
+
+        pdf_io.check_limits(data, settings.upload_max_pdf_pages)
+    elif family == "image":
+        from app.ingestion import pdf as pdf_io
+
+        pdf_io.guard_image(data, settings.upload_max_image_pixels)
     if kind and kind not in KINDS:
         raise AppError(f"Unknown document type '{kind}'.")
 
@@ -211,13 +220,12 @@ async def _process(db: Session, doc: Document) -> None:
     elif parsed.kind == "pdf":
         scanned = [p for p in pages if len(p["text"].strip()) < SCANNED_PAGE_MIN_CHARS]
         if scanned:
-            import pymupdf
+            from app.ingestion import pdf as pdf_io
 
-            with pymupdf.open(stream=data, filetype="pdf") as pdf:
-                for p in scanned[:MAX_VISION_PAGES]:
-                    pix = pdf[p["page"] - 1].get_pixmap(dpi=150)
-                    p["text"] = await vision.transcribe(cfg, pix.tobytes("png"))
-                    methods[p["page"]] = "vision"
+            for p in scanned[:MAX_VISION_PAGES]:
+                png, _ = pdf_io.render_png(data, p["page"], dpi=150)
+                p["text"] = await vision.transcribe(cfg, png)
+                methods[p["page"]] = "vision"
 
     full_text = "\n\n".join(p["text"] for p in pages)
     if not full_text.strip():

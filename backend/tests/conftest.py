@@ -149,22 +149,12 @@ def clinician(client):
 
 
 def lab_pdf(name: str, mrn: str, rows: list[tuple], date: str = "2026-09-01") -> bytes:
-    import pymupdf
+    from tests.pdfutil import lines_pdf
 
-    doc = pymupdf.open()
-    page = doc.new_page()
-    y = 60
-    for line in [
-        f"Patient name: {name}",
-        f"MRN: {mrn}",
-        f"Report date: {date}",
-        "Test | Result | Unit | Reference range",
-    ] + [" | ".join(r) for r in rows]:
-        page.insert_text((50, y), line, fontsize=10)
-        y += 15
-    data = doc.tobytes()
-    doc.close()
-    return data
+    return lines_pdf(
+        [f"Patient name: {name}", f"MRN: {mrn}", f"Report date: {date}", "Test | Result | Unit | Reference range"]
+        + [" | ".join(r) for r in rows]
+    )
 
 
 def create_patient(client, mrn="T-100", first="Alice", last="Tester", **extra) -> dict:

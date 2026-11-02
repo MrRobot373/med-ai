@@ -117,13 +117,9 @@ def _render_preview(d: Document, page: int, width: int) -> tuple[bytes, int]:
 
     data = Path(d.storage_path).read_bytes()
     if d.mime_type == "application/pdf":
-        import pymupdf
+        from app.ingestion import pdf as pdf_io
 
-        with pymupdf.open(stream=data, filetype="pdf") as pdf:
-            count = pdf.page_count
-            pg = pdf[min(max(page, 1), count) - 1]
-            zoom = width / max(pg.rect.width, 1)
-            return pg.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), alpha=False).tobytes("png"), count
+        return pdf_io.render_png(data, page, width=width)
     if d.mime_type == "application/dicom":
         from app.ingestion import dicom
 

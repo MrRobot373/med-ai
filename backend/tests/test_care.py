@@ -177,14 +177,16 @@ def test_order_auto_matches_uploaded_report_and_surfaces_in_inbox(clinician, ai)
     ).json()
     assert o["category"] == "radiology" and o["status"] == "ordered"
     other = clinician.post(f"/api/patients/{pid}/orders", json={"test_name": "CBC"}).json()
-    import pymupdf
+    from tests.pdfutil import lines_pdf
 
-    d = pymupdf.open()
-    page = d.new_page()
-    page.insert_text((50, 60), "Ultrasonography of whole abdomen")
-    page.insert_text((50, 80), "Patient name: Alice Tester   MRN: O-1")
-    page.insert_text((50, 100), "Impression: Gall bladder calculus. No pancreatic lesion.")
-    data = d.tobytes()
+    data = lines_pdf(
+        [
+            "Ultrasonography of whole abdomen",
+            "Patient name: Alice Tester   MRN: O-1",
+            "Impression: Gall bladder calculus. No pancreatic lesion.",
+        ],
+        step=20,
+    )
     r = upload(clinician, pid, data, filename="usg.pdf", title="USG whole abdomen")
     assert r.status_code == 201
     orders = {x["id"]: x for x in clinician.get(f"/api/patients/{pid}/orders").json()}
