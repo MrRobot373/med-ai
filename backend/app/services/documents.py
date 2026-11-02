@@ -13,6 +13,7 @@ from pathlib import Path
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from app.core import storage
 from app.core.config import get_settings
 from app.core.errors import AppError, Conflict
 from app.core.logging import get_logger
@@ -119,8 +120,21 @@ def create(
         from app.ingestion import pdf as pdf_io
 
         pdf_io.guard_image(data, settings.upload_max_image_pixels)
+    elif family == "dicom":
+        from app.ingestion import dicom as dicom_io
+
+        try:
+            too_big = dicom_io.pixel_count(data) > settings.upload_max_image_pixels * 4
+        except Exception as exc:
+            raise AppError("This DICOM file could not be read.", status_code=415) from exc
+        if too_big:
+            raise AppError("This DICOM study is larger than the supported size.", status_code=413)
     if kind and kind not in KINDS:
         raise AppError(f"Unknown document type '{kind}'.")
+
+    from app.services import scan
+
+    scan.check(data, filename)
 
     sha = hashlib.sha256(data).hexdigest()
     dup_q = select(Document).where(Document.sha256 == sha, Document.scope == scope, Document.status != "archived")
@@ -135,7 +149,7 @@ def create(
     folder = settings.uploads_dir / scope / (patient.id if patient else "library")
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / f"{doc_id}_{safe_name}"
-    path.write_bytes(data)
+    storage.write(path, data)
 
     doc = Document(
         id=doc_id,
@@ -197,7 +211,7 @@ async def process(document_id: str) -> None:
 
 async def _process(db: Session, doc: Document) -> None:
     cfg = runtime_config.load(db)
-    data = Path(doc.storage_path).read_bytes()
+    data = storage.read(doc.storage_path)
     parsed = parsers.parse(data, doc.mime_type)
     pages = parsed.pages
     methods: dict[int, str] = {p["page"]: "text" for p in pages}
@@ -323,7 +337,7 @@ async def _process(db: Session, doc: Document) -> None:
 async def remove(db: Session, user: User, doc: Document) -> None:
     await indexing.remove_document(db, doc)
     with contextlib.suppress(OSError):
-        Path(doc.storage_path).unlink(missing_ok=True)
+        storage.delete(doc.storage_path)
     title, patient_id, doc_id = doc.title, doc.patient_id, doc.id
     db.delete(doc)
     db.commit()

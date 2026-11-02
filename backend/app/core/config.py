@@ -36,6 +36,14 @@ class Settings(BaseSettings):
     login_rate_limit_window_seconds: int = Field(default=600, alias="LOGIN_RATE_LIMIT_WINDOW_SECONDS")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
+    # Protection of data at rest and of uploads.
+    data_encryption_key: str | None = Field(default=None, alias="DATA_ENCRYPTION_KEY")
+    encryption_at_rest_attested: bool = Field(default=False, alias="ENCRYPTION_AT_REST_ATTESTED")
+    allow_insecure_http: bool = Field(default=False, alias="ALLOW_INSECURE_HTTP")
+    clamav_host: str | None = Field(default=None, alias="CLAMAV_HOST")
+    clamav_port: int = Field(default=3310, alias="CLAMAV_PORT")
+    clamav_fail_closed: bool = Field(default=True, alias="CLAMAV_FAIL_CLOSED")
+
     # First-run administrator. Created only when the users table is empty.
     bootstrap_admin_email: str = Field(default="admin@lifecaremedico.in", alias="BOOTSTRAP_ADMIN_EMAIL")
     bootstrap_admin_password: str = Field(default="Admin@2026", alias="BOOTSTRAP_ADMIN_PASSWORD")
@@ -56,6 +64,19 @@ class Settings(BaseSettings):
         # Relative paths in .env are relative to the project root, not to whichever
         # directory a command happens to be run from.
         return v if v.is_absolute() or str(v) == ":memory:" else (PROJECT_ROOT / v).resolve()
+
+    @property
+    def is_production(self) -> bool:
+        return self.app_env.lower() == "production"
+
+    def production_problems(self) -> list[str]:
+        """Settings that must not reach a production server. Empty outside production."""
+        if not self.is_production:
+            return []
+        problems = []
+        if self.secret_key in ("", "change-me-in-production") or len(self.secret_key) < 32:
+            problems.append("APP_SECRET_KEY must be set to a random value of at least 32 characters.")
+        return problems
 
     @property
     def resolved_database_url(self) -> str:

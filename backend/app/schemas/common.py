@@ -27,6 +27,10 @@ class UserOut(ORM):
     preferences: dict
     last_login_at: datetime | None
     created_at: datetime
+    must_change_password: bool = False
+    mfa_enabled: bool = False
+    mfa_required: bool = False  # filled in by the API from the security settings
+    locked_until: datetime | None = None
 
 
 class ProfileIn(BaseModel):
@@ -37,7 +41,21 @@ class ProfileIn(BaseModel):
 
 class PasswordIn(BaseModel):
     current_password: str
-    new_password: str = Field(min_length=8, max_length=200)
+    new_password: str = Field(min_length=1, max_length=200)  # strength is checked against the security settings
+
+
+class MfaVerifyIn(BaseModel):
+    mfa_token: str
+    code: str = Field(min_length=4, max_length=32)
+
+
+class MfaEnableIn(BaseModel):
+    code: str = Field(min_length=6, max_length=8)
+
+
+class MfaDisableIn(BaseModel):
+    password: str
+    code: str = Field(min_length=4, max_length=32)
 
 
 class UserCreate(BaseModel):
@@ -46,7 +64,7 @@ class UserCreate(BaseModel):
     title: str | None = None
     specialty: str | None = None
     role: Literal["admin", "clinician", "viewer", "front_desk"] = "clinician"
-    password: str = Field(min_length=8, max_length=200)
+    password: str = Field(min_length=1, max_length=200)
 
 
 class UserUpdate(BaseModel):
@@ -58,7 +76,7 @@ class UserUpdate(BaseModel):
 
 
 class ResetPasswordIn(BaseModel):
-    new_password: str = Field(min_length=8, max_length=200)
+    new_password: str = Field(min_length=1, max_length=200)
 
 
 # ---- Patients ---------------------------------------------------------------

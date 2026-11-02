@@ -11,11 +11,13 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 
 from app.api import ai, audit, auth, care, documents, knowledge, patients, settings, system
+from app.core import passwords
 from app.core.config import PROJECT_ROOT, get_settings
 from app.core.errors import AppError
 from app.core.logging import configure_logging, get_logger
 from app.core.security import hash_password
 from app.db import SessionLocal
+from app.middleware import SecurityMiddleware
 from app.models import User
 from app.services import runtime_config
 
@@ -37,12 +39,21 @@ def bootstrap() -> None:
     db = SessionLocal()
     try:
         if not db.scalar(select(func.count()).select_from(User)):
+            if s.is_production:
+                problems = passwords.validate(
+                    s.bootstrap_admin_password, email=s.bootstrap_admin_email, name=s.bootstrap_admin_name
+                )
+                if problems:
+                    raise RuntimeError(
+                        "BOOTSTRAP_ADMIN_PASSWORD is not acceptable for a production install: " + " ".join(problems)
+                    )
             db.add(
                 User(
                     email=s.bootstrap_admin_email.lower(),
                     full_name=s.bootstrap_admin_name,
                     role="admin",
                     password_hash=hash_password(s.bootstrap_admin_password),
+                    must_change_password=s.is_production,
                 )
             )
             db.commit()
@@ -58,6 +69,14 @@ def bootstrap() -> None:
 async def lifespan(app: FastAPI):
     s = get_settings()
     configure_logging(s.log_level)
+    problems = s.production_problems()
+    if problems:
+        raise RuntimeError("Refusing to start in production: " + " ".join(problems))
+    if s.is_production and not s.cookie_secure and not s.allow_insecure_http:
+        logger.warning(
+            "COOKIE_SECURE is off in production: sign-in cookies travel unencrypted. Serve the app over HTTPS "
+            "(the bundled proxy does this) or set ALLOW_INSECURE_HTTP=true to accept the risk on a closed network."
+        )
     s.data_dir.mkdir(parents=True, exist_ok=True)
     s.uploads_dir.mkdir(parents=True, exist_ok=True)
     if getattr(app.state, "skip_migrations", False) is False:
@@ -76,6 +95,7 @@ def create_app(*, skip_migrations: bool = False) -> FastAPI:
         redoc_url=None,
     )
     app.state.skip_migrations = skip_migrations
+    app.add_middleware(SecurityMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=get_settings().cors_origin_list,

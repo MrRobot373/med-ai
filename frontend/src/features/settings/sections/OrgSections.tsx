@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ImagePlus, KeyRound, Lock, MoreHorizontal, Palette, RefreshCw, Trash2, UserPlus, Users } from "lucide-react";
+import { AlertTriangle, Check, ImagePlus, KeyRound, Lock, MoreHorizontal, Palette, RefreshCw, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useHealth, useMe } from "@/api/hooks";
@@ -60,12 +60,31 @@ export function BrandingSection() {
   );
 }
 
+const ROLE_LABELS: Record<string, string> = { admin: "Administrators", clinician: "Clinicians", viewer: "Viewers", front_desk: "Front desk" };
+
 export function SecuritySection() {
   const s = useSection("security");
   if (!s.server) return null;
+  const roles: string[] = s.draft.mfa_required_roles ?? [];
+  const toggle = (r: string) => s.set({ mfa_required_roles: roles.includes(r) ? roles.filter((x) => x !== r) : [...roles, r] });
   return (
-    <SettingsCard title={<span className="flex items-center gap-2"><Lock className="size-4 text-primary" /> Security</span>} description="Session and access policies." footer={<SaveBar dirty={s.dirty} saving={s.saving} onSave={s.save} onReset={s.reset} />}>
-      <Field label="Idle session timeout" hint="Sessions slide forward while in use." className="max-w-xs"><NumberField value={s.draft.session_timeout_minutes} onChange={(v) => s.set({ session_timeout_minutes: v })} min={5} suffix="minutes" /></Field>
+    <SettingsCard title={<span className="flex items-center gap-2"><Lock className="size-4 text-primary" /> Security</span>} description="Sign-in, session and password policy for everyone in the organisation." footer={<SaveBar dirty={s.dirty} saving={s.saving} onSave={s.save} onReset={s.reset} />}>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Field label="Idle session timeout" hint="Sessions slide forward while in use." ><NumberField value={s.draft.session_timeout_minutes} onChange={(v) => s.set({ session_timeout_minutes: v })} min={5} suffix="minutes" /></Field>
+        <Field label="Longest session" hint="A hard limit, however active the person is."><NumberField value={s.draft.session_absolute_hours} onChange={(v) => s.set({ session_absolute_hours: v })} min={1} suffix="hours" /></Field>
+        <Field label="Minimum password length" hint="At least 10. Common and guessable passwords are always refused."><NumberField value={s.draft.min_password_length} onChange={(v) => s.set({ min_password_length: v })} min={10} suffix="characters" /></Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Lock after"><NumberField value={s.draft.max_failed_attempts} onChange={(v) => s.set({ max_failed_attempts: v })} min={3} suffix="wrong passwords" /></Field>
+          <Field label="Locked for"><NumberField value={s.draft.lockout_minutes} onChange={(v) => s.set({ lockout_minutes: v })} min={1} suffix="minutes" /></Field>
+        </div>
+      </div>
+      <Field label="Two-step verification is required for" hint="Enforced in production installations; the person must set it up before using the app.">
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(ROLE_LABELS).map(([r, label]) => (
+            <button key={r} type="button" onClick={() => toggle(r)} aria-pressed={roles.includes(r)} className={cn("rounded-full border px-3 py-1 text-sm transition-colors", roles.includes(r) ? "border-primary/40 bg-primary-soft text-primary-soft-foreground" : "text-muted-foreground hover:bg-muted")}>{label}</button>
+          ))}
+        </div>
+      </Field>
       <SwitchRow label="Viewers may use AI features" description="Viewer accounts are always read-only for records; this controls access to the assistant and tools." checked={s.draft.allow_viewer_ai} onCheckedChange={(v) => s.set({ allow_viewer_ai: v })} />
     </SettingsCard>
   );
@@ -83,14 +102,14 @@ function UserDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: b
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="Add user" icon={<UserPlus />} footer={<><Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button><Button onClick={submit} loading={busy} disabled={!f.email || !f.full_name || f.password.length < 8}>Create user</Button></>}>
+      <DialogContent title="Add user" icon={<UserPlus />} footer={<><Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button><Button onClick={submit} loading={busy} disabled={!f.email || !f.full_name || f.password.length < 10}>Create user</Button></>}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Full name" required><Input value={f.full_name} onChange={set("full_name")} /></Field>
           <Field label="Email" required><Input type="email" value={f.email} onChange={set("email")} /></Field>
           <Field label="Title"><Input value={f.title} onChange={set("title")} placeholder="e.g. Dr." /></Field>
           <Field label="Specialty"><Input value={f.specialty} onChange={set("specialty")} /></Field>
           <Field label="Role"><Select value={f.role} onValueChange={(v) => setF((x) => ({ ...x, role: v }))} options={[{ value: "clinician", label: "Clinician", description: "Full clinical access" }, { value: "viewer", label: "Viewer", description: "Read-only" }, { value: "front_desk", label: "Front desk", description: "Registration, today's list and report uploads — no clinical content" }, { value: "admin", label: "Administrator", description: "Clinical access + settings, users, audit" }]} /></Field>
-          <Field label="Temporary password" required hint="At least 8 characters"><Input type="password" value={f.password} onChange={set("password")} /></Field>
+          <Field label="Temporary password" required hint="At least 12 characters. The person must choose their own at first sign-in."><Input type="password" value={f.password} onChange={set("password")} /></Field>
         </div>
       </DialogContent>
     </Dialog>
@@ -122,7 +141,7 @@ export function UsersSection() {
               <TR key={u.id}>
                 <TD><div className="flex items-center gap-3"><Avatar name={u.full_name} size="sm" /><div><div className="font-medium">{u.full_name}{u.id === me?.id && <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>}</div><div className="text-xs text-muted-foreground">{u.email}{u.specialty ? ` · ${u.specialty}` : ""}</div></div></div></TD>
                 <TD className="w-44"><Select size="sm" value={u.role} disabled={u.id === me?.id} onValueChange={(v) => patch(u, { role: v }, "Role updated")} options={[{ value: "admin", label: "Administrator" }, { value: "clinician", label: "Clinician" }, { value: "viewer", label: "Viewer" }, { value: "front_desk", label: "Front desk" }]} /></TD>
-                <TD><Badge tone={u.is_active ? "success" : "neutral"}>{u.is_active ? "Active" : "Deactivated"}</Badge></TD>
+                <TD><div className="flex flex-wrap gap-1"><Badge tone={u.is_active ? "success" : "neutral"}>{u.is_active ? "Active" : "Deactivated"}</Badge>{u.locked_until && new Date(u.locked_until) > new Date() && <Badge tone="danger">Locked</Badge>}{u.mfa_enabled ? <Badge tone="primary">2-step</Badge> : u.mfa_required ? <Badge tone="warning">No 2-step</Badge> : null}{u.must_change_password && <Badge tone="warning">New password pending</Badge>}</div></TD>
                 <TD className="text-xs text-muted-foreground">{u.last_login_at ? fmtRelative(u.last_login_at) : "Never"}</TD>
                 <TD className="text-right">
                   {u.id !== me?.id && (
@@ -130,6 +149,8 @@ export function UsersSection() {
                       <DropdownMenuTrigger asChild><Button size="icon-xs" variant="ghost" aria-label="User actions"><MoreHorizontal /></Button></DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem onSelect={() => { setResetFor(u); setPw(""); }}><KeyRound /> Reset password</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={async () => { await api(`/api/users/${u.id}/unlock`, { method: "POST" }); toast.success("Account unlocked"); qc.invalidateQueries({ queryKey: ["users"] }); }}>Unlock account</DropdownMenuItem>
+                        {u.mfa_enabled && <DropdownMenuItem onSelect={async () => { await api(`/api/users/${u.id}/mfa/reset`, { method: "POST" }); toast.success("Two-step verification reset"); qc.invalidateQueries({ queryKey: ["users"] }); }}>Reset two-step verification</DropdownMenuItem>}
                         <DropdownMenuItem danger={u.is_active} onSelect={() => patch(u, { is_active: !u.is_active }, u.is_active ? "User deactivated — sessions ended" : "User reactivated")}>{u.is_active ? "Deactivate" : "Reactivate"}</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -142,20 +163,40 @@ export function UsersSection() {
       )}
       <UserDialog open={open} onOpenChange={setOpen} />
       <Dialog open={!!resetFor} onOpenChange={(o) => !o && setResetFor(null)}>
-        <DialogContent size="sm" title={`Reset password · ${resetFor?.full_name}`} description="All of their sessions will be signed out." footer={<><Button variant="secondary" onClick={() => setResetFor(null)}>Cancel</Button><Button disabled={pw.length < 8} onClick={async () => { try { await api(`/api/users/${resetFor!.id}/reset-password`, { method: "POST", body: { new_password: pw } }); toast.success("Password reset"); setResetFor(null); } catch (e) { toast.error(e instanceof ApiError ? e.message : "Failed"); } }}>Reset password</Button></>}>
-          <Field label="New password" hint="At least 8 characters"><Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus /></Field>
+        <DialogContent size="sm" title={`Reset password · ${resetFor?.full_name}`} description="All of their sessions will be signed out and they must choose a new password at next sign-in." footer={<><Button variant="secondary" onClick={() => setResetFor(null)}>Cancel</Button><Button disabled={pw.length < 10} onClick={async () => { try { await api(`/api/users/${resetFor!.id}/reset-password`, { method: "POST", body: { new_password: pw } }); toast.success("Password reset"); setResetFor(null); } catch (e) { toast.error(e instanceof ApiError ? e.message : "Failed"); } }}>Reset password</Button></>}>
+          <Field label="Temporary password" hint="At least 12 characters"><Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus /></Field>
         </DialogContent>
       </Dialog>
     </Card>
   );
 }
 
+function SecurityChecklist() {
+  const { data } = useQuery({ queryKey: ["security-posture"], queryFn: () => api<{ environment: string; ok: boolean; items: { id: string; label: string; ok: boolean; detail: string }[] }>("/api/system/security") });
+  return (
+    <SettingsCard title={<span className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" /> Security checklist</span>} description="What protects patient data on this server right now." badge={data && <Badge tone={data.ok ? "success" : "warning"}>{data.ok ? "All good" : "Needs attention"}</Badge>}>
+      {data ? (
+        <ul className="-my-2 divide-y">
+          {data.items.map((i) => (
+            <li key={i.id} className="flex items-start gap-3 py-2.5 text-sm">
+              <span className={cn("mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full", i.ok ? "bg-success-soft text-success-foreground" : "bg-warning-soft text-warning-foreground")}>{i.ok ? <Check className="size-3.5" /> : <AlertTriangle className="size-3.5" />}</span>
+              <div><div className="font-medium">{i.label}</div><div className="text-xs text-muted-foreground">{i.detail}</div></div>
+            </li>
+          ))}
+        </ul>
+      ) : <Skeleton className="h-40" />}
+    </SettingsCard>
+  );
+}
+
 export function SystemSection() {
   const { data: health, isFetching } = useHealth();
+  const { data: me } = useMe();
   const qc = useQueryClient();
   const { data: info } = useQuery({ queryKey: ["system-info"], queryFn: () => api<any>("/api/system/info") });
   return (
     <div className="grid gap-[var(--gap)] lg:grid-cols-2">
+      {me?.role === "admin" && <div className="lg:col-span-2"><SecurityChecklist /></div>}
       <SettingsCard title="Service health" description={`Checked ${fmtDateTime(health?.checked_at)}`} badge={health && <Badge tone={STATUS_TONE[health.status]} className="capitalize">{health.status}</Badge>}
         footer={<Button size="sm" variant="secondary" loading={isFetching} onClick={async () => qc.setQueryData(["health"], await api("/api/system/health", { query: { refresh: true } }))}><RefreshCw /> Re-check now</Button>}>
         <div className="-my-2 divide-y">{health?.components.map((c) => <div key={c.component} className="py-1"><ComponentRow c={c} /><div className="pl-[18px] text-[0.7rem] text-muted-foreground">{c.latency_ms} ms</div></div>) ?? <Skeleton className="h-40" />}</div>

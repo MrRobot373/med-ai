@@ -49,11 +49,16 @@ def test_clinician_cannot_touch_settings_or_users(clinician):
 def test_deactivated_user_cannot_sign_in(admin, client):
     r = admin.post(
         "/api/users",
-        json={"email": "temp@test.local", "full_name": "Temp", "role": "clinician", "password": "Password@123"},
+        json={
+            "email": "temp@test.local",
+            "full_name": "Temp",
+            "role": "clinician",
+            "password": "Blue-Heron-Walks-0914",
+        },
     )
     uid = r.json()["id"]
     admin.patch(f"/api/users/{uid}", json={"is_active": False})
-    r = client.post("/api/auth/login", json={"email": "temp@test.local", "password": "Password@123"})
+    r = client.post("/api/auth/login", json={"email": "temp@test.local", "password": "Blue-Heron-Walks-0914"})
     assert r.status_code == 403
 
 

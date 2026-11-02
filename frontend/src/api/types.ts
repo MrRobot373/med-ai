@@ -16,7 +16,10 @@ export interface Preferences {
 export interface User {
   id: string; email: string; full_name: string; title: string | null; specialty: string | null; role: Role;
   is_active: boolean; preferences: Preferences; last_login_at: string | null; created_at: string;
+  must_change_password: boolean; mfa_enabled: boolean; mfa_required: boolean; locked_until: string | null;
 }
+
+export interface MfaChallenge { mfa_required: true; mfa_token: string }
 
 export interface Branding {
   product_name: string; tagline: string; organization: string; logo_data_url: string | null;

@@ -160,8 +160,14 @@ class BrandingConfig(BaseModel):
 
 
 class SecurityConfig(BaseModel):
-    session_timeout_minutes: int = Field(480, ge=5, le=60 * 24 * 30)
+    session_timeout_minutes: int = Field(480, ge=5, le=60 * 24 * 30)  # idle timeout, extended while in use
+    session_absolute_hours: int = Field(24, ge=1, le=24 * 30)  # hard limit however active the person is
     allow_viewer_ai: bool = True
+    min_password_length: int = Field(12, ge=10, le=64)
+    max_failed_attempts: int = Field(5, ge=3, le=20)
+    lockout_minutes: int = Field(15, ge=1, le=1440)
+    # Roles that must use two-step verification (enforced when APP_ENV=production).
+    mfa_required_roles: list[Literal["admin", "clinician", "viewer", "front_desk"]] = ["admin"]
 
 
 class RuntimeConfig(BaseModel):

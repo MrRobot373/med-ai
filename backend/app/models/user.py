@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, ForeignKey, String
+from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base, TimestampMixin, UTCDateTime, utcnow
@@ -24,6 +24,14 @@ class User(TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     preferences: Mapped[dict] = mapped_column(JSON, default=dict)
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False)
+    password_changed_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    mfa_secret: Mapped[str | None] = mapped_column(String(255))  # encrypted; set while enrolling and once enabled
+    mfa_recovery: Mapped[list] = mapped_column(JSON, default=list)  # SHA-256 of unused recovery codes
+    mfa_last_step: Mapped[int | None] = mapped_column(Integer)
 
     sessions: Mapped[list[UserSession]] = relationship(back_populates="user", cascade="all, delete-orphan")
 

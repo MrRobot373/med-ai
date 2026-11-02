@@ -26,5 +26,10 @@ class SlidingWindowLimiter:
         with self._lock:
             self._hits.pop(key, None)
 
+    def reset_prefix(self, prefix: str) -> None:
+        with self._lock:
+            for k in [k for k in self._hits if k.startswith(prefix)]:
+                self._hits.pop(k, None)
+
 
 login_limiter = SlidingWindowLimiter()

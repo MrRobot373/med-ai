@@ -10,6 +10,7 @@ from sqlalchemy import func, or_, select
 
 from app.api.deps import DB, AdminUser
 from app.models import AuditLog, Message
+from app.services import audit as audit_service
 
 router = APIRouter(prefix="/api/audit", tags=["audit"])
 
@@ -138,4 +139,18 @@ def feedback(db: DB, _: AdminUser):
             }
             for m in rows
         ],
+    }
+
+
+@router.get("/verify")
+def verify(db: DB, _: AdminUser):
+    """Recomputes the tamper-evident hash chain of the audit log."""
+    r = audit_service.verify_chain(db)
+    return {
+        "ok": r.ok,
+        "entries_checked": r.checked,
+        "entries_before_chain": r.unchained,
+        "first_bad_entry": r.first_bad_id,
+        "latest_hash": r.last_hash,
+        "message": r.message,
     }

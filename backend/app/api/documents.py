@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from datetime import date
-from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, Query, UploadFile
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import Response
 from sqlalchemy import func, select
 
 from app.api.deps import DB, ClinicalUser, CurrentUser, StaffUser, WriteUser
+from app.core import fileenc, storage
 from app.models import Chunk, Document, Order, Patient, User
 from app.schemas.common import ChunkOut, DocumentOut, DocumentUpdate
 from app.services import audit, documents, orders
@@ -90,8 +90,7 @@ def read_document(doc_id: str, db: DB, user: CurrentUser):
 @router.get("/documents/{doc_id}/file")
 def document_file(doc_id: str, db: DB, user: ClinicalUser, download: bool = False):
     d = _get(db, doc_id)
-    path = Path(d.storage_path)
-    if not path.exists():
+    if not storage.exists(d.storage_path):
         raise HTTPException(410, "The stored file is missing.")
     audit.record(
         db,
@@ -102,12 +101,20 @@ def document_file(doc_id: str, db: DB, user: ClinicalUser, download: bool = Fals
         entity_id=d.id,
         patient_id=d.patient_id,
     )
-    return FileResponse(
-        path,
+    try:
+        content = storage.read(d.storage_path)
+    except fileenc.DecryptionError as exc:
+        raise HTTPException(500, str(exc)) from exc
+    disposition = "attachment" if download else "inline"
+    return Response(
+        content,
         media_type=d.mime_type,
-        filename=d.filename,
-        content_disposition_type="attachment" if download else "inline",
+        headers={"Content-Disposition": f'{disposition}; filename="{_ascii(d.filename)}"'},
     )
+
+
+def _ascii(name: str) -> str:
+    return "".join(c if 32 <= ord(c) < 127 and c not in '"\\' else "_" for c in name) or "file"
 
 
 def _render_preview(d: Document, page: int, width: int) -> tuple[bytes, int]:
@@ -115,7 +122,7 @@ def _render_preview(d: Document, page: int, width: int) -> tuple[bytes, int]:
 
     from PIL import Image
 
-    data = Path(d.storage_path).read_bytes()
+    data = storage.read(d.storage_path)
     if d.mime_type == "application/pdf":
         from app.ingestion import pdf as pdf_io
 
@@ -139,7 +146,7 @@ def _render_preview(d: Document, page: int, width: int) -> tuple[bytes, int]:
 def document_preview(doc_id: str, db: DB, user: ClinicalUser, page: int = 1, width: int = Query(1200, ge=64, le=2400)):
     """PNG rendering of a page (PDF), image or DICOM frame — used by the report viewer."""
     d = _get(db, doc_id)
-    if not Path(d.storage_path).exists():
+    if not storage.exists(d.storage_path):
         raise HTTPException(410, "The stored file is missing.")
     try:
         png, count = _render_preview(d, page, width)

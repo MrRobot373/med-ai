@@ -51,6 +51,16 @@ def study_date(data: bytes) -> str | None:
     return f"{value[:4]}-{value[4:6]}-{value[6:]}" if len(value) == 8 and value.isdigit() else None
 
 
+def pixel_count(data: bytes) -> int:
+    """Rows × columns × frames from the header alone, so an absurd image is refused before it is decoded."""
+    import pydicom
+
+    ds = pydicom.dcmread(io.BytesIO(data), force=True, stop_before_pixels=True)
+    rows, cols = int(getattr(ds, "Rows", 0) or 0), int(getattr(ds, "Columns", 0) or 0)
+    frames = int(getattr(ds, "NumberOfFrames", 1) or 1)
+    return rows * cols * max(frames, 1)
+
+
 def render_png(data: bytes, max_dim: int = 1600) -> bytes:
     import numpy as np
 

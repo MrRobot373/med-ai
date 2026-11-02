@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, MonitorSmartphone, UserRound } from "lucide-react";
+import { KeyRound, LogOut, MonitorSmartphone, ShieldCheck, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { qk, useMe } from "@/api/hooks";
@@ -7,6 +7,7 @@ import type { User } from "@/api/types";
 import { Avatar, Badge, Button, Field, Input } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { fmtRelative } from "@/lib/utils";
+import { MfaCard } from "@/features/auth/Mfa";
 import { SettingsCard } from "../parts";
 
 export function ProfileSection() {
@@ -41,19 +42,23 @@ export function ProfileSection() {
           <Field label="Specialty" className="md:col-span-3"><Input value={f.specialty} onChange={(e) => setF({ ...f, specialty: e.target.value })} placeholder="e.g. Internal Medicine" /></Field>
         </div>
       </SettingsCard>
-      <SettingsCard title={<span className="flex items-center gap-2"><KeyRound className="size-4 text-primary" /> Password</span>} footer={<Button size="sm" onClick={changePw} loading={busy === "pw"} disabled={!pw.current || pw.next.length < 8}>Change password</Button>}>
+      <SettingsCard title={<span className="flex items-center gap-2"><KeyRound className="size-4 text-primary" /> Password</span>} footer={<Button size="sm" onClick={changePw} loading={busy === "pw"} disabled={!pw.current || pw.next.length < 10}>Change password</Button>}>
         <div className="grid gap-4 md:grid-cols-3">
           <Field label="Current password"><Input type="password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} autoComplete="current-password" /></Field>
-          <Field label="New password" hint="At least 8 characters"><Input type="password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} autoComplete="new-password" /></Field>
+          <Field label="New password" hint="At least 12 characters; not a common password, your name or a simple sequence"><Input type="password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} autoComplete="new-password" /></Field>
           <Field label="Confirm new password"><Input type="password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} autoComplete="new-password" /></Field>
         </div>
       </SettingsCard>
-      <SettingsCard title={<span className="flex items-center gap-2"><MonitorSmartphone className="size-4 text-primary" /> Active sessions</span>}>
+      <SettingsCard title={<span className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" /> Two-step verification</span>}>
+        <MfaCard me={me} />
+      </SettingsCard>
+      <SettingsCard title={<span className="flex items-center gap-2"><MonitorSmartphone className="size-4 text-primary" /> Where you are signed in</span>}
+        footer={sessions && sessions.length > 1 ? <Button size="sm" variant="secondary" onClick={async () => { const r = await api<{ revoked: number }>("/api/auth/sessions/revoke-others", { method: "POST" }); toast.success(`Signed out ${r.revoked} other device${r.revoked === 1 ? "" : "s"}`); qc.invalidateQueries({ queryKey: ["sessions"] }); }}><LogOut /> Sign out all other devices</Button> : undefined}>
         <div className="-my-2 divide-y">
           {sessions?.map((s) => (
             <div key={s.id} className="flex items-center justify-between gap-4 py-2.5 text-sm">
-              <div className="min-w-0"><div className="truncate">{s.user_agent || "Unknown device"}</div><div className="text-xs text-muted-foreground">{s.ip ?? "—"} · signed in {fmtRelative(s.created_at)}</div></div>
-              <span className="shrink-0 text-xs text-muted-foreground">active {fmtRelative(s.last_seen_at)}</span>
+              <div className="min-w-0"><div className="truncate">{s.user_agent || "Unknown device"} {s.current && <Badge tone="success" className="ml-1.5">This device</Badge>}</div><div className="text-xs text-muted-foreground">{s.ip ?? "—"} · signed in {fmtRelative(s.created_at)} · active {fmtRelative(s.last_seen_at)}</div></div>
+              {!s.current && <Button size="xs" variant="ghost" onClick={async () => { await api(`/api/auth/sessions/${s.id}`, { method: "DELETE" }); qc.invalidateQueries({ queryKey: ["sessions"] }); }}>Sign out</Button>}
             </div>
           ))}
         </div>

@@ -3,7 +3,7 @@ import { AlertCircle, ArrowRight, Cpu, Eye, EyeOff, FileSearch, ShieldCheck } fr
 import { useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { qk, useBranding } from "@/api/hooks";
-import type { User } from "@/api/types";
+import type { MfaChallenge, User } from "@/api/types";
 import { Button, Field, Input } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 
@@ -20,6 +20,8 @@ export default function LoginPage() {
   const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [challenge, setChallenge] = useState<string | null>(null);
+  const [code, setCode] = useState("");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const qc = useQueryClient();
@@ -29,15 +31,26 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const user = await api<User>("/api/auth/login", { method: "POST", body: { email, password } });
-      qc.setQueryData(qk.me, user);
-      const next = params.get("next");
-      navigate(next && next.startsWith("/") && !next.startsWith("//") ? next : "/", { replace: true });
+      if (challenge) {
+        const user = await api<User>("/api/auth/mfa/verify", { method: "POST", body: { mfa_token: challenge, code } });
+        finish(user);
+        return;
+      }
+      const r = await api<User | MfaChallenge>("/api/auth/login", { method: "POST", body: { email, password } });
+      if ("mfa_token" in r) { setChallenge(r.mfa_token); setCode(""); return; }
+      finish(r);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Sign-in failed");
+      const msg = err instanceof ApiError ? err.message : "Sign-in failed";
+      setError(msg);
+      if (challenge && err instanceof ApiError && err.status === 401 && /expired/i.test(msg)) { setChallenge(null); setPassword(""); }
     } finally {
       setLoading(false);
     }
+  };
+  const finish = (user: User) => {
+    qc.setQueryData(qk.me, user);
+    const next = params.get("next");
+    navigate(next && next.startsWith("/") && !next.startsWith("//") ? next : "/", { replace: true });
   };
 
   return (
@@ -89,22 +102,30 @@ export default function LoginPage() {
                 <AlertCircle className="mt-0.5 size-4 shrink-0" /> {error}
               </div>
             )}
-            <Field label="Email" htmlFor="email">
-              <Input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@hospital.org" autoFocus />
-            </Field>
-            <Field label="Password" htmlFor="password">
-              <Input
-                id="password" type={show ? "text" : "password"} autoComplete="current-password" required value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                suffix={
-                  <button type="button" onClick={() => setShow((s) => !s)} className="rounded p-1 text-muted-foreground hover:text-foreground" aria-label={show ? "Hide password" : "Show password"}>
-                    {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                }
-              />
-            </Field>
+            {challenge ? (
+              <Field label="6-digit code" htmlFor="code" hint="From your authenticator app — or use a recovery code.">
+                <Input id="code" inputMode="text" autoComplete="one-time-code" required autoFocus value={code} onChange={(e) => setCode(e.target.value)} placeholder="123456" className="font-mono tracking-widest" />
+              </Field>
+            ) : (
+              <>
+                <Field label="Email" htmlFor="email">
+                  <Input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@hospital.org" autoFocus />
+                </Field>
+                <Field label="Password" htmlFor="password">
+                  <Input
+                    id="password" type={show ? "text" : "password"} autoComplete="current-password" required value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    suffix={
+                      <button type="button" onClick={() => setShow((s) => !s)} className="rounded p-1 text-muted-foreground hover:text-foreground" aria-label={show ? "Hide password" : "Show password"}>
+                        {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    }
+                  />
+                </Field>
+              </>
+            )}
             <Button type="submit" size="lg" variant="strong" className="w-full rounded-full" loading={loading}>
-              Continue <ArrowRight />
+              {challenge ? "Verify" : "Continue"} <ArrowRight />
             </Button>
           </form>
 

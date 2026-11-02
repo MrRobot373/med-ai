@@ -9,11 +9,11 @@ from sqlalchemy import func, select, text
 
 from app.ai import registry
 from app.ai.llm import list_models
-from app.api.deps import DB, ClinicalUser, CurrentUser
+from app.api.deps import DB, AdminUser, ClinicalUser, CurrentUser
 from app.core.config import get_settings
 from app.core.errors import AppError, ServiceUnavailable
 from app.models import AIRun, AuditLog, Conversation, Document, Encounter, Message, Observation, Patient, User
-from app.services import runtime_config
+from app.services import audit, runtime_config
 
 router = APIRouter(prefix="/api", tags=["system"])
 _health_cache: dict = {"at": 0.0, "data": None}
@@ -125,6 +125,80 @@ async def health(db: DB, _: CurrentUser, refresh: bool = False):
     data = {"status": overall, "checked_at": datetime.now(UTC), "components": components}
     _health_cache.update(at=time.time(), data=data)
     return data
+
+
+@router.get("/system/security")
+def security_posture(db: DB, _: AdminUser):
+    """A plain checklist of the protections that matter, for the administrator's status page."""
+    from app.core import storage
+
+    s = get_settings()
+    cfg = runtime_config.load(db).security
+    users = db.scalars(select(User).where(User.is_active.is_(True))).all()
+    must = [u for u in users if u.role in cfg.mfa_required_roles]
+    chain = audit.verify_chain(db)
+    items = [
+        {
+            "id": "https",
+            "label": "Encrypted connection (HTTPS)",
+            "ok": s.cookie_secure,
+            "detail": "Sign-in cookies are marked Secure."
+            if s.cookie_secure
+            else "Sign-in cookies can travel unencrypted. Serve the app over HTTPS and set COOKIE_SECURE=true.",
+        },
+        {
+            "id": "secret",
+            "label": "Strong application secret",
+            "ok": not s.production_problems() and s.secret_key != "change-me-in-production",
+            "detail": "APP_SECRET_KEY is set."
+            if s.secret_key != "change-me-in-production"
+            else "APP_SECRET_KEY still has its default value.",
+        },
+        {
+            "id": "mfa",
+            "label": "Two-step verification for required roles",
+            "ok": all(u.mfa_enabled for u in must),
+            "detail": f"{sum(u.mfa_enabled for u in must)} of {len(must)} people in {', '.join(cfg.mfa_required_roles) or 'no'} roles have it on"
+            + ("" if s.is_production else " (enforced only in production)"),
+        },
+        {
+            "id": "uploads",
+            "label": "Uploaded files encrypted",
+            "ok": storage.encryption_enabled(),
+            "detail": "New uploads are encrypted (AES-256-GCM)."
+            if storage.encryption_enabled()
+            else "Set DATA_ENCRYPTION_KEY to encrypt uploaded files.",
+        },
+        {
+            "id": "disk",
+            "label": "Disk or volume encryption",
+            "ok": s.encryption_at_rest_attested,
+            "detail": "The installer recorded that the data volume is encrypted."
+            if s.encryption_at_rest_attested
+            else "The database and search index are protected only by an encrypted disk. Encrypt the data volume (LUKS / BitLocker) and set ENCRYPTION_AT_REST_ATTESTED=true.",
+        },
+        {
+            "id": "scan",
+            "label": "Virus scanning of uploads",
+            "ok": bool(s.clamav_host),
+            "detail": f"Scanner at {s.clamav_host}:{s.clamav_port}."
+            if s.clamav_host
+            else "No scanner configured (CLAMAV_HOST).",
+        },
+        {
+            "id": "audit",
+            "label": "Audit log intact",
+            "ok": chain.ok,
+            "detail": chain.message,
+        },
+        {
+            "id": "lockout",
+            "label": "Account lockout",
+            "ok": True,
+            "detail": f"Locks for {cfg.lockout_minutes} min after {cfg.max_failed_attempts} wrong passwords.",
+        },
+    ]
+    return {"environment": s.app_env, "items": items, "ok": all(i["ok"] for i in items)}
 
 
 @router.get("/system/info")

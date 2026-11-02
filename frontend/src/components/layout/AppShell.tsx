@@ -4,6 +4,7 @@ import { Inbox, Menu, MessageSquarePlus, Moon, Plus, Search, Sun, Upload, UserPl
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { useBranding, useInbox, useMe } from "@/api/hooks";
+import { ForcePasswordChange, MfaEnrolmentRequired } from "@/features/auth/SecurityGate";
 import { useAppearance } from "@/app/appearance";
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Kbd, SheetContent, Spinner, Tooltip } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -183,6 +184,8 @@ export function AppShell() {
   if (isLoading || !me) {
     return <div className="flex h-screen items-center justify-center"><Spinner className="size-5" /></div>;
   }
+  if (me.must_change_password) return <ForcePasswordChange me={me} />;
+  if (me.mfa_required && !me.mfa_enabled) return <MfaEnrolmentRequired me={me} />;
 
   const fullBleed = location.pathname.startsWith("/assistant");
   return (
