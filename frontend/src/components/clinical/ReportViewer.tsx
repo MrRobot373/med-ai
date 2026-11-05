@@ -11,7 +11,7 @@ const isRadiology = (d: DocumentItem) => d.mime_type === "application/dicom" || 
 function Thumb({ d, active, onClick }: { d: DocumentItem; active: boolean; onClick: () => void }) {
   return (
     <Tooltip content={`${d.title} · ${fmtDate(d.document_date ?? d.created_at)}`}>
-      <button onClick={onClick} className={cn("relative h-14 w-11 shrink-0 overflow-hidden rounded-lg border-2 bg-card shadow-xs transition-all hover:-translate-y-0.5", active ? "border-primary ring-2 ring-primary/30" : "border-white/80 opacity-80 hover:opacity-100 dark:border-white/10")}>
+      <button onClick={onClick} aria-label={`Open ${d.title}`} aria-pressed={active} className={cn("relative h-14 w-11 shrink-0 overflow-hidden rounded-lg border-2 bg-card shadow-xs transition-all hover:-translate-y-0.5", active ? "border-primary ring-2 ring-primary/30" : "border-white/80 opacity-80 hover:opacity-100 dark:border-white/10")}>
         {isVisual(d) && d.status !== "failed" ? (
           <img src={`/api/documents/${d.id}/preview?width=120`} alt="" loading="lazy" className={cn("size-full object-cover", d.mime_type === "application/dicom" && "bg-black object-contain")} />
         ) : <span className="flex size-full items-center justify-center text-muted-foreground"><FileText className="size-4" /></span>}
