@@ -19,6 +19,8 @@ and rollback. What remains before general sale is validation, review and regulat
 [docs/PENDING_TECHNICAL.md](docs/PENDING_TECHNICAL.md) · [docs/PENDING_MANAGEMENT.md](docs/PENDING_MANAGEMENT.md) ·
 [docs/compliance/](docs/compliance/README.md).
 
+**What is left to do (checklist for the owner):** [docs/REMAINING_WORK.md](docs/REMAINING_WORK.md)
+
 **Build the delivery package:** `scripts/make-bundle.sh` → `dist/gms-clinical-ai-<version>.tar.gz`
 (`--demo` adds the sample patients). **Install at a clinic:** [docs/INSTALL.md](docs/INSTALL.md). **Run it:**
 [docs/OPERATIONS.md](docs/OPERATIONS.md). **Medical sign-off:** [docs/CLINICAL_GOVERNANCE.md](docs/CLINICAL_GOVERNANCE.md).

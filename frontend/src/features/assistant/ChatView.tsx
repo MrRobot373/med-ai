@@ -153,7 +153,7 @@ export function ChatView({ conversationId, patient, onCreated, className }: { co
             </div>
           </div>
           <Tooltip content={showEvidence ? "Hide evidence" : "Show evidence"}>
-            <Button size="icon-sm" variant="ghost" onClick={() => setShowEvidence((s) => !s)} className="hidden lg:inline-flex">{showEvidence ? <PanelRightClose /> : <PanelRightOpen />}</Button>
+            <Button size="icon-sm" variant="ghost" aria-label={showEvidence ? "Hide evidence panel" : "Show evidence panel"} onClick={() => setShowEvidence((s) => !s)} className="hidden lg:inline-flex">{showEvidence ? <PanelRightClose /> : <PanelRightOpen />}</Button>
           </Tooltip>
         </div>
 

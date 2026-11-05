@@ -340,3 +340,36 @@ def test_viewer_cannot_export(admin):
 )
 def test_partner_endpoints_require_a_key(client, path):
     assert client.get(path).status_code == 401
+
+
+def test_fhir_bundle_for_a_pharmacy(admin):
+    _, _, rx_id = _finalized_rx(admin)
+    token = _token(admin, ["prescriptions:read", "metrics:read"])
+    admin.cookies.clear()
+    r = admin.get(f"/api/integration/v1/prescriptions/{rx_id}/fhir", headers=_bearer(token))
+    assert r.status_code == 200 and r.headers["content-type"].startswith("application/fhir+json")
+    b = r.json()
+    kinds = [e["resource"]["resourceType"] for e in b["entry"]]
+    assert b["resourceType"] == "Bundle" and kinds == ["Patient", "Practitioner", "MedicationRequest"]
+    mr = b["entry"][2]["resource"]
+    assert mr["medicationCodeableConcept"]["text"] == "Pan 40" and mr["intent"] == "order" and mr["status"] == "active"
+    assert mr["dosageInstruction"][0]["timing"]["repeat"] == {
+        "frequency": 1,
+        "period": 1,
+        "periodUnit": "d",
+        "boundsDuration": {"value": 14, "unit": "day", "system": "http://unitsofmeasure.org", "code": "d"},
+    }
+    assert (
+        mr["subject"]["reference"] == b["entry"][0]["fullUrl"]
+        and b["entry"][0]["resource"]["identifier"][0]["value"] == "IN-1"
+    )
+
+
+def test_metrics_need_their_own_scope_and_hold_no_patient_data(admin):
+    _finalized_rx(admin)
+    ok, no = _token(admin, ["metrics:read"]), _token(admin, ["patients:read"])
+    admin.cookies.clear()
+    assert admin.get("/api/integration/v1/metrics", headers=_bearer(no)).status_code == 403
+    r = admin.get("/api/integration/v1/metrics", headers=_bearer(ok))
+    assert r.status_code == 200 and "gms_up 1" in r.text and "gms_patients 1" in r.text
+    assert "Rohit" not in r.text and "IN-1" not in r.text

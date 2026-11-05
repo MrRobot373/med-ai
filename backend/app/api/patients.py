@@ -51,8 +51,10 @@ def list_patients(
     status: str = "active",
     tag: str | None = None,
     sort: str = Query("recent", pattern="^(recent|name|mrn|created)$"),
-    limit: int = Query(200, le=500),
+    limit: int | None = Query(None, ge=1, le=500),
 ):
+    # A search is typed one letter at a time: 50 results is plenty and keeps it instant on a large register.
+    limit = limit or (50 if q else 200)
     stmt = select(Patient)
     if status != "all":
         stmt = stmt.where(Patient.status == status)

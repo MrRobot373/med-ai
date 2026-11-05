@@ -16,10 +16,10 @@ export interface SelectOption {
 }
 
 export function Select({
-  value, onValueChange, options, placeholder = "Select…", className, disabled, id, size = "md",
+  value, onValueChange, options, placeholder = "Select…", className, disabled, id, size = "md", ariaLabel,
 }: {
   value?: string; onValueChange: (v: string) => void; options: SelectOption[]; placeholder?: string;
-  className?: string; disabled?: boolean; id?: string; size?: "sm" | "md";
+  className?: string; disabled?: boolean; id?: string; size?: "sm" | "md"; ariaLabel?: string;
 }) {
   const groups = options.reduce<Record<string, SelectOption[]>>((acc, o) => {
     (acc[o.group ?? ""] ||= []).push(o);
@@ -29,6 +29,7 @@ export function Select({
     <SelectPrimitive.Root value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectPrimitive.Trigger
         id={id}
+        aria-label={ariaLabel}
         className={cn(
           "flex w-full items-center justify-between gap-2 rounded-md border border-input bg-card px-3 text-left text-sm shadow-xs transition-colors focus:outline-none focus-visible:border-primary/60 focus-visible:ring-[3px] focus-visible:ring-ring/15 disabled:opacity-60 data-[placeholder]:text-muted-foreground",
           size === "sm" ? "h-8 text-[0.8rem]" : "h-9", className,
@@ -126,7 +127,7 @@ export function TabsTrigger({ className, ...props }: ComponentPropsWithoutRef<ty
 /* ---------- Segmented control ---------- */
 export function Segmented<T extends string>({
   value, onChange, options, className, size = "md",
-}: { value: T; onChange: (v: T) => void; options: { value: T; label: ReactNode; icon?: ReactNode }[]; className?: string; size?: "sm" | "md" }) {
+}: { value: T; onChange: (v: T) => void; options: { value: T; label: ReactNode; icon?: ReactNode; ariaLabel?: string }[]; className?: string; size?: "sm" | "md" }) {
   return (
     <div role="radiogroup" className={cn("inline-flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border border-border/60 bg-muted/80 p-0.5", className)}>
       {options.map((o) => (
@@ -134,6 +135,7 @@ export function Segmented<T extends string>({
           key={o.value}
           type="button"
           role="radio"
+          aria-label={o.ariaLabel}
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
           className={cn(

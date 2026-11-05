@@ -74,10 +74,10 @@ export default function PatientsPage() {
       <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center">
         <Input icon={<Search />} placeholder="Search by name or MRN…" value={q} onChange={(e) => setQ(e.target.value)} className="lg:max-w-sm" />
         <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
-          <Select size="sm" className="w-36" value={status} onValueChange={setStatus} options={[{ value: "active", label: "Active" }, { value: "archived", label: "Archived" }, { value: "all", label: "All statuses" }]} />
-          <Select size="sm" className="w-40" value={tag} onValueChange={setTag} options={[{ value: "all", label: "All tags" }, ...(tags ?? []).map((t) => ({ value: t.tag, label: `${t.tag} (${t.count})` }))]} />
-          <Select size="sm" className="w-44" value={sort} onValueChange={setSort} options={[{ value: "recent", label: "Recently active" }, { value: "name", label: "Name A–Z" }, { value: "mrn", label: "MRN" }, { value: "created", label: "Newest charts" }]} />
-          <Segmented size="sm" value={view} onChange={setView} options={[{ value: "table", label: "", icon: <List /> }, { value: "grid", label: "", icon: <LayoutGrid /> }]} />
+          <Select size="sm" ariaLabel="Show patients with status" className="w-36" value={status} onValueChange={setStatus} options={[{ value: "active", label: "Active" }, { value: "archived", label: "Archived" }, { value: "all", label: "All statuses" }]} />
+          <Select size="sm" ariaLabel="Filter by tag" className="w-40" value={tag} onValueChange={setTag} options={[{ value: "all", label: "All tags" }, ...(tags ?? []).map((t) => ({ value: t.tag, label: `${t.tag} (${t.count})` }))]} />
+          <Select size="sm" ariaLabel="Sort patients" className="w-44" value={sort} onValueChange={setSort} options={[{ value: "recent", label: "Recently active" }, { value: "name", label: "Name A–Z" }, { value: "mrn", label: "MRN" }, { value: "created", label: "Newest charts" }]} />
+          <Segmented size="sm" value={view} onChange={setView} options={[{ value: "table", label: "", icon: <List />, ariaLabel: "List view" }, { value: "grid", label: "", icon: <LayoutGrid />, ariaLabel: "Card view" }]} />
         </div>
       </div>
 

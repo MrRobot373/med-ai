@@ -62,7 +62,7 @@ export function PrintSection() {
             <Field label="Accent colour">
               <div className="flex flex-wrap items-center gap-2">
                 {ACCENTS.map((c) => <button key={c} onClick={() => s.set({ accent: c })} aria-label={c} className="size-6 rounded-full ring-offset-2 ring-offset-card data-[on=true]:ring-2 data-[on=true]:ring-foreground/60" data-on={d.accent?.toLowerCase() === c.toLowerCase()} style={{ background: c }} />)}
-                <Input value={d.accent ?? ""} onChange={(e) => s.set({ accent: e.target.value })} className="w-24 font-mono text-xs" />
+                <Input aria-label="Accent colour code" value={d.accent ?? ""} onChange={(e) => s.set({ accent: e.target.value })} className="w-24 font-mono text-xs" />
               </div>
             </Field>
           </div>

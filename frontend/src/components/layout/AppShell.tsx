@@ -111,7 +111,7 @@ function TopBar() {
             </button>
           </Tooltip>
           {clinical && <Tooltip content="Inbox">
-            <Link to="/inbox" className={cn(iconBtn, "gap-1.5 px-3 w-auto")} aria-label="Inbox">
+            <Link to="/inbox" className={cn(iconBtn, "gap-1.5 px-3 w-auto")} aria-label={`Inbox, ${urgent} need attention`}>
               <Inbox /><span className="text-[0.8rem] font-semibold text-foreground num">{urgent}</span>
             </Link>
           </Tooltip>}

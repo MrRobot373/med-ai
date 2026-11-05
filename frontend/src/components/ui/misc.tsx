@@ -42,7 +42,7 @@ export function Avatar({ name, size = "md", className }: { name: string; size?: 
   const hash = [...name].reduce((a, c) => a + c.charCodeAt(0), 0);
   const sizes = { xs: "size-6 text-[0.6rem]", sm: "size-7 text-[0.65rem]", md: "size-9 text-xs", lg: "size-11 text-sm", xl: "size-14 text-base" };
   return (
-    <span className={cn("inline-flex shrink-0 select-none items-center justify-center rounded-full font-semibold", AVATAR_TONES[hash % AVATAR_TONES.length], sizes[size], className)}>
+    <span aria-hidden="true" className={cn("inline-flex shrink-0 select-none items-center justify-center rounded-full font-semibold", AVATAR_TONES[hash % AVATAR_TONES.length], sizes[size], className)}>
       {initials(name)}
     </span>
   );

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -298,6 +299,23 @@ def partner_prescription(rx_id: str, request: Request, db: DB):
     if rx is None or rx.status == "draft":
         raise HTTPException(404, "Prescription not found")
     return integration.prescription_api(db, rx)
+
+
+@partner.get("/prescriptions/{rx_id}/fhir")
+def partner_prescription_fhir(rx_id: str, request: Request, db: DB):
+    """The same prescription as an HL7 FHIR R4 Bundle (Patient, Practitioner, MedicationRequest)."""
+    integration.authenticate(db, request, "prescriptions:read")
+    rx = db.get(Prescription, rx_id)
+    if rx is None or rx.status == "draft":
+        raise HTTPException(404, "Prescription not found")
+    return Response(json.dumps(integration.prescription_fhir(db, rx)), media_type="application/fhir+json")
+
+
+@partner.get("/metrics")
+def partner_metrics(request: Request, db: DB):
+    """Prometheus metrics for the clinic's monitoring. Needs a key with the `metrics:read` scope."""
+    integration.authenticate(db, request, "metrics:read")
+    return Response(integration.metrics_text(db), media_type="text/plain; version=0.0.4")
 
 
 class DispenseIn(BaseModel):

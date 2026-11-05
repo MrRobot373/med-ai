@@ -15,7 +15,7 @@ import json
 import secrets
 import socket
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 import httpx
@@ -49,6 +49,7 @@ SCOPES = {
     "prescriptions:read": "Read issued prescriptions, including the medicines",
     "visits:read": "Read completed visits and the services given (for billing)",
     "prescriptions:dispense": "Tell the clinic a prescription was dispensed",
+    "metrics:read": "Read health counters (no patient data) for monitoring",
 }
 EVENTS = {
     "prescription.finalized": "A doctor issued a prescription",
@@ -314,3 +315,137 @@ def deliver_due(db: Session, limit: int = 20, client: httpx.Client | None = None
 
 def encrypt_hook_secret(secret: str) -> str:
     return encrypt_secret(secret, get_settings().secret_key)
+
+
+# ------------------------------------------------------------------------------------------------ FHIR (HL7 R4)
+def prescription_fhir(db: Session, rx: Prescription) -> dict:
+    """The issued prescription as a FHIR R4 *document-style* Bundle: Patient, Practitioner and one MedicationRequest per
+    medicine. Built from the structured record so a pharmacy's system can read it without parsing text.
+    NOT validated against a national profile (e.g. ABDM): that needs the profile's own validator and a test partner."""
+    from app.formulary.dosing import parse_frequency
+
+    p = db.get(Patient, rx.patient_id)
+    doc = db.get(User, rx.clinician_id) if rx.clinician_id else None
+    issued = (rx.finalized_at or rx.created_at).isoformat()
+    pat_id, doc_id = f"patient-{p.id}", f"practitioner-{doc.id}" if doc else None
+    entries: list[dict] = [
+        {
+            "fullUrl": f"urn:uuid:{pat_id}",
+            "resource": {
+                "resourceType": "Patient",
+                "id": pat_id,
+                "identifier": [{"system": "urn:gms:mrn", "value": p.mrn}],
+                "name": [{"text": p.full_name, "family": p.last_name, "given": [p.first_name]}],
+                "gender": p.sex if p.sex in ("male", "female", "other") else "unknown",
+                **({"birthDate": p.date_of_birth.isoformat()} if p.date_of_birth else {}),
+            },
+        },
+    ]
+    if doc:
+        entries.append(
+            {
+                "fullUrl": f"urn:uuid:{doc_id}",
+                "resource": {
+                    "resourceType": "Practitioner",
+                    "id": doc_id,
+                    "name": [{"text": doc.full_name}],
+                    "identifier": [
+                        {
+                            "system": f"urn:gms:registration:{(doc.registration_council or 'unknown').replace(' ', '-').lower()}",
+                            "value": doc.registration_no,
+                        }
+                    ]
+                    if doc.registration_no
+                    else [],
+                },
+            }
+        )
+    for n, i in enumerate(rx.items, start=1):
+        f = parse_frequency(i.frequency)
+        timing: dict = {}
+        if f.per_day and not f.weekly:
+            timing = {"repeat": {"frequency": max(1, round(f.per_day)), "period": 1, "periodUnit": "d"}}
+        elif f.weekly:
+            timing = {"repeat": {"frequency": 1, "period": 1, "periodUnit": "wk"}}
+        if i.duration_days and timing:
+            timing["repeat"]["boundsDuration"] = {
+                "value": i.duration_days,
+                "unit": "day",
+                "system": "http://unitsofmeasure.org",
+                "code": "d",
+            }
+        dosage = {
+            "sequence": n,
+            "text": " ".join(
+                x
+                for x in (
+                    i.dose,
+                    i.frequency,
+                    f"for {i.duration_days} days" if i.duration_days else "",
+                    i.instructions or "",
+                )
+                if x
+            ),
+            **({"timing": timing} if timing else {}),
+            **({"asNeededBoolean": True} if f.prn else {}),
+        }
+        entries.append(
+            {
+                "fullUrl": f"urn:uuid:{rx.id}-{n}",
+                "resource": {
+                    "resourceType": "MedicationRequest",
+                    "id": f"{rx.id}-{n}",
+                    "status": "completed" if rx.dispensed_at else "active",
+                    "intent": "order",
+                    "authoredOn": issued,
+                    "medicationCodeableConcept": {
+                        "text": i.drug,
+                        **({"coding": [{"system": "urn:gms:generic", "display": i.generic}]} if i.generic else {}),
+                    },
+                    "subject": {"reference": f"urn:uuid:{pat_id}"},
+                    **({"requester": {"reference": f"urn:uuid:{doc_id}"}} if doc else {}),
+                    **({"reasonCode": [{"text": rx.diagnosis}]} if rx.diagnosis else {}),
+                    "dosageInstruction": [dosage],
+                },
+            }
+        )
+    return {"resourceType": "Bundle", "id": rx.id, "type": "collection", "timestamp": issued, "entry": entries}
+
+
+# ------------------------------------------------------------------------------------------------ metrics
+def metrics_text(db: Session) -> str:
+    """Prometheus text format. Counts and queue depths only — never patient data."""
+    from sqlalchemy import func
+
+    from app.models import AuditLog, Document, WebhookDelivery
+    from app.services import backup, licensing
+
+    use = licensing.usage(db)
+    b = backup.status(db)
+    age = None
+    if b.get("last_ok_at"):
+        age = (utcnow() - datetime.fromisoformat(b["last_ok_at"])).total_seconds()
+    docs = {s: n for s, n in db.execute(select(Document.status, func.count()).group_by(Document.status))}
+    hooks = {s: n for s, n in db.execute(select(WebhookDelivery.status, func.count()).group_by(WebhookDelivery.status))}
+    lines = [
+        "# HELP gms_up The application is running.",
+        "# TYPE gms_up gauge",
+        "gms_up 1",
+        "# TYPE gms_patients gauge",
+        f"gms_patients {use['patients']}",
+        "# TYPE gms_users gauge",
+        *[f'gms_users{{role="{r}"}} {n}' for r, n in use["users"].items()],
+        "# TYPE gms_storage_bytes gauge",
+        f"gms_storage_bytes {use['storage_bytes']}",
+        "# TYPE gms_documents gauge",
+        *[f'gms_documents{{status="{s}"}} {n}' for s, n in docs.items()],
+        "# TYPE gms_webhook_deliveries gauge",
+        *[f'gms_webhook_deliveries{{status="{s}"}} {n}' for s, n in hooks.items()],
+        "# TYPE gms_audit_entries counter",
+        f"gms_audit_entries {db.scalar(select(func.count()).select_from(AuditLog)) or 0}",
+        "# HELP gms_backup_age_seconds Seconds since the last successful backup (absent if never).",
+        "# TYPE gms_backup_age_seconds gauge",
+    ]
+    if age is not None:
+        lines.append(f"gms_backup_age_seconds {int(age)}")
+    return "\n".join(lines) + "\n"

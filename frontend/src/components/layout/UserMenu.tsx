@@ -24,7 +24,7 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex size-10 items-center justify-center rounded-xl bg-primary text-[0.8rem] font-semibold text-primary-foreground shadow-card ring-2 ring-white/60 transition-transform hover:scale-[1.03] dark:ring-white/10" aria-label="Account menu">
+        <button className="flex size-10 items-center justify-center rounded-xl bg-primary text-[0.8rem] font-semibold text-primary-foreground shadow-card ring-2 ring-white/60 transition-transform hover:scale-[1.03] dark:ring-white/10" aria-label={`${initials(me.full_name)} — account menu`}>
           {initials(me.full_name)}
         </button>
       </DropdownMenuTrigger>

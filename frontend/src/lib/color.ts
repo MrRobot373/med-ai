@@ -35,11 +35,12 @@ export function accentVars(hex: string, dark: boolean): Record<string, string> {
   const hsl = hexToHsl(hex) ?? [221, 98, 57];
   const [h, s, l] = hsl;
   // Keep text on the accent readable, and lift very dark accents in dark mode.
-  const lAdj = dark ? Math.max(l, 55) : Math.min(Math.max(l, 30), 60);
-  // White text unless it would fall below the 3:1 WCAG contrast for UI components
-  // (very light accents such as yellow then get dark text).
-  const whiteContrast = 1.05 / (hslLuminance(h, s, lAdj) + 0.05);
-  const fg = whiteContrast >= 3 ? "0 0% 100%" : "222 47% 11%";
+  let lAdj = dark ? Math.max(l, 55) : Math.min(Math.max(l, 30), 60);
+  const contrastWhite = (li: number) => 1.05 / (hslLuminance(h, s, li) + 0.05);
+  // Body-size text on the accent (buttons, avatars) must reach WCAG AA, 4.5:1. In the light theme the accent is darkened
+  // just enough for white text to pass; a light accent such as yellow gets dark text instead.
+  if (!dark) while (lAdj > 30 && contrastWhite(lAdj) < 4.5 && contrastWhite(lAdj) >= 3) lAdj -= 1;
+  const fg = contrastWhite(lAdj) >= 3 ? "0 0% 100%" : "222 47% 11%";
   return {
     "--primary": `${h} ${s}% ${lAdj}%`,
     "--ring": `${h} ${s}% ${lAdj}%`,

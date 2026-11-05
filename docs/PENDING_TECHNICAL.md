@@ -30,6 +30,8 @@ Tests at this version: **200+ backend**, 8 front-end unit, 6 browser end-to-end;
 Found and fixed while measuring: three lab analytes that were not recognised (random blood glucose, absolute eosinophil count,
 total IgE) and D-dimer; a path-handling hole in the backup-verify endpoint (admin-only, now names only).
 
+> **The owner's step-by-step checklist is [REMAINING_WORK.md](REMAINING_WORK.md).** Done since this table was written: FHIR e-prescription view, metrics endpoint, CI workflow, Windows installer script (untested on Windows), measured load test ([PERFORMANCE.md](PERFORMANCE.md)), accessibility audit and fixes, doctor and front-desk guides.
+
 ## What remains
 
 ### Needs a GPU and a real model — **do this first** (T-01)

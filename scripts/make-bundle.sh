@@ -35,7 +35,7 @@ for p in ${WITH//,/ }; do
   docker pull -q "$img" >/dev/null && docker save "$img" -o "$OUT/images/$p.tar"
 done
 
-cp deploy/docker-compose.yml deploy/Caddyfile deploy/.env.template deploy/install.sh deploy/update.sh deploy/rollback.sh deploy/backup-offsite.sh "$OUT/"
+cp deploy/docker-compose.yml deploy/Caddyfile deploy/.env.template deploy/install.sh deploy/install.ps1 deploy/update.sh deploy/rollback.sh deploy/backup-offsite.sh "$OUT/"
 cp docs/INSTALL.md docs/OPERATIONS.md docs/SECURITY_OPERATIONS.md "$OUT/docs/" 2>/dev/null || true
 cp THIRD_PARTY_NOTICES.md "$OUT/" 2>/dev/null || true
 echo "$VERSION" > "$OUT/VERSION"

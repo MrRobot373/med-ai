@@ -39,7 +39,7 @@ export function StatusIndicator({ collapsed }: { collapsed?: boolean }) {
     <Popover>
       <Tooltip content={collapsed ? label : undefined} side="right">
         <PopoverTrigger asChild>
-          <button className={cn("flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs text-sidebar-foreground transition-colors hover:bg-sidebar-active", collapsed && "justify-center px-0")}>
+          <button aria-label={label} className={cn("flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs text-sidebar-foreground transition-colors hover:bg-sidebar-active", collapsed && "justify-center px-0")}>
             <Dot tone={data ? STATUS_TONE[status] : "neutral"} pulse={status === "online"} />
             {!collapsed && <span className="truncate">{data ? label : "Checking services…"}</span>}
           </button>
